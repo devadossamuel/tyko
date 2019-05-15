@@ -286,6 +286,7 @@ pipeline {
                     [pattern: 'reports', type: 'INCLUDE'],
                     [pattern: 'logs', type: 'INCLUDE'],
                     [pattern: 'certs', type: 'INCLUDE'],
+                    [pattern: 'mypy_stubs', type: 'INCLUDE'],
                     [pattern: '*tmp', type: 'INCLUDE'],
                     [pattern: "scm", type: 'INCLUDE'],
                     ]
