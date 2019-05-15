@@ -10,4 +10,3 @@ def main():
 
     database.validate_tables(engine)
     # with engine.connect() as connection:
-
