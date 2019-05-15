@@ -166,20 +166,35 @@ pipeline {
                             when {
                                 equals expected: true, actual: params.TEST_RUN_MYPY
                             }
-                            steps{
-                                bat "if not exist reports\\mypy\\html mkdir reports\\mypy\\html"
-                                dir("scm"){
-                                    bat(returnStatus: true,
-                                        script: "mypy -p avforms --html-report ${WORKSPACE}\\reports\\mypy\\html > ${WORKSPACE}\\logs\\mypy.log",
-                                        label: "Running MyPy"
-                                        )
+                            stages{
+                                stage("Generate Stubs") {
+                                    steps{
+                                        dir("scm"){
+                                          bat "stubgen -p avforms -o ${WORKSPACE}\\mypy_stubs"
+                                        }
+                                    }
 
                                 }
-                            }
-                            post {
-                                always {
-                                    recordIssues(tools: [myPy(name: 'MyPy', pattern: 'logs/mypy.log')])
-                                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: "reports/mypy/html/", reportFiles: 'index.html', reportName: 'MyPy HTML Report', reportTitles: ''])
+                                stage("Running MyPy"){
+                                    environment{
+                                        MYPYPATH = "${WORKSPACE}\\mypy_stubs"
+                                    }
+                                    steps{
+                                        bat "if not exist reports\\mypy\\html mkdir reports\\mypy\\html"
+                                        dir("scm"){
+                                            bat(returnStatus: true,
+                                                script: "mypy -p avforms --html-report ${WORKSPACE}\\reports\\mypy\\html > ${WORKSPACE}\\logs\\mypy.log",
+                                                label: "Running MyPy"
+                                                )
+
+                                        }
+                                    }
+                                    post {
+                                        always {
+                                            recordIssues(tools: [myPy(name: 'MyPy', pattern: 'logs/mypy.log')])
+                                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: "reports/mypy/html/", reportFiles: 'index.html', reportName: 'MyPy HTML Report', reportTitles: ''])
+                                        }
+                                    }
                                 }
                             }
                         }
