@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
+
 @pytest.fixture
 def dummy_database_session():
     engine = create_engine("sqlite:///:memory:")

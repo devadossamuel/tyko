@@ -11,6 +11,8 @@ setup(
         'Champaign: Preservation Services',
     author_email='prescons@library.illinois.edu',
     description='',
+    setup_requires=["pytest-runner"],
+    tests_require=["pytest"],
     install_requires=[
         "sqlalchemy",
         "mysqlclient"
