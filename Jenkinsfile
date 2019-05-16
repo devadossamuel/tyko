@@ -192,7 +192,7 @@ pipeline {
                                     post {
                                         always {
                                             recordIssues(tools: [myPy(name: 'MyPy', pattern: 'logs/mypy.log')])
-                                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: "reports/mypy/html/", reportFiles: 'index.html', reportName: 'MyPy HTML Report', reportTitles: ''])
+                                            publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: "reports/mypy/html/", reportFiles: 'index.html', reportName: 'MyPy HTML Report', reportTitles: ''])
                                         }
                                     }
                                 }
