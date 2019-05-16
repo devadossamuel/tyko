@@ -5,7 +5,7 @@ from avforms import database
 DATABASE_CONNECTION = ""
 
 
-def main():
+def main() -> None:
     engine = db.create_engine(DATABASE_CONNECTION)
 
     database.validate_tables(engine)
