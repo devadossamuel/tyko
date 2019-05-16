@@ -6,9 +6,8 @@ setup(
     packages=['avforms'],
     url='https://library.illinois.edu',
     license='University of Illinois/NCSA Open Source License',
-    author=
-        'University Library at The University of Illinois at Urbana '
-        'Champaign: Preservation Services',
+    author='University Library at The University of Illinois at Urbana '
+           'Champaign: Preservation Services',
     author_email='prescons@library.illinois.edu',
     description='',
     setup_requires=["pytest-runner"],
