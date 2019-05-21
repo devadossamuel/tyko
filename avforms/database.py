@@ -1,19 +1,7 @@
 import sqlalchemy as db
 from sqlalchemy.ext.declarative import declarative_base
-
+from sqlalchemy.orm import relationship
 Base = declarative_base()
-
-
-class PreservationStaff(Base):
-    __tablename__ = "preservation_staff"
-    id = db.Column(
-        "staff_id",
-        db.Integer,
-        primary_key=True,
-        autoincrement=True)
-    first_name = db.Column("first_name", db.String)
-    last_name = db.Column("last_name", db.String)
-    email_address = db.Column("email_address", db.String)
 
 
 def validate_tables(engine):
@@ -48,3 +36,29 @@ def validate_tables(engine):
         print("Missing tables [{}]".format(",".join(expected_table_names)))
         valid = False
     return valid
+
+
+class Contact(Base):
+    __tablename__ = "contact"
+    id = db.Column(
+        "contact_id",
+        db.Integer,
+        primary_key=True,
+        autoincrement=True)
+    first_name = db.Column("first_name", db.String)
+    last_name = db.Column("last_name", db.String)
+    email_address = db.Column("email_address", db.String)
+
+
+class Collection(Base):
+    __tablename__ = "collection"
+    id = db.Column(
+        "collection_id",
+        db.Integer,
+        primary_key=True,
+        autoincrement=True)
+    record_series = db.Column("record_series", db.String)
+    collection_name = db.Column("collection_name", db.String)
+    department = db.Column("department", db.String)
+    contact = relationship("Contact")
+    contact_id = db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
