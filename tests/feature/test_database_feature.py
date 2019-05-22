@@ -1,7 +1,6 @@
 from avforms import database
 
-
-from pytest_bdd import scenario, given, then, when
+from pytest_bdd import scenario, given, then, when, parsers
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -60,7 +59,6 @@ def add_contact(dummy_database, collection_contact):
 @then("the collection contact can be found in the database")
 def find_collection_contact(dummy_database):
     staff_in_database = dummy_database.query(database.Contact).all()
-    assert len(staff_in_database) == 1
 
     assert staff_in_database[0].first_name == CONTACT_COLLECTION_FIRST_NAME
     assert staff_in_database[0].last_name == CONTACT_COLLECTION_LAST_NAME
@@ -133,7 +131,6 @@ def add_new_object(dummy_database, create_new_object):
     dummy_database.add(create_new_object)
     dummy_database.commit()
     return dummy_database
-    # print(dummy_database)
 
 
 @given("a new object for the collection created by the staff")
@@ -186,16 +183,7 @@ def staff_contact():
     )
 
 
-@then("the database has 1 object")
-def database_has_one_object(dummy_database):
-    assert len(dummy_database.query(database.CollectionObject).all()) == 1
-
-
-@then("the database has 1 collection")
-def database_has_one_collection(dummy_database):
-    assert len(dummy_database.query(database.Collection).all()) == 1
-
-
-@then("the collection as 1 project")
-def database_has_one_project(dummy_database):
-    assert len(dummy_database.query(database.Project).all()) == 1
+@then(parsers.parse("the database has {count:d} {data_type}"))
+def count_database_items(dummy_database, count, data_type):
+    my_data_type = getattr(database, data_type)
+    assert len(dummy_database.query(my_data_type).all()) == count
