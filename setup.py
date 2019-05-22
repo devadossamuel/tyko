@@ -11,7 +11,7 @@ setup(
     author_email='prescons@library.illinois.edu',
     description='',
     setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
+    tests_require=["pytest", "pytest-bdd"],
     install_requires=[
         "sqlalchemy",
         "mysqlclient"

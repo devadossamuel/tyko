@@ -64,6 +64,30 @@ class Collection(Base):
     contact_id = db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
 
 
+class CollectionObject(Base):
+    __tablename__ = "object"
+
+    id = db.Column(
+        "object_id",
+        db.Integer,
+        primary_key=True,
+        autoincrement=True)
+
+    name = db.Column("name", db.String)
+
+    collection_id = \
+        db.Column(db.Integer, db.ForeignKey("collection.collection_id"))
+
+    collection = relationship("Collection", foreign_keys=[collection_id])
+
+    project_id = db.Column(db.Integer, db.ForeignKey("project.project_id"))
+    project = relationship("Project", foreign_keys=[project_id])
+
+    last_updated_id = \
+        db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
+    last_updated = relationship("Contact", foreign_keys=[last_updated_id])
+
+
 class Project(Base):
     __tablename__ = "project"
 
@@ -75,32 +99,6 @@ class Project(Base):
 
     code = db.Column("code", db.String)
     title = db.Column("title", db.String)
-    contact_id = db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
-    contact = relationship("Contact", foreign_keys=[contact_id])
     current_location = db.Column("current_location", db.String)
-    project_status = db.Column("project_status", db.String)
+    status = db.Column("status", db.String)
     specs = db.Column("specs", db.String)
-
-
-class CollectionObject(Base):
-    __tablename__ = "object"
-
-    id = db.Column(
-        "object_id",
-        db.Integer,
-        primary_key=True,
-        autoincrement=True)
-
-    name = db.Column("object_name", db.String)
-
-    collection_id = \
-        db.Column(db.Integer,db.ForeignKey("collection.collection_id"))
-
-    collection = relationship("Collection", foreign_keys=[collection_id])
-
-    project_id = db.Column(db.Integer, db.ForeignKey("project.project_id"))
-    project = relationship("Project", foreign_keys=[project_id])
-
-    last_updated_id = \
-        db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
-    last_updated = relationship("Contact", foreign_keys=[last_updated_id])
