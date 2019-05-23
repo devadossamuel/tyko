@@ -251,8 +251,23 @@ def inspection_note(dummy_database):
 
     assert inspection_note.type_name == "Inspection"
 
-    database.Note(
+    return database.Note(
         text=SAMPLE_INSPECTION_NOTE,
         note_type=inspection_note
 
     )
+
+
+@when("the new inspection note is added to the item")
+def add_inspection_note(dummy_database, inspection_note):
+    collection_item = dummy_database.query(database.CollectionItem).first()
+    collection_item.notes.append(inspection_note)
+    dummy_database.commit()
+    return dummy_database
+
+
+@then("the item record has the new note")
+def item_has_the_note(dummy_database):
+    collection_item = dummy_database.query(database.CollectionItem).first()
+    for note in collection_item.notes:
+        assert note.text == SAMPLE_INSPECTION_NOTE

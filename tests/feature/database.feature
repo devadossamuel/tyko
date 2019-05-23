@@ -51,3 +51,7 @@ Feature: database
       And a new object for the collection created by the staff
       And a new item is created by the staff
       And a new inspection note is created
+      When a item is added to the object
+      And the new inspection note is added to the item
+      Then the database has 1 Note records
+      And the item record has the new note

@@ -37,6 +37,8 @@ def validate_tables(engine):
         "notes",
         "object",
         "project",
+        "item_has_notes",
+        "object_has_notes",
         # "audio_video",
         # "collection",
         # "collection_contact",
@@ -67,6 +69,21 @@ def validate_tables(engine):
         valid = False
     return valid
 
+
+item_has_notes_table = db.Table(
+    "item_has_notes",
+    Base.metadata,
+    db.Column("notes_id", db.Integer, db.ForeignKey("item.item_id")),
+    db.Column("item_id", db.Integer, db.ForeignKey("notes.note_id"))
+)
+
+
+object_has_notes_table = db.Table(
+    "object_has_notes",
+    Base.metadata,
+    db.Column("notes_id", db.Integer, db.ForeignKey("object.object_id")),
+    db.Column("object_id", db.Integer, db.ForeignKey("notes.note_id"))
+)
 
 class Contact(Base):
     __tablename__ = "contact"
@@ -133,6 +150,12 @@ class CollectionObject(Base):
         db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
     last_updated = relationship("Contact", foreign_keys=[last_updated_id])
 
+    notes = relationship("Note",
+                         secondary=object_has_notes_table,
+                         backref="object_sources"
+                         )
+
+
 
 class CollectionItem(Base):
     __tablename__ = "item"
@@ -153,6 +176,10 @@ class CollectionItem(Base):
                                      foreign_keys=[collection_object_id])
 
     obj_sequence = db.Column("obj_sequence", db.Integer)
+    notes = relationship("Note",
+                         secondary=item_has_notes_table,
+                         backref="item_sources"
+                         )
 
 
 class Note(Base):
@@ -160,11 +187,16 @@ class Note(Base):
 
     id = db.Column("note_id", db.Integer, primary_key=True, autoincrement=True)
     text = db.Column("text", db.Text)
-    note_type_id = db.Column(db.Integer, db.ForeignKey("note_types.note_types_id"))
+
+    note_type_id = db.Column(
+        db.Integer, db.ForeignKey("note_types.note_types_id"))
+
     note_type = relationship("NoteTypes", foreign_keys=[note_type_id])
 
 
 class NoteTypes(Base):
     __tablename__ = "note_types"
-    id = db.Column("note_types_id", db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(
+        "note_types_id", db.Integer, primary_key=True, autoincrement=True)
+    
     type_name = db.Column("type_name", db.String)
