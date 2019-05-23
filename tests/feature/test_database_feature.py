@@ -5,6 +5,8 @@ from pytest_bdd import scenario, given, then, when, parsers
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+SAMPLE_INSPECTION_NOTE = "This is a sample long form notes about the inspection"
+
 SAMPLE_OBJ_SEQUENCE = 12
 
 SAMPLE_DATE = date(1970, 1, 1)
@@ -45,9 +47,9 @@ def test_database_feature():
 @given("a blank database")
 def dummy_database():
     engine = create_engine("sqlite:///:memory:")
+    database.init_database(engine)
 
     dummy_session = sessionmaker(bind=engine)
-    database.Base.metadata.create_all(bind=engine)
     session = dummy_session()
     yield session
     session.close()
@@ -234,3 +236,23 @@ def add_item(dummy_database, new_item):
 def item_has_correct_barcode(dummy_database):
     new_added_item = dummy_database.query(database.CollectionItem).first()
     assert new_added_item.barcode == SAMPLE_BAR_CODE
+
+
+@scenario("database.feature", "Create a new note")
+def test_database_note():
+    pass
+
+
+@given("a new inspection note is created")
+def inspection_note(dummy_database):
+    inspection_note = \
+        dummy_database.query(database.NoteTypes).filter(
+            database.NoteTypes.type_name == "Inspection").one()
+
+    assert inspection_note.type_name == "Inspection"
+
+    database.Note(
+        text=SAMPLE_INSPECTION_NOTE,
+        note_type=inspection_note
+
+    )

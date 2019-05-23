@@ -1,26 +1,56 @@
 import sqlalchemy as db
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, sessionmaker
+
 Base = declarative_base()
+
+
+def init_database(engine):
+    Base.metadata.create_all(bind=engine)
+
+    initial_session = sessionmaker(bind=engine)
+    session = initial_session()
+    _populate_note_type_table(session)
+    session.commit()
+    session.close()
+    if not(validate_tables(engine)):
+        raise IOError("Newly created database is invalid")
+
+
+def _populate_note_type_table(session):
+    note_types = [
+        "Inspection",
+        "Playback"
+    ]
+    for note_type in note_types:
+        new_note_type = NoteTypes(type_name=note_type)
+        session.add(new_note_type)
 
 
 def validate_tables(engine):
 
     expected_table_names = [
-        "audio_video",
         "collection",
-        "collection_contact",
-        "film",
-        "format",
-        "grooved_disc",
+        "contact",
         "item",
+        "note_types",
+        "notes",
         "object",
-        "open_reel",
-        "preservation_staff",
         "project",
-        "vendor",
-        "vendor_contact",
-        "vendor_item_transfers",
+        # "audio_video",
+        # "collection",
+        # "collection_contact",
+        # "film",
+        # "format",
+        # "grooved_disc",
+        # "item",
+        # "object",
+        # "open_reel",
+        # "preservation_staff",
+        # "project",
+        # "vendor",
+        # "vendor_contact",
+        # "vendor_item_transfers",
     ]
 
     valid = True
@@ -123,3 +153,18 @@ class CollectionItem(Base):
                                      foreign_keys=[collection_object_id])
 
     obj_sequence = db.Column("obj_sequence", db.Integer)
+
+
+class Note(Base):
+    __tablename__ = "notes"
+
+    id = db.Column("note_id", db.Integer, primary_key=True, autoincrement=True)
+    text = db.Column("text", db.Text)
+    note_type_id = db.Column(db.Integer, db.ForeignKey("note_types.note_types_id"))
+    note_type = relationship("NoteTypes", foreign_keys=[note_type_id])
+
+
+class NoteTypes(Base):
+    __tablename__ = "note_types"
+    id = db.Column("note_types_id", db.Integer, primary_key=True, autoincrement=True)
+    type_name = db.Column("type_name", db.String)

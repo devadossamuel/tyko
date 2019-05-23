@@ -44,3 +44,10 @@ Feature: database
     And the database has 1 CollectionObject records
     And the database has 1 CollectionItem records
     And the new item record contains the correct barcode
+
+    Scenario: Create a new note
+      Given a database with a collection
+      And a staff contact
+      And a new object for the collection created by the staff
+      And a new item is created by the staff
+      And a new inspection note is created
