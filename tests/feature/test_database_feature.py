@@ -1,8 +1,21 @@
 from avforms import database
+from datetime import date
 
 from pytest_bdd import scenario, given, then, when, parsers
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+SAMPLE_OBJ_SEQUENCE = 12
+
+SAMPLE_DATE = date(1970, 1, 1)
+
+SAMPLE_MEDUSA_ID = "ASDFASDF"
+
+SAMPLE_FILE = "SampleFile.txt"
+
+SAMPLE_BAR_CODE = "S4MP1384RC0D"
+
+SAMPLE_ITEM_NAME = "Sample Item Name"
 
 CONTACT_COLLECTION_EMAIL = "jsmith@illinois.edu"
 CONTACT_COLLECTION_LAST_NAME = "Smith"
@@ -183,7 +196,41 @@ def staff_contact():
     )
 
 
-@then(parsers.parse("the database has {count:d} {data_type}"))
+@then(parsers.parse("the database has {count:d} {data_type} records"))
 def count_database_items(dummy_database, count, data_type):
     my_data_type = getattr(database, data_type)
     assert len(dummy_database.query(my_data_type).all()) == count
+
+
+@scenario("database.feature", "Create a new item")
+def test_newitem():
+    pass
+
+
+@given("a new item is created by the staff")
+def new_item(dummy_database, new_collection, new_project, staff_contact,
+             create_new_object):
+    return database.CollectionItem(
+        name=SAMPLE_ITEM_NAME,
+        barcode=SAMPLE_BAR_CODE,
+        file_name=SAMPLE_FILE,
+        medusa_uuid=SAMPLE_MEDUSA_ID,
+        original_rec_date=SAMPLE_DATE,
+        original_return_date=SAMPLE_DATE,
+        collection_object=create_new_object,
+        obj_sequence=SAMPLE_OBJ_SEQUENCE
+
+    )
+
+
+@when("a item is added to the object")
+def add_item(dummy_database, new_item):
+    dummy_database.add(new_item)
+    dummy_database.commit()
+    return dummy_database
+
+
+@then("the new item record contains the correct barcode")
+def item_has_correct_barcode(dummy_database):
+    new_added_item = dummy_database.query(database.CollectionItem).first()
+    assert new_added_item.barcode == SAMPLE_BAR_CODE

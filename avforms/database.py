@@ -50,6 +50,22 @@ class Contact(Base):
     email_address = db.Column("email_address", db.String)
 
 
+class Project(Base):
+    __tablename__ = "project"
+
+    id = db.Column(
+        "project_id",
+        db.Integer,
+        primary_key=True,
+        autoincrement=True)
+
+    code = db.Column("code", db.String)
+    title = db.Column("title", db.String)
+    current_location = db.Column("current_location", db.String)
+    status = db.Column("status", db.String)
+    specs = db.Column("specs", db.String)
+
+
 class Collection(Base):
     __tablename__ = "collection"
     id = db.Column(
@@ -88,17 +104,22 @@ class CollectionObject(Base):
     last_updated = relationship("Contact", foreign_keys=[last_updated_id])
 
 
-class Project(Base):
-    __tablename__ = "project"
+class CollectionItem(Base):
+    __tablename__ = "item"
 
-    id = db.Column(
-        "project_id",
-        db.Integer,
-        primary_key=True,
-        autoincrement=True)
+    id = db.Column("item_id", db.Integer, primary_key=True, autoincrement=True)
 
-    code = db.Column("code", db.String)
-    title = db.Column("title", db.String)
-    current_location = db.Column("current_location", db.String)
-    status = db.Column("status", db.String)
-    specs = db.Column("specs", db.String)
+    name = db.Column("name", db.String)
+    barcode = db.Column("barcode", db.String)
+    file_name = db.Column("file_name", db.String)
+    medusa_uuid = db.Column("medusa_uuid", db.String)
+    original_rec_date = db.Column("original_rec_date", db.Date)
+    original_return_date = db.Column("original_return_date", db.Date)
+
+    collection_object_id = db.Column(db.Integer,
+                                     db.ForeignKey("object.object_id"))
+
+    collection_object = relationship("CollectionObject",
+                                     foreign_keys=[collection_object_id])
+
+    obj_sequence = db.Column("obj_sequence", db.Integer)
