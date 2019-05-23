@@ -108,7 +108,7 @@ pipeline {
                                 dir("scm"){
                                     bat(
                                         label: "Run PyTest",
-                                        script: "coverage run --parallel-mode --source=avforms -m pytest --junitxml=${WORKSPACE}/reports/pytest/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest"
+                                        script: "coverage run --parallel-mode  -m pytest --junitxml=${WORKSPACE}/reports/pytest/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest"
                                     )
                                 }
                             }
