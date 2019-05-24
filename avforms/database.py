@@ -28,6 +28,8 @@ def _populate_note_type_table(session):
 
 
 def validate_tables(engine):
+    # TODO: dynamically set tables based on how many classes here with the
+    #       correct base
 
     expected_table_names = [
         "collection",
@@ -39,6 +41,7 @@ def validate_tables(engine):
         "project",
         "item_has_notes",
         "object_has_notes",
+        "treatment",
         # "audio_video",
         # "collection",
         # "collection_contact",
@@ -84,6 +87,7 @@ object_has_notes_table = db.Table(
     db.Column("notes_id", db.Integer, db.ForeignKey("object.object_id")),
     db.Column("object_id", db.Integer, db.ForeignKey("notes.note_id"))
 )
+
 
 class Contact(Base):
     __tablename__ = "contact"
@@ -156,7 +160,6 @@ class CollectionObject(Base):
                          )
 
 
-
 class CollectionItem(Base):
     __tablename__ = "item"
 
@@ -181,6 +184,8 @@ class CollectionItem(Base):
                          backref="item_sources"
                          )
 
+    treatment = relationship("Treatment", backref="treatment_id")
+
 
 class Note(Base):
     __tablename__ = "notes"
@@ -198,5 +203,16 @@ class NoteTypes(Base):
     __tablename__ = "note_types"
     id = db.Column(
         "note_types_id", db.Integer, primary_key=True, autoincrement=True)
-    
+
     type_name = db.Column("type_name", db.String)
+
+
+class Treatment(Base):
+    __tablename__ = "treatment"
+    id = db.Column(
+        "treatment_id", db.Integer, primary_key=True, autoincrement=True)
+
+    needed = db.Column("needed", db.Text)
+    given = db.Column("given", db.Text)
+    date = db.Column("date", db.Date)
+    item_id = db.Column(db.Integer, db.ForeignKey("item.item_id"))

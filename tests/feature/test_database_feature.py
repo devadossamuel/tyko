@@ -5,6 +5,10 @@ from pytest_bdd import scenario, given, then, when, parsers
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+SAMPLE_TREATMENT_GIVEN = "This item got only y treatment"
+
+SAMPLE_TREATMENT_NEEDED = "This item needs x, y, and z treatment"
+
 SAMPLE_INSPECTION_NOTE = "This is a sample long form notes about the inspection"
 
 SAMPLE_OBJ_SEQUENCE = 12
@@ -223,8 +227,7 @@ def test_newitem():
 
 
 @given("a new item is created by the staff")
-def new_item(dummy_database, new_collection, new_project, staff_contact,
-             create_new_object):
+def new_item(new_collection, new_project, staff_contact, create_new_object):
     return database.CollectionItem(
         name=SAMPLE_ITEM_NAME,
         barcode=SAMPLE_BAR_CODE,
@@ -238,7 +241,7 @@ def new_item(dummy_database, new_collection, new_project, staff_contact,
     )
 
 
-@when("a item is added to the object")
+@when("the item is added to the object")
 def add_item(dummy_database, new_item):
     dummy_database.add(new_item)
     dummy_database.commit()
@@ -293,12 +296,14 @@ def test_project_node():
     pass
 
 
-@scenario("database.feature", "Create a new inspection note for CollectionObject")
+@scenario("database.feature",
+          "Create a new inspection note for CollectionObject")
 def test_project_node():
     pass
 
 
-@then(parsers.parse("the CollectionObject record was last updated by {staff_first_name} {staff_last_name}"))
+@then(parsers.parse("the CollectionObject record was last updated "
+                    "by {staff_first_name} {staff_last_name}"))
 def object_updated_by_staff(dummy_database, staff_first_name, staff_last_name):
     all_contacts = dummy_database.query(database.Contact)
 
@@ -314,3 +319,38 @@ def object_updated_by_staff(dummy_database, staff_first_name, staff_last_name):
     collection_object = dummy_database.query(database.CollectionObject).first()
     assert collection_object.last_updated.last_name == staff_last_name
     assert collection_object.last_updated.first_name == staff_first_name
+
+
+@scenario("database.feature", "Item is sent for treatment")
+def test_add_treatment():
+    pass
+
+
+@when("the new treatment record is added to the item")
+def treatment_add_to_item(dummy_database, new_item, treatment_record):
+    # TODO: add treatment
+    new_item.treatment.append(treatment_record)
+    dummy_database.commit()
+    return dummy_database
+
+
+@given(parsers.parse('a new treatment record is created that '
+                     'needs "{needs}" and got "{given}"'))
+def treatment_record(needs, given):
+    return database.Treatment(
+        needed=needs,
+        given=given,
+        date=SAMPLE_DATE
+
+    )
+
+
+@then(parsers.parse('the treatment record of the item states that it '
+                    'needs "{needs}" and got "{given}"'))
+def treatment_record_reads(dummy_database, needs, given):
+    collection_item = dummy_database.query(database.CollectionItem).first()
+    assert len(collection_item.treatment) == 1, "Can only test if there is a single treatement record"
+    treatment_record = collection_item.treatment[0]
+
+    assert treatment_record.needed == needs
+    assert treatment_record.given == given

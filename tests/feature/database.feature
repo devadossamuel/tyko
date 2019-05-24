@@ -39,7 +39,7 @@ Feature: database
     And a staff contact named Henry Borchers
     And a new object for the collection created by Henry Borchers
     And a new item is created by the staff
-    When a item is added to the object
+    When the item is added to the object
     Then the database has 1 Project records
     And the database has 1 Collection records
     And the database has 1 CollectionObject records
@@ -53,7 +53,7 @@ Feature: database
     And a new object for the collection created by Henry Borchers
     And a new item is created by the staff
     And a new Inspection note is created
-    When a item is added to the object
+    When the item is added to the object
     And the new note is added to the CollectionItem
     Then the database has 1 Note records
     And the CollectionItem record has the new note
@@ -65,7 +65,7 @@ Feature: database
     And a new object for the collection created by Henry Borchers
     And a new item is created by the staff
     And a new Inspection note is created
-    When a item is added to the object
+    When the item is added to the object
     And the new note is added to the Project
     Then the database has 1 Note records
     And the Project record has the new note
@@ -77,8 +77,21 @@ Feature: database
     And a new object for the collection created by Henry Borchers
     And a new item is created by the staff
     And a new Inspection note is created
-    When a item is added to the object
+    When the item is added to the object
     And the new note is added to the CollectionObject
     Then the database has 1 Note records
     And the CollectionObject record has the new note
+    And the CollectionObject record was last updated by Henry Borchers
+
+  Scenario: Item is sent for treatment
+    Given a database with a collection
+    And a staff contact named Henry Borchers
+    And a new object for the collection created by Henry Borchers
+    And a new item is created by the staff
+    And a new treatment record is created that needs "X, Y, Z treatment" and got "Y treatment only"
+    When the new treatment record is added to the item
+    And the item is added to the object
+    Then the database has 1 CollectionObject records
+    And the database has 1 Treatment records
+    And the treatment record of the item states that it needs "X, Y, Z treatment" and got "Y treatment only"
     And the CollectionObject record was last updated by Henry Borchers
