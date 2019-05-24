@@ -328,7 +328,6 @@ def test_add_treatment():
 
 @when("the new treatment record is added to the item")
 def treatment_add_to_item(dummy_database, new_item, treatment_record):
-    # TODO: add treatment
     new_item.treatment.append(treatment_record)
     dummy_database.commit()
     return dummy_database

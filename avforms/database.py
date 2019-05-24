@@ -2,11 +2,16 @@ import sqlalchemy as db
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
-Base = declarative_base()
+AVTables = declarative_base()
+
+note_types = [
+    "Inspection",
+    "Playback"
+]
 
 
 def init_database(engine):
-    Base.metadata.create_all(bind=engine)
+    AVTables.metadata.create_all(bind=engine)
 
     initial_session = sessionmaker(bind=engine)
     session = initial_session()
@@ -18,45 +23,15 @@ def init_database(engine):
 
 
 def _populate_note_type_table(session):
-    note_types = [
-        "Inspection",
-        "Playback"
-    ]
+
     for note_type in note_types:
         new_note_type = NoteTypes(type_name=note_type)
         session.add(new_note_type)
 
 
 def validate_tables(engine):
-    # TODO: dynamically set tables based on how many classes here with the
-    #       correct base
 
-    expected_table_names = [
-        "collection",
-        "contact",
-        "item",
-        "note_types",
-        "notes",
-        "object",
-        "project",
-        "item_has_notes",
-        "object_has_notes",
-        "treatment",
-        # "audio_video",
-        # "collection",
-        # "collection_contact",
-        # "film",
-        # "format",
-        # "grooved_disc",
-        # "item",
-        # "object",
-        # "open_reel",
-        # "preservation_staff",
-        # "project",
-        # "vendor",
-        # "vendor_contact",
-        # "vendor_item_transfers",
-    ]
+    expected_table_names = [k for k in AVTables.metadata.tables.keys()]
 
     valid = True
 
@@ -75,7 +50,7 @@ def validate_tables(engine):
 
 item_has_notes_table = db.Table(
     "item_has_notes",
-    Base.metadata,
+    AVTables.metadata,
     db.Column("notes_id", db.Integer, db.ForeignKey("item.item_id")),
     db.Column("item_id", db.Integer, db.ForeignKey("notes.note_id"))
 )
@@ -83,13 +58,13 @@ item_has_notes_table = db.Table(
 
 object_has_notes_table = db.Table(
     "object_has_notes",
-    Base.metadata,
+    AVTables.metadata,
     db.Column("notes_id", db.Integer, db.ForeignKey("object.object_id")),
     db.Column("object_id", db.Integer, db.ForeignKey("notes.note_id"))
 )
 
 
-class Contact(Base):
+class Contact(AVTables):
     __tablename__ = "contact"
     id = db.Column(
         "contact_id",
@@ -101,7 +76,7 @@ class Contact(Base):
     email_address = db.Column("email_address", db.String)
 
 
-class Project(Base):
+class Project(AVTables):
     __tablename__ = "project"
 
     id = db.Column(
@@ -117,7 +92,7 @@ class Project(Base):
     specs = db.Column("specs", db.String)
 
 
-class Collection(Base):
+class Collection(AVTables):
     __tablename__ = "collection"
     id = db.Column(
         "collection_id",
@@ -131,7 +106,7 @@ class Collection(Base):
     contact_id = db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
 
 
-class CollectionObject(Base):
+class CollectionObject(AVTables):
     __tablename__ = "object"
 
     id = db.Column(
@@ -160,7 +135,7 @@ class CollectionObject(Base):
                          )
 
 
-class CollectionItem(Base):
+class CollectionItem(AVTables):
     __tablename__ = "item"
 
     id = db.Column("item_id", db.Integer, primary_key=True, autoincrement=True)
@@ -187,7 +162,7 @@ class CollectionItem(Base):
     treatment = relationship("Treatment", backref="treatment_id")
 
 
-class Note(Base):
+class Note(AVTables):
     __tablename__ = "notes"
 
     id = db.Column("note_id", db.Integer, primary_key=True, autoincrement=True)
@@ -199,7 +174,7 @@ class Note(Base):
     note_type = relationship("NoteTypes", foreign_keys=[note_type_id])
 
 
-class NoteTypes(Base):
+class NoteTypes(AVTables):
     __tablename__ = "note_types"
     id = db.Column(
         "note_types_id", db.Integer, primary_key=True, autoincrement=True)
@@ -207,7 +182,7 @@ class NoteTypes(Base):
     type_name = db.Column("type_name", db.String)
 
 
-class Treatment(Base):
+class Treatment(AVTables):
     __tablename__ = "treatment"
     id = db.Column(
         "treatment_id", db.Integer, primary_key=True, autoincrement=True)
