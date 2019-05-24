@@ -26,7 +26,7 @@ Feature: database
   Scenario: Create a new object
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new object for the collection created by Henry Borchers
+    And a new audiovisual object for the collection created by Henry Borchers
     When a object is added to the collection
     Then the database has 1 Project records
     And the database has 2 Contact records
@@ -37,7 +37,7 @@ Feature: database
   Scenario: Create a new item
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new object for the collection created by Henry Borchers
+    And a new audiovisual object for the collection created by Henry Borchers
     And a new item is created by the staff
     When the item is added to the object
     Then the database has 1 Project records
@@ -50,7 +50,7 @@ Feature: database
   Scenario: Create a new inspection note for item
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new object for the collection created by Henry Borchers
+    And a new audiovisual object for the collection created by Henry Borchers
     And a new item is created by the staff
     And a new Inspection note is created
     When the item is added to the object
@@ -62,7 +62,7 @@ Feature: database
   Scenario: Create a new inspection note for project
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new object for the collection created by Henry Borchers
+    And a new audiovisual object for the collection created by Henry Borchers
     And a new item is created by the staff
     And a new Inspection note is created
     When the item is added to the object
@@ -74,7 +74,7 @@ Feature: database
   Scenario: Create a new inspection note for CollectionObject
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new object for the collection created by Henry Borchers
+    And a new audiovisual object for the collection created by Henry Borchers
     And a new item is created by the staff
     And a new Inspection note is created
     When the item is added to the object
@@ -86,7 +86,7 @@ Feature: database
   Scenario: Item is sent for treatment
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new object for the collection created by Henry Borchers
+    And a new audiovisual object for the collection created by Henry Borchers
     And a new item is created by the staff
     And a new treatment record is created that needs "X, Y, Z treatment" and got "Y treatment only"
     When the new treatment record is added to the item
@@ -95,3 +95,15 @@ Feature: database
     And the database has 1 Treatment records
     And the treatment record of the item states that it needs "X, Y, Z treatment" and got "Y treatment only"
     And the CollectionObject record was last updated by Henry Borchers
+
+
+  Scenario: Create a new open reel project
+    Given a database with a collection
+    And a staff contact named Henry Borchers
+    And a new open reel object for the collection created by Henry Borchers
+    And a new item added to the object
+    Then the database has 1 CollectionItem records
+    And the database has 1 CollectionObject records
+#    And the database has 1 Contact records
+#    And the database has 1 Collection records
+#    And the contact to the collection is expected value

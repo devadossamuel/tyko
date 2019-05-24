@@ -152,8 +152,11 @@ def add_new_object(dummy_database, create_new_object):
     return dummy_database
 
 
-@given(parsers.parse("a new object for the collection created by {staff_first_name} {staff_last_name}"))
-def create_new_object(dummy_database, new_collection, new_project, staff_first_name, staff_last_name):
+@given(parsers.parse("a new {media_format_name} object for the collection created "
+                     "by {staff_first_name} {staff_last_name}"))
+def create_new_object(dummy_database, new_collection, new_project,
+                      media_format_name, staff_first_name, staff_last_name):
+
     all_contacts = dummy_database.query(database.Contact)
 
     staff_contact = \
@@ -164,6 +167,12 @@ def create_new_object(dummy_database, new_collection, new_project, staff_first_n
 
     assert staff_contact.last_name == staff_last_name
     assert staff_contact.first_name == staff_first_name
+
+    all_media_formats = dummy_database.query(database.FormatTypes)
+
+    format_type = all_media_formats.filter(
+        database.FormatTypes.name == media_format_name
+    ).one()
 
     new_object = database.CollectionObject(
         name=SAMPLE_OBJECT_NAME,
@@ -263,9 +272,9 @@ def test_database_note():
 def new_note(dummy_database, note_type):
     inspection_note = \
         dummy_database.query(database.NoteTypes).filter(
-            database.NoteTypes.type_name == note_type).one()
+            database.NoteTypes.name == note_type).one()
 
-    assert inspection_note.type_name == note_type
+    assert inspection_note.name == note_type
 
     return database.Note(
         text=SAMPLE_INSPECTION_NOTE,
@@ -353,3 +362,25 @@ def treatment_record_reads(dummy_database, needs, given):
 
     assert treatment_record.needed == needs
     assert treatment_record.given == given
+
+
+@scenario("database.feature", "Create a new open reel project")
+def test_new_open_reel_project():
+    pass
+
+
+@given("a new item added to the object")
+def add_new_item_to_object(dummy_database, create_new_object):
+    new_item = database.CollectionItem(
+        name=SAMPLE_ITEM_NAME,
+        barcode=SAMPLE_BAR_CODE,
+        file_name=SAMPLE_FILE,
+        medusa_uuid=SAMPLE_MEDUSA_ID,
+        original_rec_date=SAMPLE_DATE,
+        original_return_date=SAMPLE_DATE,
+        obj_sequence=SAMPLE_OBJ_SEQUENCE
+
+    )
+    create_new_object.items.append(new_item)
+    dummy_database.add(create_new_object)
+    dummy_database.commit()

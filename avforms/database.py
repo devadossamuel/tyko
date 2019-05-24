@@ -1,13 +1,38 @@
+import sys
+from typing import Dict
+
 import sqlalchemy as db
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
 AVTables = declarative_base()
 
-note_types = [
-    "Inspection",
-    "Playback"
-]
+
+# =============================================================================
+# Enumerated tables
+# =============================================================================
+#
+# To keep the enumerated id tables consistent, the ids are hardcoded
+#
+# Important Note:
+#
+# Add to the bottom of this list, For compatibility reasons, do not
+# edit existing value ids
+
+note_types = {
+    "Inspection": 0,
+    "Playback": 1
+}
+
+
+format_types = {
+    "audiovisual": 0,
+    "audio": 1,
+    "video": 2,
+    "open reel": 3,
+    "grooved disc": 4
+}
+# =============================================================================
 
 
 def init_database(engine):
@@ -16,17 +41,62 @@ def init_database(engine):
     initial_session = sessionmaker(bind=engine)
     session = initial_session()
     _populate_note_type_table(session)
+    _populate_format_types_table(session)
+
     session.commit()
     session.close()
+
     if not(validate_tables(engine)):
         raise IOError("Newly created database is invalid")
+
+    if not(validate_enumerated_tables(engine)):
+        raise IOError("Table data has changed")
 
 
 def _populate_note_type_table(session):
 
-    for note_type in note_types:
-        new_note_type = NoteTypes(type_name=note_type)
+    for note_type, note_id in note_types.items():
+        new_note_type = NoteTypes(name=note_type, id=note_id)
         session.add(new_note_type)
+
+
+def _populate_format_types_table(session):
+    for format_type, format_id in format_types.items():
+        new_format_type = FormatTypes(name=format_type, id=format_id)
+        session.add(new_format_type)
+
+
+def validate_enumerated_tables(engine):
+    session = sessionmaker(bind=engine)()
+    valid = True
+
+    if not validate_enumerate_table_data(engine, FormatTypes, format_types):
+        valid = False
+
+    if not validate_enumerate_table_data(engine, NoteTypes, note_types):
+        valid = False
+
+    session.close()
+    return valid
+
+
+def validate_enumerate_table_data(engine, sql_table_type: AVTables,
+                                  expected_table: Dict[str, int]) -> bool:
+
+    session = sessionmaker(bind=engine)()
+    valid = True
+
+    for table_entry in session.query(sql_table_type):
+        expected_id = expected_table.get(table_entry.name)
+        if expected_id != table_entry.id:
+            print(f"Type {table_entry.name} does not match expected id. "
+                  f"expected {expected_id}. "
+                  f"got {table_entry.id}.",
+                  file=sys.stderr)
+            valid = False
+
+    session.close()
+    return valid
 
 
 def validate_tables(engine):
@@ -134,6 +204,8 @@ class CollectionObject(AVTables):
                          backref="object_sources"
                          )
 
+    items = relationship("CollectionItem", backref="item_id")
+
 
 class CollectionItem(AVTables):
     __tablename__ = "item"
@@ -179,7 +251,7 @@ class NoteTypes(AVTables):
     id = db.Column(
         "note_types_id", db.Integer, primary_key=True, autoincrement=True)
 
-    type_name = db.Column("type_name", db.String)
+    name = db.Column("type_name", db.String)
 
 
 class Treatment(AVTables):
@@ -191,3 +263,12 @@ class Treatment(AVTables):
     given = db.Column("given", db.Text)
     date = db.Column("date", db.Date)
     item_id = db.Column(db.Integer, db.ForeignKey("item.item_id"))
+
+
+class FormatTypes(AVTables):
+    __tablename__ = "format_types"
+
+    id = db.Column(
+        "format_id", db.Integer, primary_key=True, autoincrement=True)
+
+    name = db.Column("name", db.String)
