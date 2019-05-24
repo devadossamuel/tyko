@@ -148,8 +148,19 @@ def add_new_object(dummy_database, create_new_object):
     return dummy_database
 
 
-@given("a new object for the collection created by the staff")
-def create_new_object(dummy_database, new_collection, new_project, staff_contact):
+@given(parsers.parse("a new object for the collection created by {staff_first_name} {staff_last_name}"))
+def create_new_object(dummy_database, new_collection, new_project, staff_first_name, staff_last_name):
+    all_contacts = dummy_database.query(database.Contact)
+
+    staff_contact = \
+        all_contacts.filter(
+            database.Contact.last_name == staff_last_name,
+            database.Contact.first_name == staff_first_name
+        ).one()
+
+    assert staff_contact.last_name == staff_last_name
+    assert staff_contact.first_name == staff_first_name
+
     new_object = database.CollectionObject(
         name=SAMPLE_OBJECT_NAME,
         collection=new_collection,
@@ -189,13 +200,15 @@ def collection_has_project(dummy_database):
     assert new_added_project.specs == SAMPLE_PROJECT_SPECS
 
 
-@given("a staff contact")
-def staff_contact():
-    return database.Contact(
-        first_name=SAMPLE_STAFF_CONTACT_FIRST_NAME,
-        last_name=SAMPLE_STAFF_CONTACT_LAST_NAME,
+@given(parsers.parse("a staff contact named {staff_first_name} {staff_last_name}"))
+def staff_contact(dummy_database, staff_first_name, staff_last_name):
+    new_contact = database.Contact(
+        first_name=staff_first_name,
+        last_name=staff_last_name,
         email_address=SAMPLE_STAFF_CONTACT_EMAIL
     )
+    dummy_database.add(new_contact)
+    return new_contact
 
 
 @then(parsers.parse("the database has {count:d} {data_type} records"))
@@ -238,18 +251,18 @@ def item_has_correct_barcode(dummy_database):
     assert new_added_item.barcode == SAMPLE_BAR_CODE
 
 
-@scenario("database.feature", "Create a new note")
+@scenario("database.feature", "Create a new inspection note for item")
 def test_database_note():
     pass
 
 
-@given("a new inspection note is created")
-def inspection_note(dummy_database):
+@given(parsers.parse("a new {note_type} note is created"))
+def new_note(dummy_database, note_type):
     inspection_note = \
         dummy_database.query(database.NoteTypes).filter(
-            database.NoteTypes.type_name == "Inspection").one()
+            database.NoteTypes.type_name == note_type).one()
 
-    assert inspection_note.type_name == "Inspection"
+    assert inspection_note.type_name == note_type
 
     return database.Note(
         text=SAMPLE_INSPECTION_NOTE,
@@ -258,16 +271,46 @@ def inspection_note(dummy_database):
     )
 
 
-@when("the new inspection note is added to the item")
-def add_inspection_note(dummy_database, inspection_note):
-    collection_item = dummy_database.query(database.CollectionItem).first()
-    collection_item.notes.append(inspection_note)
+@when(parsers.parse("the new note is added to the {data_type}"))
+def add_inspection_note(dummy_database, new_note, data_type):
+    my_data_type = getattr(database, data_type)
+    collection_item = dummy_database.query(my_data_type).first()
+    collection_item.notes.append(new_note)
     dummy_database.commit()
     return dummy_database
 
 
-@then("the item record has the new note")
-def item_has_the_note(dummy_database):
-    collection_item = dummy_database.query(database.CollectionItem).first()
+@then(parsers.parse("the {data_type} record has the new note"))
+def item_has_the_note(dummy_database, data_type):
+    my_data_type = getattr(database, data_type)
+    collection_item = dummy_database.query(my_data_type).first()
     for note in collection_item.notes:
         assert note.text == SAMPLE_INSPECTION_NOTE
+
+
+@scenario("database.feature", "Create a new inspection note for project")
+def test_project_node():
+    pass
+
+
+@scenario("database.feature", "Create a new inspection note for CollectionObject")
+def test_project_node():
+    pass
+
+
+@then(parsers.parse("the CollectionObject record was last updated by {staff_first_name} {staff_last_name}"))
+def object_updated_by_staff(dummy_database, staff_first_name, staff_last_name):
+    all_contacts = dummy_database.query(database.Contact)
+
+    staff_contact = \
+        all_contacts.filter(
+            database.Contact.last_name == staff_last_name,
+            database.Contact.first_name == staff_first_name
+        ).one()
+
+    assert staff_contact.last_name == staff_last_name
+    assert staff_contact.first_name == staff_first_name
+
+    collection_object = dummy_database.query(database.CollectionObject).first()
+    assert collection_object.last_updated.last_name == staff_last_name
+    assert collection_object.last_updated.first_name == staff_first_name

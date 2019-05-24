@@ -25,18 +25,19 @@ Feature: database
 
   Scenario: Create a new object
     Given a database with a collection
-    And a staff contact
-    And a new object for the collection created by the staff
+    And a staff contact named Henry Borchers
+    And a new object for the collection created by Henry Borchers
     When a object is added to the collection
     Then the database has 1 Project records
     And the database has 2 Contact records
     And the database has 1 Collection records
     And the database has 1 CollectionObject records
+    And the CollectionObject record was last updated by Henry Borchers
 
   Scenario: Create a new item
     Given a database with a collection
-    And a staff contact
-    And a new object for the collection created by the staff
+    And a staff contact named Henry Borchers
+    And a new object for the collection created by Henry Borchers
     And a new item is created by the staff
     When a item is added to the object
     Then the database has 1 Project records
@@ -44,14 +45,40 @@ Feature: database
     And the database has 1 CollectionObject records
     And the database has 1 CollectionItem records
     And the new item record contains the correct barcode
+    And the CollectionObject record was last updated by Henry Borchers
 
-    Scenario: Create a new note
-      Given a database with a collection
-      And a staff contact
-      And a new object for the collection created by the staff
-      And a new item is created by the staff
-      And a new inspection note is created
-      When a item is added to the object
-      And the new inspection note is added to the item
-      Then the database has 1 Note records
-      And the item record has the new note
+  Scenario: Create a new inspection note for item
+    Given a database with a collection
+    And a staff contact named Henry Borchers
+    And a new object for the collection created by Henry Borchers
+    And a new item is created by the staff
+    And a new Inspection note is created
+    When a item is added to the object
+    And the new note is added to the CollectionItem
+    Then the database has 1 Note records
+    And the CollectionItem record has the new note
+    And the CollectionObject record was last updated by Henry Borchers
+
+  Scenario: Create a new inspection note for project
+    Given a database with a collection
+    And a staff contact named Henry Borchers
+    And a new object for the collection created by Henry Borchers
+    And a new item is created by the staff
+    And a new Inspection note is created
+    When a item is added to the object
+    And the new note is added to the Project
+    Then the database has 1 Note records
+    And the Project record has the new note
+    And the CollectionObject record was last updated by Henry Borchers
+
+  Scenario: Create a new inspection note for CollectionObject
+    Given a database with a collection
+    And a staff contact named Henry Borchers
+    And a new object for the collection created by Henry Borchers
+    And a new item is created by the staff
+    And a new Inspection note is created
+    When a item is added to the object
+    And the new note is added to the CollectionObject
+    Then the database has 1 Note records
+    And the CollectionObject record has the new note
+    And the CollectionObject record was last updated by Henry Borchers
