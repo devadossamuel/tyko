@@ -152,10 +152,10 @@ def add_new_object(dummy_database, create_new_object):
     return dummy_database
 
 
-@given(parsers.parse("a new {media_format_name} object for the collection created "
-                     "by {staff_first_name} {staff_last_name}"))
+@given(parsers.parse("a new object for the collection "
+                     "created by {staff_first_name} {staff_last_name}"))
 def create_new_object(dummy_database, new_collection, new_project,
-                      media_format_name, staff_first_name, staff_last_name):
+                      staff_first_name, staff_last_name):
 
     all_contacts = dummy_database.query(database.Contact)
 
@@ -168,17 +168,11 @@ def create_new_object(dummy_database, new_collection, new_project,
     assert staff_contact.last_name == staff_last_name
     assert staff_contact.first_name == staff_first_name
 
-    all_media_formats = dummy_database.query(database.FormatTypes)
-
-    format_type = all_media_formats.filter(
-        database.FormatTypes.name == media_format_name
-    ).one()
-
     new_object = database.CollectionObject(
         name=SAMPLE_OBJECT_NAME,
         collection=new_collection,
         project=new_project,
-        last_updated=staff_contact
+        last_updated=staff_contact,
     )
     return new_object
 
@@ -235,9 +229,17 @@ def test_newitem():
     pass
 
 
-@given("a new item is created by the staff")
-def new_item(new_collection, new_project, staff_contact, create_new_object):
-    return database.CollectionItem(
+@given(parsers.parse("a new {media_format_name} item is created by the staff"))
+def new_item(dummy_database, new_collection, new_project, staff_contact,
+             create_new_object, media_format_name):
+
+    all_media_formats = dummy_database.query(database.FormatTypes)
+
+    format_type = all_media_formats.filter(
+        database.FormatTypes.name == media_format_name
+    ).one()
+
+    collection_item = database.CollectionItem(
         name=SAMPLE_ITEM_NAME,
         barcode=SAMPLE_BAR_CODE,
         file_name=SAMPLE_FILE,
@@ -245,9 +247,12 @@ def new_item(new_collection, new_project, staff_contact, create_new_object):
         original_rec_date=SAMPLE_DATE,
         original_return_date=SAMPLE_DATE,
         collection_object=create_new_object,
-        obj_sequence=SAMPLE_OBJ_SEQUENCE
+        obj_sequence=SAMPLE_OBJ_SEQUENCE,
+        format_type=format_type
 
     )
+
+    return collection_item
 
 
 @when("the item is added to the object")
@@ -364,23 +369,106 @@ def treatment_record_reads(dummy_database, needs, given):
     assert treatment_record.given == given
 
 
-@scenario("database.feature", "Create a new open reel project")
+@scenario("database.feature", "Create a new media project")
+def test_new_media_project():
+    pass
+
+
+@given("a new <media_type> item with <file_name> added to the object")
+def add_new_item_to_object(dummy_database, create_new_object, media_type,
+                           file_name):
+
+    media_type_info = database.format_types.get(media_type)
+    assert media_type_info is not None, "No table for {}".format(media_type)
+
+    all_format_types = dummy_database.query(database.FormatTypes)
+    format_type = all_format_types.filter(
+        database.FormatTypes.name == media_type
+    ).one()
+
+    new_item = database.CollectionItem(
+        name=SAMPLE_ITEM_NAME,
+        barcode=SAMPLE_BAR_CODE,
+        file_name=file_name,
+        medusa_uuid=SAMPLE_MEDUSA_ID,
+        original_rec_date=SAMPLE_DATE,
+        original_return_date=SAMPLE_DATE,
+        obj_sequence=SAMPLE_OBJ_SEQUENCE,
+        format_type=format_type
+
+    )
+
+    media_table_type = media_type_info[1](item=new_item)
+    create_new_object.items.append(new_item)
+    dummy_database.add(create_new_object)
+    dummy_database.add(media_table_type)
+    dummy_database.commit()
+
+
+@then("the database has item record with the <file_name> and has a "
+       "corresponding <media_type> record with the same item id")
+def has_a_record_with_media_item(dummy_database, file_name, media_type):
+    collection_items = dummy_database.query(database.CollectionItem)
+    collection_item = collection_items.filter(
+        database.CollectionItem.file_name == file_name).one()
+
+    assert collection_item.file_name == file_name
+
+    media_types = dummy_database.query(database.FormatTypes)
+    media_format = media_types.filter(database.FormatTypes.id == collection_item.format_type_id).one()
+    assert media_format.name == media_type
+
+
+@scenario("database.feature", "Create a open reel project")
 def test_new_open_reel_project():
     pass
 
 
-@given("a new item added to the object")
-def add_new_item_to_object(dummy_database, create_new_object):
+@when("a new open reel item recorded on <date_recorded> to <tape_size> tape "
+      "on a <base> base with <file_name> added to the object")
+def new_open_reel(dummy_database, create_new_object, date_recorded,
+                  tape_size, base, file_name):
+
     new_item = database.CollectionItem(
         name=SAMPLE_ITEM_NAME,
-        barcode=SAMPLE_BAR_CODE,
-        file_name=SAMPLE_FILE,
-        medusa_uuid=SAMPLE_MEDUSA_ID,
-        original_rec_date=SAMPLE_DATE,
-        original_return_date=SAMPLE_DATE,
-        obj_sequence=SAMPLE_OBJ_SEQUENCE
+        file_name=file_name
+    )
+
+    open_reel = database.OpenReel(
+        item=new_item,
+        date_recorded=SAMPLE_DATE,
+        tape_size=tape_size,
+        base=base
 
     )
+
     create_new_object.items.append(new_item)
-    dummy_database.add(create_new_object)
+    dummy_database.add(open_reel)
+    dummy_database.add(new_item)
     dummy_database.commit()
+
+
+@then("the database has item record with the <file_name>")
+def database_has_item_record_w_filename(dummy_database, file_name):
+    collection_items = dummy_database.query(database.CollectionItem)
+    collection_item = collection_items.filter(
+        database.CollectionItem.file_name == file_name).one()
+    assert collection_item.file_name == file_name
+
+
+@then("the database has open reel record with a <tape_size> sized tape")
+def check_open_reel_tape_size(dummy_database, tape_size):
+    open_reel_items = dummy_database.query(database.OpenReel)
+    open_reel_item = open_reel_items.filter(
+        database.OpenReel.tape_size == tape_size).one()
+
+    assert open_reel_item.tape_size == tape_size
+
+
+@then("the database has open reel record with a <base> base")
+def check_open_reel_base(dummy_database, base):
+    open_reel_items = dummy_database.query(database.OpenReel)
+    open_reel_item = open_reel_items.filter(
+        database.OpenReel.base == base).one()
+
+    assert open_reel_item.base == base

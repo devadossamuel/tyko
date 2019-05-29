@@ -26,7 +26,7 @@ Feature: database
   Scenario: Create a new object
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new audiovisual object for the collection created by Henry Borchers
+    And a new object for the collection created by Henry Borchers
     When a object is added to the collection
     Then the database has 1 Project records
     And the database has 2 Contact records
@@ -37,8 +37,8 @@ Feature: database
   Scenario: Create a new item
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new audiovisual object for the collection created by Henry Borchers
-    And a new item is created by the staff
+    And a new object for the collection created by Henry Borchers
+    And a new audiovisual item is created by the staff
     When the item is added to the object
     Then the database has 1 Project records
     And the database has 1 Collection records
@@ -50,8 +50,8 @@ Feature: database
   Scenario: Create a new inspection note for item
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new audiovisual object for the collection created by Henry Borchers
-    And a new item is created by the staff
+    And a new object for the collection created by Henry Borchers
+    And a new audiovisual item is created by the staff
     And a new Inspection note is created
     When the item is added to the object
     And the new note is added to the CollectionItem
@@ -62,8 +62,8 @@ Feature: database
   Scenario: Create a new inspection note for project
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new audiovisual object for the collection created by Henry Borchers
-    And a new item is created by the staff
+    And a new object for the collection created by Henry Borchers
+    And a new audiovisual item is created by the staff
     And a new Inspection note is created
     When the item is added to the object
     And the new note is added to the Project
@@ -74,8 +74,8 @@ Feature: database
   Scenario: Create a new inspection note for CollectionObject
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new audiovisual object for the collection created by Henry Borchers
-    And a new item is created by the staff
+    And a new object for the collection created by Henry Borchers
+    And a new audiovisual item is created by the staff
     And a new Inspection note is created
     When the item is added to the object
     And the new note is added to the CollectionObject
@@ -86,8 +86,8 @@ Feature: database
   Scenario: Item is sent for treatment
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new audiovisual object for the collection created by Henry Borchers
-    And a new item is created by the staff
+    And a new object for the collection created by Henry Borchers
+    And a new audiovisual item is created by the staff
     And a new treatment record is created that needs "X, Y, Z treatment" and got "Y treatment only"
     When the new treatment record is added to the item
     And the item is added to the object
@@ -97,13 +97,33 @@ Feature: database
     And the CollectionObject record was last updated by Henry Borchers
 
 
-  Scenario: Create a new open reel project
+  Scenario Outline: Create a new media project
     Given a database with a collection
-    And a staff contact named Henry Borchers
-    And a new open reel object for the collection created by Henry Borchers
-    And a new item added to the object
+    And a staff contact named <first_name> <last_name>
+    And a new object for the collection created by <first_name> <last_name>
+    And a new <media_type> item with <file_name> added to the object
     Then the database has 1 CollectionItem records
     And the database has 1 CollectionObject records
-#    And the database has 1 Contact records
-#    And the database has 1 Collection records
-#    And the contact to the collection is expected value
+    And the database has item record with the <file_name> and has a corresponding <media_type> record with the same item id
+
+    Examples:
+    | first_name | last_name | media_type |  file_name   |
+    | Henry      | Borchers  | open reel  |  myfile.wav  |
+    | John       | Smith     | open reel  |  my2file.wav |
+
+
+  Scenario Outline: Create a open reel project
+    Given a database with a collection
+    And a staff contact named <first_name> <last_name>
+    And a new object for the collection created by <first_name> <last_name>
+    When a new open reel item recorded on <date_recorded> to <tape_size> tape on a <base> base with <file_name> added to the object
+    Then the database has 1 CollectionItem records
+    And the database has 1 CollectionObject records
+    And the database has item record with the <file_name>
+    And the database has open reel record with a <tape_size> sized tape
+    And the database has open reel record with a <base> base
+
+    Examples:
+    | first_name | last_name | file_name    | date_recorded | tape_size | base      |
+    | Henry      | Borchers  | myfile.wav   | 1970/1/1      | 1/4 inch  | acetate   |
+    | John       | Smith     | my2file2.wav | 1998/2/10     | 1/4 inch  | polyester |

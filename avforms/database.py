@@ -1,5 +1,5 @@
 import sys
-from typing import Dict
+from typing import Dict, Tuple, Any
 
 import sqlalchemy as db
 from sqlalchemy.ext.declarative import declarative_base
@@ -7,32 +7,6 @@ from sqlalchemy.orm import relationship, sessionmaker
 
 AVTables = declarative_base()
 
-
-# =============================================================================
-# Enumerated tables
-# =============================================================================
-#
-# To keep the enumerated id tables consistent, the ids are hardcoded
-#
-# Important Note:
-#
-# Add to the bottom of this list, For compatibility reasons, do not
-# edit existing value ids
-
-note_types = {
-    "Inspection": 0,
-    "Playback": 1
-}
-
-
-format_types = {
-    "audiovisual": 0,
-    "audio": 1,
-    "video": 2,
-    "open reel": 3,
-    "grooved disc": 4
-}
-# =============================================================================
 
 
 def init_database(engine):
@@ -55,13 +29,17 @@ def init_database(engine):
 
 def _populate_note_type_table(session):
 
-    for note_type, note_id in note_types.items():
+    for note_type, note_metadata in note_types.items():
+        note_id = note_metadata[0]
+        
         new_note_type = NoteTypes(name=note_type, id=note_id)
         session.add(new_note_type)
 
 
 def _populate_format_types_table(session):
-    for format_type, format_id in format_types.items():
+    for format_type, format_metadata in format_types.items():
+        format_id = format_metadata[0]
+        
         new_format_type = FormatTypes(name=format_type, id=format_id)
         session.add(new_format_type)
 
@@ -81,13 +59,20 @@ def validate_enumerated_tables(engine):
 
 
 def validate_enumerate_table_data(engine, sql_table_type: AVTables,
-                                  expected_table: Dict[str, int]) -> bool:
+                                  expected_table: Dict[str, Tuple[int, Any]]
+                                  ) -> bool:
 
     session = sessionmaker(bind=engine)()
     valid = True
 
     for table_entry in session.query(sql_table_type):
-        expected_id = expected_table.get(table_entry.name)
+        expected_item = expected_table.get(table_entry.name)
+
+        if expected_item is None:
+            return False
+
+        expected_id = expected_item[0]
+
         if expected_id != table_entry.id:
             print(f"Type {table_entry.name} does not match expected id. "
                   f"expected {expected_id}. "
@@ -233,6 +218,11 @@ class CollectionItem(AVTables):
 
     treatment = relationship("Treatment", backref="treatment_id")
 
+    format_type_id = db.Column(db.Integer,
+                               db.ForeignKey("format_types.format_id"))
+
+    format_type = relationship("FormatTypes", foreign_keys=[format_type_id])
+
 
 class Note(AVTables):
     __tablename__ = "notes"
@@ -272,3 +262,57 @@ class FormatTypes(AVTables):
         "format_id", db.Integer, primary_key=True, autoincrement=True)
 
     name = db.Column("name", db.String)
+
+
+class OpenReel(AVTables):
+    __tablename__ = "open_reel"
+
+    item_id = db.Column(
+        db.Integer, db.ForeignKey("item.item_id"), primary_key=True)
+
+    item = relationship("CollectionItem", foreign_keys=[item_id])
+
+    date_recorded = db.Column(
+        "date_recorded", db.Date
+    )
+
+    track_count = db.Column("track_count", db.Text)
+    tape_size = db.Column("tape_size", db.Text)
+    reel_diam = db.Column("reel_diam", db.Integer)
+    reel_type = db.Column("reel_type", db.Text)
+    tape_thickness = db.Column("tape_thickness", db.Integer)
+    tape_brand = db.Column("tape_brand", db.Text)
+    base = db.Column("base", db.Text)
+    wind = db.Column("wind", db.Text)
+    track_speed = db.Column("track_speed", db.Text)
+    track_configuration = db.Column("track_configuration", db.Text)
+    track_duration = db.Column("track_duration", db.Text)
+    generation = db.Column("generation", db.Text)
+
+
+
+# =============================================================================
+# Enumerated tables
+# =============================================================================
+#
+# To keep the enumerated id tables consistent, the ids are hardcoded
+#
+# Important Note:
+#
+# Add to the bottom of this list, For compatibility reasons, do not
+# edit existing value ids
+
+note_types = {
+    "Inspection": (0, ),
+    "Playback": (1, ),
+}
+
+
+format_types = {
+    "audiovisual": (0,),
+    "audio": (1,),
+    "video": (2,),
+    "open reel": (3, OpenReel),
+    "grooved disc": (4,)
+}
+# =============================================================================
