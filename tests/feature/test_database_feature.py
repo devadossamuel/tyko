@@ -472,3 +472,61 @@ def check_open_reel_base(dummy_database, base):
         database.OpenReel.base == base).one()
 
     assert open_reel_item.base == base
+
+
+@scenario("database.feature", "Create a vendor")
+def test_vendor():
+    pass
+
+
+@given("an empty database")
+def empty_database(dummy_database):
+    return dummy_database
+
+
+@when("a new vendor named <name> from <address> in <city>, <state> <zipcode> is added")
+def add_vendor(empty_database, name, address, city, state, zipcode):
+    new_vendor = database.Vendor(
+        name=name,
+        address=address,
+        city=city,
+        state=state,
+        zipcode=zipcode,
+    )
+    empty_database.add(new_vendor)
+    empty_database.commit()
+
+
+@then("the newly created vendor has the name <name>")
+def vendor_has_name(dummy_database, name):
+    vendors = dummy_database.query(database.Vendor)
+    vendor = vendors.filter(database.Vendor.name == name).one()
+    assert vendor.name == name
+
+
+@then("the newly created vendor has the address <address>")
+def vendor_has_address(dummy_database, address):
+    vendors = dummy_database.query(database.Vendor)
+    vendor = vendors.filter(database.Vendor.address == address).one()
+    assert vendor.address == address
+
+
+@then("the newly created vendor is located in <city> city")
+def vendor_is_in_city(dummy_database, city):
+    vendors = dummy_database.query(database.Vendor)
+    vendor = vendors.filter(database.Vendor.city == city).one()
+    assert vendor.city == city
+
+
+@then("the newly created vendor is located in <state> state")
+def vendor_is_in_city(dummy_database, state):
+    vendors = dummy_database.query(database.Vendor)
+    vendor = vendors.filter(database.Vendor.state == state).one()
+    assert vendor.state == state
+
+
+@then("the newly created vendor is has a <zipcode> zipcode")
+def vendor_is_in_city(dummy_database, zipcode):
+    vendors = dummy_database.query(database.Vendor)
+    vendor = vendors.filter(database.Vendor.zipcode == zipcode).one()
+    assert vendor.zipcode == zipcode

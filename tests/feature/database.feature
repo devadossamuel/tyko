@@ -130,3 +130,17 @@ Feature: database
     | first_name | last_name | file_name    | date_recorded | tape_size | base      |
     | Henry      | Borchers  | myfile.wav   | 1970/1/1      | 1/4 inch  | acetate   |
     | John       | Smith     | my2file2.wav | 1998/2/10     | 1/4 inch  | polyester |
+
+
+  Scenario Outline: Create a vendor
+    Given an empty database
+    When a new vendor named <name> from <address> in <city>, <state> <zipcode> is added
+    Then the database has 1 Vendor records
+    And the newly created vendor has the name <name>
+    And the newly created vendor is located in <city> city
+    And the newly created vendor is located in <state> state
+    And the newly created vendor is has a <zipcode> zipcode
+
+    Examples:
+    | name             | address          | city    | state | zipcode |
+    | Alias av vendor  | 123 fake street  | Gothum  | NY    | 12345   |

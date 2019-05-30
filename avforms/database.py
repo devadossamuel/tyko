@@ -344,6 +344,19 @@ class AudioVideo(AVTables):
     format_subtype = db.Column("format_subtype", db.Text)
 
 
+class Vendor(AVTables):
+    __tablename__ = "vendor"
+
+    id = db.Column(
+        "vendor_id", db.Integer, primary_key=True, autoincrement=True)
+
+    name = db.Column("name", db.Text)
+    address = db.Column("address", db.Text)
+    city = db.Column("city", db.Text)
+    state = db.Column("state", db.Text)
+    zipcode = db.Column("zipcode", db.Text)
+
+
 # =============================================================================
 # Enumerated tables
 # =============================================================================
