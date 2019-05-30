@@ -8,7 +8,6 @@ from sqlalchemy.orm import relationship, sessionmaker
 AVTables = declarative_base()
 
 
-
 def init_database(engine):
     AVTables.metadata.create_all(bind=engine)
 
@@ -31,7 +30,7 @@ def _populate_note_type_table(session):
 
     for note_type, note_metadata in note_types.items():
         note_id = note_metadata[0]
-        
+
         new_note_type = NoteTypes(name=note_type, id=note_id)
         session.add(new_note_type)
 
@@ -39,7 +38,7 @@ def _populate_note_type_table(session):
 def _populate_format_types_table(session):
     for format_type, format_metadata in format_types.items():
         format_id = format_metadata[0]
-        
+
         new_format_type = FormatTypes(name=format_type, id=format_id)
         session.add(new_format_type)
 
@@ -288,7 +287,6 @@ class OpenReel(AVTables):
     track_configuration = db.Column("track_configuration", db.Text)
     track_duration = db.Column("track_duration", db.Text)
     generation = db.Column("generation", db.Text)
-
 
 
 # =============================================================================
