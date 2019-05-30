@@ -289,6 +289,61 @@ class OpenReel(AVTables):
     generation = db.Column("generation", db.Text)
 
 
+class Film(AVTables):
+    __tablename__ = "film"
+
+    item_id = db.Column(
+        db.Integer, db.ForeignKey("item.item_id"), primary_key=True)
+
+    item = relationship("CollectionItem", foreign_keys=[item_id])
+
+    date_of_film = db.Column("date_of_film", db.Date)
+    can_label = db.Column("can_label", db.Text)
+    leader_label = db.Column("leader_label", db.Text)
+    length = db.Column("length", db.Integer)
+    duration = db.Column("duration", db.Text)
+    format_gauge = db.Column("format_gauge", db.Integer)
+    base = db.Column("base", db.Text)
+    edge_code_date = db.Column("edge_code_date", db.Date)
+    sound = db.Column("sound", db.Text)
+    color = db.Column("color", db.Text)
+    image_type = db.Column("image_type", db.Text)
+    ad_test_date = db.Column("ad_test_date", db.Date)
+    ad_test_level = db.Column("ad_test_level", db.Integer)
+
+
+class GroovedDisc(AVTables):
+    __tablename__ = "grooved_disc"
+
+    item_id = db.Column(
+        db.Integer, db.ForeignKey("item.item_id"), primary_key=True)
+
+    item = relationship("CollectionItem", foreign_keys=[item_id])
+
+    # This is a year
+    date_recorded = db.Column("date_recorded", db.Integer)
+    side = db.Column("side", db.Text)
+    duration = db.Column("duration", db.Text)
+    diameter = db.Column("diameter", db.Integer)
+    disc_material = db.Column("disc_material", db.Text)
+    base = db.Column("base", db.Text)
+    playback_direction = db.Column("playback_direction", db.Text)
+    playback_speed = db.Column("playback_speed", db.Text)
+
+
+class AudioVideo(AVTables):
+    __tablename__ = "audio_video"
+
+    item_id = db.Column(
+        db.Integer, db.ForeignKey("item.item_id"), primary_key=True)
+
+    item = relationship("CollectionItem", foreign_keys=[item_id])
+    date_recorded = db.Column("date_recorded", db.Date)
+    side = db.Column("side", db.Text)
+    duration = db.Column("duration", db.Text)
+    format_subtype = db.Column("format_subtype", db.Text)
+
+
 # =============================================================================
 # Enumerated tables
 # =============================================================================
@@ -307,10 +362,11 @@ note_types = {
 
 
 format_types = {
-    "audiovisual": (0,),
+    "audio video": (0, AudioVideo),
     "audio": (1,),
     "video": (2,),
     "open reel": (3, OpenReel),
-    "grooved disc": (4,)
+    "grooved disc": (4, GroovedDisc),
+    "film": (5, Film)
 }
 # =============================================================================

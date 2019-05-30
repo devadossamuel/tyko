@@ -38,7 +38,7 @@ Feature: database
     Given a database with a collection
     And a staff contact named Henry Borchers
     And a new object for the collection created by Henry Borchers
-    And a new audiovisual item is created by the staff
+    And a new audio video item is created by the staff
     When the item is added to the object
     Then the database has 1 Project records
     And the database has 1 Collection records
@@ -51,7 +51,7 @@ Feature: database
     Given a database with a collection
     And a staff contact named Henry Borchers
     And a new object for the collection created by Henry Borchers
-    And a new audiovisual item is created by the staff
+    And a new audio video item is created by the staff
     And a new Inspection note is created
     When the item is added to the object
     And the new note is added to the CollectionItem
@@ -63,7 +63,7 @@ Feature: database
     Given a database with a collection
     And a staff contact named Henry Borchers
     And a new object for the collection created by Henry Borchers
-    And a new audiovisual item is created by the staff
+    And a new audio video item is created by the staff
     And a new Inspection note is created
     When the item is added to the object
     And the new note is added to the Project
@@ -75,7 +75,7 @@ Feature: database
     Given a database with a collection
     And a staff contact named Henry Borchers
     And a new object for the collection created by Henry Borchers
-    And a new audiovisual item is created by the staff
+    And a new audio video item is created by the staff
     And a new Inspection note is created
     When the item is added to the object
     And the new note is added to the CollectionObject
@@ -87,7 +87,7 @@ Feature: database
     Given a database with a collection
     And a staff contact named Henry Borchers
     And a new object for the collection created by Henry Borchers
-    And a new audiovisual item is created by the staff
+    And a new audio video item is created by the staff
     And a new treatment record is created that needs "X, Y, Z treatment" and got "Y treatment only"
     When the new treatment record is added to the item
     And the item is added to the object
@@ -107,9 +107,12 @@ Feature: database
     And the database has item record with the <file_name> and has a corresponding <media_type> record with the same item id
 
     Examples:
-    | first_name | last_name | media_type |  file_name   |
-    | Henry      | Borchers  | open reel  |  myfile.wav  |
-    | John       | Smith     | open reel  |  my2file.wav |
+    | first_name | last_name | media_type         |  file_name    |
+    | Henry      | Borchers  | open reel          |  myfile.wav   |
+    | John       | Smith     | open reel          |  my2file.wav  |
+    | John       | Smith     | film               |  myfilm.mov   |
+    | John       | Smith     | grooved disc       |  mydisc.wav   |
+    | John       | Smith     | audio video        |  myvideo.mov  |
 
 
   Scenario Outline: Create a open reel project
