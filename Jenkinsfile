@@ -57,7 +57,7 @@ pipeline {
                                 bat "venv\\37\\Scripts\\python.exe -m pip install -U pip --no-cache-dir"
                             }
                         }
-                        bat "venv\\37\\Scripts\\pip.exe install -U setuptools wheel sqlalchemy mysqlclient sqlalchemy-stubs"
+                        bat "venv\\37\\Scripts\\pip.exe install -U setuptools wheel sqlalchemy mysqlclient"
 //                        bat "venv36\\Scripts\\pip.exe install pytest-cov lxml flake8 mypy -r source\\requirements.txt --upgrade-strategy only-if-needed"
                     }
                 post{
@@ -95,7 +95,8 @@ pipeline {
             stages{
                 stage("Installing Python Testing Packages"){
                     steps{
-                        bat 'pip install "tox<3.10" pytest pytest-bdd mypy flake8 coverage lxml'
+                        // Bandit version 1.6 exclude the directories doesn't work
+                        bat 'pip install "tox<3.10" pytest pytest-bdd mypy flake8 coverage lxml sqlalchemy-stubs "bandit<1.6'
                     }
                 }
                 stage("Running Tests"){
@@ -108,16 +109,13 @@ pipeline {
                                 dir("scm"){
                                     bat(
                                         label: "Run PyTest",
-                                        script: "coverage run --parallel-mode --source=avforms -m pytest --junitxml=${WORKSPACE}/reports/pytest/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest"
+                                        script: "coverage run --parallel-mode --branch --source=avforms,tests,setup.py -m pytest --junitxml=${WORKSPACE}/reports/pytest/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest"
                                     )
                                 }
                             }
                             post {
                                 always{
                                     junit "reports/pytest/junit-*.xml"
-                                }
-                                cleanup{
-                                    cleanWs(patterns: [[pattern: 'reports/pytest/junit-*.xml', type: 'INCLUDE']])
                                 }
                             }
                         }
@@ -170,7 +168,7 @@ pipeline {
                                 bat "if not exist reports\\mypy\\html mkdir reports\\mypy\\html"
                                 dir("scm"){
                                     bat(returnStatus: true,
-                                        script: "mypy -p avforms --html-report ${WORKSPACE}\\reports\\mypy\\html > ${WORKSPACE}\\logs\\mypy.log && type ${WORKSPACE}\\logs\\mypy.log",
+                                        script: "mypy -p avforms ${env.scannerHome} --cache-dir=${WORKSPACE}/mypy_cache --html-report ${WORKSPACE}\\reports\\mypy\\html > ${WORKSPACE}\\logs\\mypy.log && type ${WORKSPACE}\\logs\\mypy.log",
                                         label: "Running MyPy"
                                         )
 
@@ -180,6 +178,22 @@ pipeline {
                                 always {
                                     recordIssues(tools: [myPy(name: 'MyPy', pattern: 'logs/mypy.log')])
                                     publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: "reports/mypy/html/", reportFiles: 'index.html', reportName: 'MyPy HTML Report', reportTitles: ''])
+                                }
+                            }
+                        }
+                        stage("Run Bandit Static Analysis") {
+                            steps{
+                                dir("scm"){
+                                    bat(returnStatus: true,
+                                        label: "Running bandit",
+                                        script: "bandit --format json --output ${WORKSPACE}/reports/bandit-report.json --recursive ${WORKSPACE}\\scm --exclude ${WORKSPACE}\\scm\\.eggs",
+                                        )
+
+                                }
+                            }
+                            post {
+                                always {
+                                    archiveArtifacts "reports/bandit-report.json"
                                 }
                             }
                         }
@@ -227,17 +241,57 @@ pipeline {
                                 }
                             }
                         }
-                        cleanup{
-                            cleanWs(patterns:
-                                [
-                                    [pattern: 'reports/coverage.xml', type: 'INCLUDE'],
-                                    [pattern: 'reports/coverage', type: 'INCLUDE'],
-                                    [pattern: 'scm/.coverage', type: 'INCLUDE']
-                                ]
-                            )
 
-                        }
                     }
+                }
+                stage("Run Sonarqube Analysis"){
+                    when{
+                        equals expected: "master", actual: env.BRANCH_NAME
+                    }
+
+                    environment{
+                        scannerHome = tool name: 'sonar-scanner-3.3.0', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+
+                    }
+                    steps{
+                        withSonarQubeEnv('sonarqube.library.illinois.edu') {
+                            withEnv([
+                                "PROJECT_HOMEPAGE=${bat(label: 'Getting url metadata', returnStdout: true, script: '@python scm/setup.py --url').trim()}",
+                                "PROJECT_DESCRIPTION=${bat(label: 'Getting description metadata', returnStdout: true, script: '@python scm/setup.py --description').trim()}"
+                                ]) {
+
+                                bat(
+                                    label: "Running Sonar Scanner",
+                                    script: "${env.scannerHome}/bin/sonar-scanner \
+-Dsonar.projectKey=avdatabase -Dsonar.sources=. \
+-Dsonar.projectBaseDir=${WORKSPACE}/scm \
+-Dsonar.python.coverage.reportPaths=reports/coverage.xml \
+-Dsonar.python.xunit.reportPath=reports/pytest/junit-${env.NODE_NAME}-pytest.xml \
+-Dsonar.projectVersion=${PKG_VERSION} \
+-Dsonar.python.bandit.reportPaths=${WORKSPACE}/reports/bandit-report.json \
+-Dsonar.links.ci=${env.JOB_URL} \
+-Dsonar.links.homepage=${env.PROJECT_HOMEPAGE} \
+-Dsonar.buildString=${env.BUILD_TAG} \
+-Dsonar.analysis.packageName=${env.PKG_NAME} \
+-Dsonar.projectDescription=\"%PROJECT_DESCRIPTION%\" "
+                                    )
+                                }
+                        }
+
+                    }
+                }
+            }
+            post{
+                cleanup{
+                    cleanWs(patterns:
+                        [
+                            [pattern: 'reports/coverage.xml', type: 'INCLUDE'],
+                            [pattern: 'reports/coverage', type: 'INCLUDE'],
+                            [pattern: 'scm/.coverage', type: 'INCLUDE'],
+                            [pattern: 'reports/pytest/junit-*.xml', type: 'INCLUDE']
+                        ]
+                    )
+
                 }
             }
         }
@@ -268,7 +322,7 @@ pipeline {
                 deleteDirs: true,
                 patterns: [
                     [pattern: 'dist', type: 'INCLUDE'],
-//                    [pattern: 'reports', type: 'INCLUDE'],
+                    [pattern: 'reports', type: 'INCLUDE'],
                     [pattern: 'logs', type: 'INCLUDE'],
                     [pattern: 'certs', type: 'INCLUDE'],
                     [pattern: 'mypy_stubs', type: 'INCLUDE'],
