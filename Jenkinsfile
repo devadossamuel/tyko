@@ -274,7 +274,7 @@ pipeline {
 -Dsonar.buildString=${env.BUILD_TAG} \
 -Dsonar.analysis.packageName=${env.PKG_NAME} \
 -Dsonar.projectDescription=\"%PROJECT_DESCRIPTION%\" \
--X
+-X "
                                     )
                                 }
                         }
