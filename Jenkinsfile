@@ -96,7 +96,7 @@ pipeline {
                 stage("Installing Python Testing Packages"){
                     steps{
                         // Bandit version 1.6 exclude the directories doesn't work
-                        bat 'pip install "tox<3.10" pytest pytest-bdd mypy flake8 coverage lxml sqlalchemy-stubs "bandit<1.6'
+                        bat 'pip install "tox<3.10" pytest pytest-bdd mypy flake8 coverage lxml pylint sqlalchemy-stubs "bandit<1.6'
                     }
                 }
                 stage("Running Tests"){
