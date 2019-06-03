@@ -158,10 +158,13 @@ pipeline {
                             steps{
                                 bat "if not exist reports\\mypy\\html mkdir reports\\mypy\\html"
                                 dir("scm"){
-                                    bat(returnStatus: true,
-                                        script: "mypy -p avforms ${env.scannerHome} --cache-dir=${WORKSPACE}/mypy_cache --html-report ${WORKSPACE}\\reports\\mypy\\html > ${WORKSPACE}\\logs\\mypy.log && type ${WORKSPACE}\\logs\\mypy.log",
-                                        label: "Running MyPy"
-                                        )
+                                    catchError(buildResult: hudson.model.Result.SUCCESS, message: 'MyPy found issues', stageResult: hudson.model.Result.UNSTABLE) {
+
+                                        bat(returnStatus: true,
+                                            script: "mypy -p avforms ${env.scannerHome} --cache-dir=${WORKSPACE}/mypy_cache --html-report ${WORKSPACE}\\reports\\mypy\\html > ${WORKSPACE}\\logs\\mypy.log && type ${WORKSPACE}\\logs\\mypy.log",
+                                            label: "Running MyPy"
+                                            )
+                                    }
 
                                 }
                             }
@@ -175,10 +178,12 @@ pipeline {
                         stage("Run Bandit Static Analysis") {
                             steps{
                                 dir("scm"){
-                                    bat(returnStatus: true,
-                                        label: "Running bandit",
-                                        script: "bandit --format json --output ${WORKSPACE}/reports/bandit-report.json --recursive ${WORKSPACE}\\scm --exclude ${WORKSPACE}\\scm\\.eggs",
-                                        )
+                                    catchError(buildResult: hudson.model.Result.SUCCESS, message: 'Bandit found issues', stageResult: hudson.model.Result.UNSTABLE) {
+                                        bat(
+                                            label: "Running bandit",
+                                            script: "bandit --format json --output ${WORKSPACE}/reports/bandit-report.json --recursive ${WORKSPACE}\\scm --exclude ${WORKSPACE}\\scm\\.eggs",
+                                            )
+                                    }
 
                                 }
                             }
