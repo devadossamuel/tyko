@@ -261,7 +261,6 @@ pipeline {
                                 bat(
                                     label: "Running Sonar Scanner",
                                     script: "${env.scannerHome}/bin/sonar-scanner \
--Dsonar.projectKey=avdatabase \
 -Dsonar.sources=. \
 -Dsonar.projectBaseDir=${WORKSPACE}/scm \
 -Dsonar.python.coverage.reportPaths=reports/coverage.xml \
@@ -269,7 +268,6 @@ pipeline {
 -Dsonar.projectVersion=${PKG_VERSION} \
 -Dsonar.python.bandit.reportPaths=${WORKSPACE}/reports/bandit-report.json \
 -Dsonar.links.ci=${env.JOB_URL} \
--Dsonar.links.homepage=${env.PROJECT_HOMEPAGE} \
 -Dsonar.buildString=${env.BUILD_TAG} \
 -Dsonar.analysis.packageName=${env.PKG_NAME} \
 -Dsonar.projectDescription=\"%PROJECT_DESCRIPTION%\" \
