@@ -20,10 +20,7 @@ pipeline {
     }
     parameters {
         booleanParam(name: "FRESH_WORKSPACE", defaultValue: false, description: "Purge workspace before staring and checking out source")
-        booleanParam(name: "TEST_RUN_PYTEST", defaultValue: true, description: "Run unit tests with PyTest")
         booleanParam(name: "TEST_RUN_TOX", defaultValue: true, description: "Run Tox Tests")
-        booleanParam(name: "TEST_RUN_MYPY", defaultValue: true, description: "Run MyPy Tests")
-        booleanParam(name: "TEST_RUN_FLAKE8", defaultValue: true, description: "Run Flake8 Tests")
     }
     stages {
         stage('Configure Environment') {
@@ -102,9 +99,6 @@ pipeline {
                 stage("Running Tests"){
                     parallel {
                         stage("PyTest"){
-                            when {
-                                equals expected: true, actual: params.TEST_RUN_PYTEST
-                            }
                             steps{
                                 dir("scm"){
                                     bat(
@@ -161,9 +155,6 @@ pipeline {
                             }
                         }
                         stage("Run MyPy Static Analysis") {
-                            when {
-                                equals expected: true, actual: params.TEST_RUN_MYPY
-                            }
                             steps{
                                 bat "if not exist reports\\mypy\\html mkdir reports\\mypy\\html"
                                 dir("scm"){
@@ -198,9 +189,6 @@ pipeline {
                             }
                         }
                         stage("Run Flake8 Static Analysis") {
-                            when {
-                                equals expected: true, actual: params.TEST_RUN_FLAKE8
-                            }
                             steps{
                                 dir("scm"){
                                     bat(returnStatus: true,
