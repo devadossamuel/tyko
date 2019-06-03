@@ -179,11 +179,16 @@ pipeline {
                         }
                         stage("Run Bandit Static Analysis") {
                             steps{
+                                bat(
+                                    label: "Creating report directories for Bandit reports",
+                                    script: """if not exist reports\\bandit\\json mkdir reports\\bandit\\json
+if not exist reports\\bandit\\html mkdir reports\\bandit\\html"""
+                                )
                                 dir("scm"){
                                     catchError(buildResult: hudson.model.Result.SUCCESS, message: 'Bandit found issues', stageResult: hudson.model.Result.UNSTABLE) {
                                         bat(
                                             label: "Running bandit",
-                                            script: "bandit --format json --output ${WORKSPACE}/reports/bandit-report.json --recursive ${WORKSPACE}\\scm --exclude ${WORKSPACE}\\scm\\.eggs",
+                                            script: "bandit --format json --output ${WORKSPACE}/reports/bandit/json/bandit-report.json --format html --output ${WORKSPACE}/reports/bandit/html/bandit-report.html --recursive ${WORKSPACE}\\scm --exclude ${WORKSPACE}\\scm\\.eggs",
                                             )
                                     }
 
@@ -191,7 +196,10 @@ pipeline {
                             }
                             post {
                                 always {
-                                    archiveArtifacts "reports/bandit-report.json"
+                                    archiveArtifacts "reports/bandit/json/bandit-report.json"
+                                }
+                                unstable{
+                                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: true, reportDir: 'reports/bandit/html', reportFiles: 'bandit-report.html', reportName: 'Bandit Security Report', reportTitles: ''])
                                 }
                             }
                         }
