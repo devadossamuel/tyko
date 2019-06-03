@@ -101,10 +101,12 @@ pipeline {
                         stage("PyTest"){
                             steps{
                                 dir("scm"){
-                                    bat(
-                                        label: "Run PyTest",
-                                        script: "coverage run --parallel-mode --branch --source=avforms,tests,setup.py -m pytest --junitxml=${WORKSPACE}/reports/pytest/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest"
-                                    )
+                                    catchError(buildResult: hudson.model.Result.UNSTABLE, message: 'Did not pass all pytest tests', stageResult: hudson.model.Result.UNSTABLE) {
+                                        bat(
+                                            label: "Run PyTest",
+                                            script: "coverage run --parallel-mode --branch --source=avforms,tests,setup.py -m pytest --junitxml=${WORKSPACE}/reports/pytest/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest"
+                                        )
+                                    }
                                 }
                             }
                             post {
