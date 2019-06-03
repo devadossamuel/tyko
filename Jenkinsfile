@@ -198,7 +198,8 @@ if not exist reports\\bandit\\html mkdir reports\\bandit\\html"""
                                 always {
                                     archiveArtifacts "reports/bandit/json/bandit-report.json"
                                 }
-                                unstable{
+                                unstable {
+                                    echo "I'm unstable!!!"
                                     publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: true, reportDir: 'reports/bandit/html', reportFiles: 'bandit-report.html', reportName: 'Bandit Security Report', reportTitles: ''])
                                 }
                             }
