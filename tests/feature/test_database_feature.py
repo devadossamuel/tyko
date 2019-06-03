@@ -500,7 +500,7 @@ def add_vendor(empty_database, name, address, city, state, zipcode):
 @then("the newly created vendor has the name <name>")
 def vendor_has_name(dummy_database, name):
     vendors = dummy_database.query(database.Vendor)
-    vendor = vendors.filter(database.Vendor.name ==name).one()
+    vendor = vendors.filter(database.Vendor.name == name).one()
     assert vendor.name == name
 
 
