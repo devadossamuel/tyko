@@ -179,17 +179,11 @@ pipeline {
                         }
                         stage("Run Bandit Static Analysis") {
                             steps{
-                                bat(
-                                    label: "Creating report directories for Bandit reports",
-                                    script: """if not exist reports\\bandit\\json mkdir reports\\bandit\\json
-if not exist reports\\bandit\\txt mkdir reports\\bandit\\txt"""
-                                )
                                 dir("scm"){
                                     catchError(buildResult: hudson.model.Result.SUCCESS, message: 'Bandit found issues', stageResult: hudson.model.Result.UNSTABLE) {
                                         bat(
                                             label: "Running bandit",
-                                            script: """bandit --format json --output ${WORKSPACE}/reports/bandit/json/bandit-report.json --recursive ${WORKSPACE}\\scm --exclude ${WORKSPACE}\\scm\\.eggs
-bandit --format txt --output ${WORKSPACE}/reports/bandit/txt/bandit-report.txt --recursive ${WORKSPACE}\\scm --exclude ${WORKSPACE}\\scm\\.eggs""",
+                                            script: "bandit --format json --output ${WORKSPACE}/reports/bandit-report.json --recursive ${WORKSPACE}\\scm --exclude ${WORKSPACE}\\scm\\.eggs"
                                             )
                                     }
 
@@ -197,8 +191,7 @@ bandit --format txt --output ${WORKSPACE}/reports/bandit/txt/bandit-report.txt -
                             }
                             post {
                                 always {
-                                    archiveArtifacts "reports/bandit/json/bandit-report.json"
-                                    archiveArtifacts "reports/bandit/txt/bandit-report.txt"
+                                    archiveArtifacts "reports/bandit-report.json"
                                 }
                             }
                         }
@@ -274,7 +267,7 @@ bandit --format txt --output ${WORKSPACE}/reports/bandit/txt/bandit-report.txt -
 -Dsonar.python.coverage.reportPaths=reports/coverage.xml \
 -Dsonar.python.xunit.reportPath=reports/pytest/junit-${env.NODE_NAME}-pytest.xml \
 -Dsonar.projectVersion=${PKG_VERSION} \
--Dsonar.python.bandit.reportPaths=${WORKSPACE}/reports/bandit/json/bandit-report.json \
+-Dsonar.python.bandit.reportPaths=${WORKSPACE}/reports/bandit-report.json \
 -Dsonar.links.ci=${env.JOB_URL} \
 -Dsonar.links.homepage=${env.PROJECT_HOMEPAGE} \
 -Dsonar.buildString=${env.BUILD_TAG} \
