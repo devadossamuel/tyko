@@ -191,10 +191,13 @@ pipeline {
                         stage("Run Flake8 Static Analysis") {
                             steps{
                                 dir("scm"){
-                                    bat(returnStatus: true,
-                                        script: "flake8 avforms --tee --output-file=${WORKSPACE}\\logs\\flake8.log",
-                                        label: "Running Flake8"
+                                    catchError(buildResult: hudson.model.Result.SUCCESS, message: 'Flake8 found issues', stageResult: hudson.model.Result.UNSTABLE) {
+
+                                        bat(
+                                            script: "flake8 avforms --tee --output-file=${WORKSPACE}\\logs\\flake8.log",
+                                            label: "Running Flake8"
                                         )
+                                    }
                                 }
                             }
                             post {
