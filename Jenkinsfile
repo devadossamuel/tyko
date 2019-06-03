@@ -267,12 +267,13 @@ if not exist reports\\bandit\\txt mkdir reports\\bandit\\txt"""
                                 bat(
                                     label: "Running Sonar Scanner",
                                     script: "${env.scannerHome}/bin/sonar-scanner \
--Dsonar.projectKey=avdatabase -Dsonar.sources=. \
+-Dsonar.projectKey=avdatabase \
+-Dsonar.sources=. \
 -Dsonar.projectBaseDir=${WORKSPACE}/scm \
 -Dsonar.python.coverage.reportPaths=reports/coverage.xml \
 -Dsonar.python.xunit.reportPath=reports/pytest/junit-${env.NODE_NAME}-pytest.xml \
 -Dsonar.projectVersion=${PKG_VERSION} \
--Dsonar.python.bandit.reportPaths=${WORKSPACE}/reports/bandit-report.json \
+-Dsonar.python.bandit.reportPaths=${WORKSPACE}/reports/bandit/json/bandit-report.json \
 -Dsonar.links.ci=${env.JOB_URL} \
 -Dsonar.links.homepage=${env.PROJECT_HOMEPAGE} \
 -Dsonar.buildString=${env.BUILD_TAG} \
