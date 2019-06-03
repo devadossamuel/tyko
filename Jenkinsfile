@@ -188,7 +188,8 @@ if not exist reports\\bandit\\txt mkdir reports\\bandit\\txt"""
                                     catchError(buildResult: hudson.model.Result.SUCCESS, message: 'Bandit found issues', stageResult: hudson.model.Result.UNSTABLE) {
                                         bat(
                                             label: "Running bandit",
-                                            script: "bandit --format json --output ${WORKSPACE}/reports/bandit/json/bandit-report.json --format txt --output ${WORKSPACE}/reports/bandit/txt/bandit-report.txt --recursive ${WORKSPACE}\\scm --exclude ${WORKSPACE}\\scm\\.eggs",
+                                            script: """bandit --format json --output ${WORKSPACE}/reports/bandit/json/bandit-report.json --recursive ${WORKSPACE}\\scm --exclude ${WORKSPACE}\\scm\\.eggs
+bandit --format txt --output ${WORKSPACE}/reports/bandit/txt/bandit-report.txt --recursive ${WORKSPACE}\\scm --exclude ${WORKSPACE}\\scm\\.eggs""",
                                             )
                                     }
 
