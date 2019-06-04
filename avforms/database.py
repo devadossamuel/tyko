@@ -344,6 +344,14 @@ class AudioVideo(AVTables):
     format_subtype = db.Column("format_subtype", db.Text)
 
 
+vendor_has_contacts_table = db.Table(
+    "item_has_contacts",
+    AVTables.metadata,
+    db.Column("contact_id", db.Integer, db.ForeignKey("vendor.vendor_id")),
+    db.Column("vendor_id", db.Integer, db.ForeignKey("contact.contact_id"))
+)
+
+
 class Vendor(AVTables):
     __tablename__ = "vendor"
 
@@ -355,6 +363,11 @@ class Vendor(AVTables):
     city = db.Column("city", db.Text)
     state = db.Column("state", db.Text)
     zipcode = db.Column("zipcode", db.Text)
+    contacts = relationship("Contact",
+                            secondary=vendor_has_contacts_table,
+                            backref="vendor_id"
+                            )
+
 
 
 # =============================================================================

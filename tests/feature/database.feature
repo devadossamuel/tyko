@@ -134,13 +134,23 @@ Feature: database
 
   Scenario Outline: Create a vendor
     Given an empty database
-    When a new vendor named <name> from <address> in <city>, <state> <zipcode> is added
+    When a new vendor named <vendor_name> from <address> in <city>, <state> <zipcode> is added
     Then the database has 1 Vendor records
-    And the newly created vendor has the name <name>
+    And the newly created vendor has the name <vendor_name>
     And the newly created vendor is located in <city> city
     And the newly created vendor is located in <state> state
     And the newly created vendor is has a <zipcode> zipcode
 
     Examples:
-    | name             | address          | city    | state | zipcode |
+    | vendor_name      | address          | city    | state | zipcode |
     | Alias AV Vendor  | 123 Fake Street  | Gothum  | NY    | 12345   |
+
+  Scenario Outline: Create a vendor contacts
+    Given an empty database
+    When a new vendor named <vendor_name> from <address> in <city>, <state> <zipcode> is added
+    And <contact_first_name> <contact_last_name> is added as a contact to the vendor named <vendor_name>
+    Then the vendor named <vendor_name> has a contact named <contact_first_name> <contact_last_name>
+
+  Examples:
+  | contact_first_name | contact_last_name | vendor_name      | address          | city    | state | zipcode |
+  | John               | Smith             | Alias AV Vendor  | 123 Fake Street  | Gothum  | NY    | 12345   |
