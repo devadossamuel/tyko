@@ -484,10 +484,10 @@ def empty_database(dummy_database):
     return dummy_database
 
 
-@when("a new vendor named <name> from <address> in <city>, <state> <zipcode> is added")
-def add_vendor(empty_database, name, address, city, state, zipcode):
+@when("a new vendor named <vendor_name> from <address> in <city>, <state> <zipcode> is added")
+def add_vendor(empty_database, vendor_name, address, city, state, zipcode):
     new_vendor = database.Vendor(
-        name=name,
+        name=vendor_name,
         address=address,
         city=city,
         state=state,
@@ -497,11 +497,11 @@ def add_vendor(empty_database, name, address, city, state, zipcode):
     empty_database.commit()
 
 
-@then("the newly created vendor has the name <name>")
-def vendor_has_name(dummy_database, name):
+@then("the newly created vendor has the name <vendor_name>")
+def vendor_has_name(dummy_database, vendor_name):
     vendors = dummy_database.query(database.Vendor)
-    vendor = vendors.filter(database.Vendor.name == name).one()
-    assert vendor.name == name
+    vendor = vendors.filter(database.Vendor.name == vendor_name).one()
+    assert vendor.name == vendor_name
 
 
 @then("the newly created vendor has the address <address>")
@@ -530,3 +530,41 @@ def vendor_is_in_city(dummy_database, zipcode):
     vendors = dummy_database.query(database.Vendor)
     vendor = vendors.filter(database.Vendor.zipcode == zipcode).one()
     assert vendor.zipcode == zipcode
+
+
+@scenario("database.feature", "Create a vendor contacts")
+def test_vendor_contact():
+    pass
+
+
+@when("<contact_first_name> <contact_last_name> is added as a contact to the "
+      "vendor named <vendor_name>")
+def contact_to_vendor(dummy_database, contact_first_name, contact_last_name,
+                      vendor_name):
+    vendors = dummy_database.query(database.Vendor)
+    vendor = vendors.filter(database.Vendor.name == vendor_name).one()
+
+    contact = database.Contact(
+        first_name=contact_first_name,
+        last_name=contact_last_name,
+        )
+    vendor.contacts.append(contact)
+    dummy_database.commit()
+
+
+@then("the vendor named <vendor_name> has a contact named "
+      "<contact_first_name> <contact_last_name>")
+def vendor_has_contact(dummy_database, vendor_name, contact_first_name,
+                       contact_last_name):
+
+    vendors = dummy_database.query(database.Vendor)
+    vendor = vendors.filter(database.Vendor.name == vendor_name).one()
+
+    for contact in vendor.contacts:
+        print(contact)
+        if contact.first_name == contact_first_name \
+                and contact.last_name == contact_last_name:
+            break
+
+    else:
+        assert False, f"No contact named {contact_first_name}, {contact_last_name}"
