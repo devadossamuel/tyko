@@ -273,17 +273,8 @@ pipeline {
                                     )
                                 }
                         }
-
-                    }
-                }
-                stage("Getting results from SonarQube"){
-                    options{
-                        timeout(5)
-                    }
-                    steps{
                         script{
                             def result = waitForQualityGate abortPipeline: true
-                            echo "result = ${result}"
                             echo "result.status = ${result.status}"
                         }
                     }
