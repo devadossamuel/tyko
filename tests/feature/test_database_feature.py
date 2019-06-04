@@ -207,7 +207,8 @@ def collection_has_project(dummy_database):
     assert new_added_project.specs == SAMPLE_PROJECT_SPECS
 
 
-@given(parsers.parse("a staff contact named {staff_first_name} {staff_last_name}"))
+@given(parsers.parse(
+    "a staff contact named {staff_first_name} {staff_last_name}"))
 def staff_contact(dummy_database, staff_first_name, staff_last_name):
     new_contact = database.Contact(
         first_name=staff_first_name,
@@ -362,7 +363,10 @@ def treatment_record(needs, given):
                     'needs "{needs}" and got "{given}"'))
 def treatment_record_reads(dummy_database, needs, given):
     collection_item = dummy_database.query(database.CollectionItem).first()
-    assert len(collection_item.treatment) == 1, "Can only test if there is a single treatement record"
+
+    assert len(collection_item.treatment) == 1, \
+        "Can only test if there is a single treatement record"
+
     treatment_record = collection_item.treatment[0]
 
     assert treatment_record.needed == needs
@@ -415,7 +419,10 @@ def has_a_record_with_media_item(dummy_database, file_name, media_type):
     assert collection_item.file_name == file_name
 
     media_types = dummy_database.query(database.FormatTypes)
-    media_format = media_types.filter(database.FormatTypes.id == collection_item.format_type_id).one()
+
+    media_format = media_types.filter(database.FormatTypes.id ==
+                                      collection_item.format_type_id).one()
+
     assert media_format.name == media_type
 
 
@@ -484,7 +491,8 @@ def empty_database(dummy_database):
     return dummy_database
 
 
-@when("a new vendor named <vendor_name> from <address> in <city>, <state> <zipcode> is added")
+@when("a new vendor named <vendor_name> from <address> in <city>, <state> "
+      "<zipcode> is added")
 def add_vendor(empty_database, vendor_name, address, city, state, zipcode):
     new_vendor = database.Vendor(
         name=vendor_name,
@@ -567,4 +575,5 @@ def vendor_has_contact(dummy_database, vendor_name, contact_first_name,
             break
 
     else:
-        assert False, f"No contact named {contact_first_name}, {contact_last_name}"
+        assert False, \
+            f"No contact named {contact_first_name}, {contact_last_name}"
