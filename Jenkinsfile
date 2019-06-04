@@ -284,6 +284,7 @@ pipeline {
                         script{
                             def result = waitForQualityGate abortPipeline: true
                             echo "result = ${result}"
+                            echo "result.status = ${result.status}"
                         }
                     }
                 }
