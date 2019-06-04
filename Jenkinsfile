@@ -274,8 +274,10 @@ pipeline {
                                 }
                         }
                         script{
-                            def result = waitForQualityGate abortPipeline: true
-                            echo "result.status = ${result.status}"
+                            def sonarqube_result = waitForQualityGate abortPipeline: false
+                            if(sonarqube_result.status != "OK"){
+                                unstable("SonarQube quality gate: ${sonarqube_result}")
+                            }
                         }
                     }
                 }
