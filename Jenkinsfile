@@ -254,7 +254,6 @@ pipeline {
                     steps{
                         withSonarQubeEnv('sonarqube.library.illinois.edu') {
                             withEnv([
-                                "PROJECT_HOMEPAGE=${bat(label: 'Getting url metadata', returnStdout: true, script: '@python scm/setup.py --url').trim()}",
                                 "PROJECT_DESCRIPTION=${bat(label: 'Getting description metadata', returnStdout: true, script: '@python scm/setup.py --description').trim()}"
                                 ]) {
 
