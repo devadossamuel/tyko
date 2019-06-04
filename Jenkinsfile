@@ -242,7 +242,7 @@ pipeline {
 
                     }
                 }
-                stage("Run Sonarqube Analysis"){
+                stage("Run SonarQube Analysis"){
                     when{
                         equals expected: "master", actual: env.BRANCH_NAME
                     }
@@ -274,6 +274,14 @@ pipeline {
                                 }
                         }
 
+                    }
+                }
+                stage("Getting results from SonarQube"){
+                    options{
+                        timeout(5)
+                    }
+                    steps{
+                        waitForQualityGate abortPipeline: true
                     }
                 }
             }
