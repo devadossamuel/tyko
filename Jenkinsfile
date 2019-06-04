@@ -281,7 +281,10 @@ pipeline {
                         timeout(5)
                     }
                     steps{
-                        waitForQualityGate abortPipeline: true
+                        script{
+                            def result = waitForQualityGate abortPipeline: true
+                            echo "result = ${result}"
+                        }
                     }
                 }
             }
