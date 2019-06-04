@@ -101,7 +101,7 @@ pipeline {
                         stage("PyTest"){
                             steps{
                                 dir("scm"){
-                                    catchError(buildResult: hudson.model.Result.UNSTABLE, message: 'Did not pass all pytest tests', stageResult: hudson.model.Result.UNSTABLE) {
+                                    catchError(buildResult: 'UNSTABLE', message: 'Did not pass all pytest tests', stageResult: 'UNSTABLE') {
                                         bat(
                                             label: "Run PyTest",
                                             script: "coverage run --parallel-mode --branch --source=avforms,tests,setup.py -m pytest --junitxml=${WORKSPACE}/reports/pytest/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest"
@@ -160,7 +160,7 @@ pipeline {
                             steps{
                                 bat "if not exist reports\\mypy\\html mkdir reports\\mypy\\html"
                                 dir("scm"){
-                                    catchError(buildResult: hudson.model.Result.SUCCESS, message: 'MyPy found issues', stageResult: hudson.model.Result.UNSTABLE) {
+                                    catchError(buildResult: 'SUCCESS', message: 'MyPy found issues', stageResult: 'UNSTABLE') {
 
                                         bat(returnStatus: true,
                                             script: "mypy -p avforms ${env.scannerHome} --cache-dir=${WORKSPACE}/mypy_cache --html-report ${WORKSPACE}\\reports\\mypy\\html > ${WORKSPACE}\\logs\\mypy.log && type ${WORKSPACE}\\logs\\mypy.log",
@@ -180,7 +180,7 @@ pipeline {
                         stage("Run Bandit Static Analysis") {
                             steps{
                                 dir("scm"){
-                                    catchError(buildResult: hudson.model.Result.SUCCESS, message: 'Bandit found issues', stageResult: hudson.model.Result.UNSTABLE) {
+                                    catchError(buildResult: 'SUCCESS', message: 'Bandit found issues', stageResult: 'UNSTABLE') {
                                         bat(
                                             label: "Running bandit",
                                             script: "bandit --format json --output ${WORKSPACE}/reports/bandit-report.json --recursive ${WORKSPACE}\\scm\\avforms"
@@ -198,7 +198,7 @@ pipeline {
                         stage("Run Flake8 Static Analysis") {
                             steps{
                                 dir("scm"){
-                                    catchError(buildResult: hudson.model.Result.SUCCESS, message: 'Flake8 found issues', stageResult: hudson.model.Result.UNSTABLE) {
+                                    catchError(buildResult: 'SUCCESS', message: 'Flake8 found issues', stageResult: 'UNSTABLE') {
 
                                         bat(
                                             script: "flake8 avforms --tee --output-file=${WORKSPACE}\\logs\\flake8.log",
