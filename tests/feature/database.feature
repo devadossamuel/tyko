@@ -143,4 +143,4 @@ Feature: database
 
     Examples:
     | name             | address          | city    | state | zipcode |
-    | Alias av vendor  | 123 fake street  | Gothum  | NY    | 12345   |
+    | Alias AV Vendor  | 123 Fake Street  | Gothum  | NY    | 12345   |
