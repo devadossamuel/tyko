@@ -154,3 +154,17 @@ Feature: database
   Examples:
   | contact_first_name | contact_last_name | vendor_name      | address          | city    | state | zipcode |
   | John               | Smith             | Alias AV Vendor  | 123 Fake Street  | Gothum  | NY    | 12345   |
+
+
+  Scenario Outline: Send an object to a vendor
+    Given an empty database
+    And a staff contact named <staff_first_name> <staff_last_name>
+    And a new object for the collection created by <staff_first_name> <staff_last_name>
+    When a new vendor named <vendor_name> from <address> in <city>, <state> <zipcode> is added
+    And the object is sent to the vendor <vendor_name>
+    Then the database has 1 VendorTransfer records
+    And there is a new transfer for the new object sent to <vendor_name>
+
+  Examples:
+  | staff_first_name   | staff_last_name   | vendor_name      | address          | city    | state | zipcode |
+  | John               | Smith             | Alias AV Vendor  | 123 Fake Street  | Gothum  | NY    | 12345   |

@@ -190,6 +190,10 @@ class CollectionObject(AVTables):
 
     items = relationship("CollectionItem", backref="item_id")
 
+    contact_id = db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
+
+    contact = relationship("Contact", foreign_keys=[contact_id])
+
 
 class CollectionItem(AVTables):
     __tablename__ = "item"
@@ -367,6 +371,39 @@ class Vendor(AVTables):
                             secondary=vendor_has_contacts_table,
                             backref="vendor_id"
                             )
+
+
+vendor_transfer_has_an_object = db.Table(
+    "vendor_transfer_has_an_object",
+    AVTables.metadata,
+    db.Column("object_id",
+              db.Integer,
+              db.ForeignKey("vendor_transfer.vendor_transfer_id")),
+    db.Column("vendor_transfer_id",
+              db.Integer,
+              db.ForeignKey("object.object_id")
+              )
+)
+
+
+class VendorTransfer(AVTables):
+    __tablename__ = "vendor_transfer"
+
+    id = db.Column(
+        "vendor_transfer_id", db.Integer, primary_key=True, autoincrement=True)
+
+    vendor_id = db.Column(
+        db.Integer, db.ForeignKey("vendor.vendor_id")
+    )
+    vendor = relationship("Vendor", foreign_keys=[vendor_id])
+    vendor_rec_date = db.Column("vendor_rec_date", db.Date)
+    returned_rec_date = db.Column("returned_rec_date", db.Date)
+
+    transfer_objects = relationship(
+        "CollectionObject",
+        secondary=vendor_transfer_has_an_object,
+        backref="transfer_object"
+    )
 
 
 # =============================================================================

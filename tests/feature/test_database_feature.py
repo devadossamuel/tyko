@@ -577,3 +577,50 @@ def vendor_has_contact(dummy_database, vendor_name, contact_first_name,
     else:
         assert False, \
             f"No contact named {contact_first_name}, {contact_last_name}"
+
+
+@scenario("database.feature", "Send an object to a vendor")
+def test_vendor_gets_object():
+    pass
+
+
+@when("the object is sent to the vendor <vendor_name>")
+def vendor_gets_object(dummy_database, create_new_object, vendor_name):
+    vendors = dummy_database.query(database.Vendor)
+    vendor = vendors.filter(database.Vendor.name == vendor_name).one()
+
+    vendor_transfer = database.VendorTransfer(
+        vendor=vendor,
+        vendor_rec_date=SAMPLE_DATE,
+        returned_rec_date=SAMPLE_DATE,
+    )
+    vendor_transfer.transfer_objects.append(create_new_object)
+    dummy_database.add(vendor_transfer)
+    dummy_database.commit()
+
+
+@then("there is a new transfer for the new object sent to <vendor_name>")
+def new_transfer_for_vendor(dummy_database, vendor_name, create_new_object):
+    vendors = dummy_database.query(database.Vendor)
+    vendor = vendors.filter(database.Vendor.name == vendor_name).one()
+
+    transfers = dummy_database.query(database.VendorTransfer)
+    transfer = transfers.filter(database.VendorTransfer.vendor == vendor).one()
+
+    for transfer_object in transfer.transfer_objects:
+
+        if transfer_object.name != create_new_object.name:
+            continue
+
+        if transfer_object.collection != create_new_object.collection:
+            continue
+
+        if transfer_object.project != create_new_object.project:
+            continue
+
+        if transfer_object.contact != create_new_object.contact:
+            continue
+
+        break
+    else:
+        assert False, "No valid objects found in the VendorTransfer"
