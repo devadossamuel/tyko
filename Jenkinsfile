@@ -77,7 +77,7 @@ def get_sonarqube_scan_data(report_task_file){
 def get_sonarqube_project_analysis(report_task_file, buildString){
     def props = readProperties  file: '.scannerwork/report-task.txt'
     def response2 = httpRequest url : props['serverUrl'] + "/api/project_analyses/search?project=" + props['projectKey']
-    def analyses = readJSON text: response.content
+    def analyses = readJSON text: response2.content
     echo analyses.toString()
 }
 
