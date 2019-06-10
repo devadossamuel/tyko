@@ -364,9 +364,9 @@ pipeline {
                                 unstable("SonarQube quality gate: ${sonarqube_result}")
                             }
                             def sonarqube_data = get_sonarqube_scan_data(".scannerwork/report-task.txt")
-                            echo sonarqube_data.toString(".scannerwork/report-task.txt", BUILD_TAG)
+                            echo sonarqube_data.toString()
 
-                            echo get_sonarqube_project_analysis()
+                            echo get_sonarqube_project_analysis(".scannerwork/report-task.txt", BUILD_TAG)
 //                            def props = readProperties  file: '.scannerwork/report-task.txt'
 //                            echo "properties=${props}"
 //
