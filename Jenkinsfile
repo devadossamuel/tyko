@@ -341,6 +341,7 @@ pipeline {
                             if(sonarqube_result.status != "OK"){
                                 unstable("SonarQube quality gate: ${sonarqube_result}")
                             }
+                            echo "sonarqube_result.properties = ${sonarqube_result.properties}"
                         }
                     }
                 }
