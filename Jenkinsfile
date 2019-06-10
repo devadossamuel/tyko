@@ -327,6 +327,7 @@ pipeline {
 -Dsonar.links.ci=${env.JOB_URL} \
 -Dsonar.buildString=${env.BUILD_TAG} \
 -Dsonar.analysis.packageName=${env.PKG_NAME} \
+-Dsonar.analysis.buildNumber=${env.BUILD_NUMBER} \
 -Dsonar.projectDescription=\"%PROJECT_DESCRIPTION%\" \
 -X "
                                     )
