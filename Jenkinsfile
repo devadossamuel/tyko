@@ -87,7 +87,7 @@ def get_sonarqube_project_analysis(report_task_file, buildString){
         if(build_string != buildString){
             continue
         }
-        echo "${analysis}"
+        return analysis
     }
 //    echo analyses.toString()
 }
