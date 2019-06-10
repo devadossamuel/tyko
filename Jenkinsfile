@@ -388,17 +388,12 @@ pipeline {
 
                             echo get_sonarqube_project_analysis(".scannerwork/report-task.txt", BUILD_TAG).toString()
                             def outstandingIssues = get_sonarqube_unresolved_issues(".scannerwork/report-task.txt")
-//                            def props = readProperties  file: '.scannerwork/report-task.txt'
-//                            echo "properties=${props}"
-//
-//                            def ceTaskUrl= props['ceTaskUrl']
-//                            def response = httpRequest ceTaskUrl
-//                            def ceTask = readJSON text: response.content
-//                            echo ceTask.toString()
-//
-//                            def response2 = httpRequest url : props['serverUrl'] + "/api/qualitygates/project_status?analysisId=" + ceTask["task"]["analysisId"]
-//                            def qualitygate =  readJSON text: response2.content
-//                            echo qualitygate.toString()
+                            writeJSON file: 'reports/sonar-report.json', json: outstandingIssues
+                        }
+                    }
+                    post{
+                        always{
+                            archiveArtifacts allowEmptyArchive: true, artifacts: 'reports/sonar-report.json'
                         }
                     }
                 }
