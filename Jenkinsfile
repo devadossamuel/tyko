@@ -59,6 +59,16 @@
 //    }
 //}
 
+def get_sonarqube_unresolved_issues(report_task_file){
+    script{
+
+        def props = readProperties  file: '.scannerwork/report-task.txt'
+        def response = httpRequest url : props['serverUrl'] + "api/issues/search?componentKeys?project=" + props['projectKey'] + "&resolved=no"
+        def outstandingIssues = readJSON text: response.content
+        echo outstandingIssues.toString()
+    }
+//https://sonarqube.library.illinois.edu/api/issues/search?componentKeys=speedwagon&resolved=no
+}
 def get_sonarqube_scan_data(report_task_file){
     script{
 
@@ -377,6 +387,7 @@ pipeline {
                             echo sonarqube_data.toString()
 
                             echo get_sonarqube_project_analysis(".scannerwork/report-task.txt", BUILD_TAG).toString()
+                            def outstandingIssues = get_sonarqube_unresolved_issues(".scannerwork/report-task.txt")
 //                            def props = readProperties  file: '.scannerwork/report-task.txt'
 //                            echo "properties=${props}"
 //
