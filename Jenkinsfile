@@ -78,15 +78,16 @@ def get_sonarqube_project_analysis(report_task_file, buildString){
     def props = readProperties  file: '.scannerwork/report-task.txt'
     def response = httpRequest url : props['serverUrl'] + "/api/project_analyses/search?project=" + props['projectKey']
     def project_analyses = readJSON text: response.content
-    project_analyses['analyses'].each{
-        if(!it.containsKey("buildString")){
+
+    for( analysis in project_analyses['analyses']){
+        if(!analysis.containsKey("buildString")){
             continue
         }
-        def build_string = it["buildString"]
+        def build_string = analysis["buildString"]
         if(build_string != buildString){
             continue
         }
-        echo "${it}"
+        echo "${analysis}"
     }
 //    echo analyses.toString()
 }
