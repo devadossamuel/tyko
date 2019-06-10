@@ -308,6 +308,7 @@ pipeline {
 
                     environment{
                         scannerHome = tool name: 'sonar-scanner-3.3.0', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                        SONAR_WORKING_DIRECTORY="${WORKSPACE}\\.scannerwork"
 
                     }
                     steps{
