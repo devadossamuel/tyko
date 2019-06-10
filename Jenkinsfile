@@ -337,7 +337,8 @@ pipeline {
                         }
                         script{
                             def props = readProperties  file: '.scannerwork/report-task.txt'
-                            echo "properties=${props}
+                            echo "properties=${props}"
+
                             def sonarqube_result = waitForQualityGate abortPipeline: false
                             echo "sonarqube_result = ${sonarqube_result}"
                             if(sonarqube_result.status != "OK"){
