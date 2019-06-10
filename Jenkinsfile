@@ -308,7 +308,6 @@ pipeline {
 
                     environment{
                         scannerHome = tool name: 'sonar-scanner-3.3.0', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
-                        SONAR_WORKING_DIRECTORY="${WORKSPACE}\\.scannerwork"
 
                     }
                     steps{
@@ -329,6 +328,8 @@ pipeline {
 -Dsonar.buildString=${env.BUILD_TAG} \
 -Dsonar.analysis.packageName=${env.PKG_NAME} \
 -Dsonar.analysis.buildNumber=${env.BUILD_NUMBER} \
+-Dsonar.analysis.scmRevision=${env.GIT_COMMIT} \
+-Dsonar.working.directory=${WORKSPACE}\\.scannerwork \
 -Dsonar.projectDescription=\"%PROJECT_DESCRIPTION%\" \
 -X "
                                     )
