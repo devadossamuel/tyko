@@ -63,17 +63,22 @@ def get_sonarqube_scan_data(report_task_file){
     script{
 
         def props = readProperties  file: '.scannerwork/report-task.txt'
-//        echo "properties=${props}"
 
         def ceTaskUrl= props['ceTaskUrl']
         def response = httpRequest ceTaskUrl
         def ceTask = readJSON text: response.content
-//        echo ceTask.toString()
 
         def response2 = httpRequest url : props['serverUrl'] + "/api/qualitygates/project_status?analysisId=" + ceTask["task"]["analysisId"]
         def qualitygate =  readJSON text: response2.content
         return qualitygate
     }
+}
+
+def get_sonarqube_project_analysis(report_task_file, buildString){
+    def props = readProperties  file: '.scannerwork/report-task.txt'
+    def response2 = httpRequest url : props['serverUrl'] + "/api/project_analyses/search?project=" + props['projectKey']
+    def analyses = readJSON text: response.content
+    echo analyses.toString()
 }
 
 pipeline {
@@ -359,7 +364,9 @@ pipeline {
                                 unstable("SonarQube quality gate: ${sonarqube_result}")
                             }
                             def sonarqube_data = get_sonarqube_scan_data(".scannerwork/report-task.txt")
-                            echo sonarqube_data.toString()
+                            echo sonarqube_data.toString(".scannerwork/report-task.txt", BUILD_TAG)
+
+                            echo get_sonarqube_project_analysis()
 //                            def props = readProperties  file: '.scannerwork/report-task.txt'
 //                            echo "properties=${props}"
 //
