@@ -59,6 +59,23 @@
 //    }
 //}
 
+def get_sonarqube_scan_data(report_task_file){
+    script{
+
+        def props = readProperties  file: '.scannerwork/report-task.txt'
+//        echo "properties=${props}"
+
+        def ceTaskUrl= props['ceTaskUrl']
+        def response = httpRequest ceTaskUrl
+        def ceTask = readJSON text: response.content
+//        echo ceTask.toString()
+
+        def response2 = httpRequest url : props['serverUrl'] + "/api/qualitygates/project_status?analysisId=" + ceTask["task"]["analysisId"]
+        def qualitygate =  readJSON text: response2.content
+        return qualitygate
+    }
+}
+
 pipeline {
     agent {
         label 'Windows && Python3'
@@ -338,22 +355,22 @@ pipeline {
                         script{
 
                             def sonarqube_result = waitForQualityGate abortPipeline: false
-                            echo "sonarqube_result = ${sonarqube_result}"
                             if(sonarqube_result.status != "OK"){
                                 unstable("SonarQube quality gate: ${sonarqube_result}")
                             }
-
-                            def props = readProperties  file: '.scannerwork/report-task.txt'
-                            echo "properties=${props}"
-
-                            def ceTaskUrl= props['ceTaskUrl']
-                            def response = httpRequest ceTaskUrl
-                            def ceTask = readJSON text: response.content
-                            echo ceTask.toString()
-
-                            def response2 = httpRequest url : "https://sonarqube.library.illinois.edu/api/qualitygates/project_status?analysisId=" + ceTask["task"]["analysisId"]
-                            def qualitygate =  readJSON text: response2.content
-                            echo qualitygate.toString()
+                            def sonarqube_data = get_sonarqube_scan_data(".scannerwork/report-task.txt")
+                            echo sonarqube_data.toString()
+//                            def props = readProperties  file: '.scannerwork/report-task.txt'
+//                            echo "properties=${props}"
+//
+//                            def ceTaskUrl= props['ceTaskUrl']
+//                            def response = httpRequest ceTaskUrl
+//                            def ceTask = readJSON text: response.content
+//                            echo ceTask.toString()
+//
+//                            def response2 = httpRequest url : props['serverUrl'] + "/api/qualitygates/project_status?analysisId=" + ceTask["task"]["analysisId"]
+//                            def qualitygate =  readJSON text: response2.content
+//                            echo qualitygate.toString()
                         }
                     }
                 }
