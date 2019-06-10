@@ -339,11 +339,16 @@ pipeline {
                             def props = readProperties  file: '.scannerwork/report-task.txt'
                             echo "properties=${props}"
 
+                            def ceTaskUrl= props['ceTaskUrl']
+
                             def sonarqube_result = waitForQualityGate abortPipeline: false
                             echo "sonarqube_result = ${sonarqube_result}"
                             if(sonarqube_result.status != "OK"){
                                 unstable("SonarQube quality gate: ${sonarqube_result}")
                             }
+                            def response = httpRequest ceTaskUrl
+                            def ceTask = readJSON text: response.content
+                            echo ceTask.toString()
                         }
                     }
                 }
