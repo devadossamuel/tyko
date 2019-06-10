@@ -65,7 +65,7 @@ def get_sonarqube_unresolved_issues(report_task_file){
         def props = readProperties  file: '.scannerwork/report-task.txt'
         def response = httpRequest url : props['serverUrl'] + "/api/issues/search?componentKeys=" + props['projectKey'] + "&resolved=no"
         def outstandingIssues = readJSON text: response.content
-        echo outstandingIssues.toString()
+        return outstandingIssues
     }
 //https://sonarqube.library.illinois.edu/api/issues/search?componentKeys=speedwagon&resolved=no
 }
