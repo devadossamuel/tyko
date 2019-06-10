@@ -351,7 +351,7 @@ pipeline {
                             def ceTask = readJSON text: response.content
                             echo ceTask.toString()
 
-                            def response2 = httpRequest url : sonarServerUrl + "/api/qualitygates/project_status?analysisId=" + ceTask["task"]["analysisId"]
+                            def response2 = httpRequest url : "https://sonarqube.library.illinois.edu/api/qualitygates/project_status?analysisId=" + ceTask["task"]["analysisId"]
                             def qualitygate =  readJSON text: response2.content
                             echo qualitygate.toString()
                         }
