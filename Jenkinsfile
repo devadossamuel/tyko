@@ -82,6 +82,10 @@ def get_sonarqube_project_analysis(report_task_file, buildString){
         if(!it.containsKey("buildString")){
             continue
         }
+        def build_string = it["buildString"]
+        if(build_string != buildString){
+            continue
+        }
         echo "${it}"
     }
 //    echo analyses.toString()
