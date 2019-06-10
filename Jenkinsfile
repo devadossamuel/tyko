@@ -89,7 +89,6 @@ def get_sonarqube_project_analysis(report_task_file, buildString){
         }
         return analysis
     }
-//    echo analyses.toString()
 }
 
 pipeline {
@@ -377,7 +376,7 @@ pipeline {
                             def sonarqube_data = get_sonarqube_scan_data(".scannerwork/report-task.txt")
                             echo sonarqube_data.toString()
 
-                            echo get_sonarqube_project_analysis(".scannerwork/report-task.txt", BUILD_TAG)
+                            echo get_sonarqube_project_analysis(".scannerwork/report-task.txt", BUILD_TAG).toString()
 //                            def props = readProperties  file: '.scannerwork/report-task.txt'
 //                            echo "properties=${props}"
 //
