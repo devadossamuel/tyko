@@ -27,9 +27,9 @@ class Contact(AVTables):
         db.Integer,
         primary_key=True,
         autoincrement=True)
-    first_name = db.Column("first_name", db.String)
-    last_name = db.Column("last_name", db.String)
-    email_address = db.Column("email_address", db.String)
+    first_name = db.Column("first_name", db.Text)
+    last_name = db.Column("last_name", db.Text)
+    email_address = db.Column("email_address", db.Text)
 
 
 class Project(AVTables):
@@ -41,11 +41,11 @@ class Project(AVTables):
         primary_key=True,
         autoincrement=True)
 
-    code = db.Column("code", db.String)
-    title = db.Column("title", db.String)
-    current_location = db.Column("current_location", db.String)
-    status = db.Column("status", db.String)
-    specs = db.Column("specs", db.String)
+    code = db.Column("code", db.Text)
+    title = db.Column("title", db.Text)
+    current_location = db.Column("current_location", db.Text)
+    status = db.Column("status", db.Text)
+    specs = db.Column("specs", db.Text)
 
 
 class Collection(AVTables):
@@ -55,9 +55,9 @@ class Collection(AVTables):
         db.Integer,
         primary_key=True,
         autoincrement=True)
-    record_series = db.Column("record_series", db.String)
-    collection_name = db.Column("collection_name", db.String)
-    department = db.Column("department", db.String)
+    record_series = db.Column("record_series", db.Text)
+    collection_name = db.Column("collection_name", db.Text)
+    department = db.Column("department", db.Text)
     contact = relationship("Contact")
     contact_id = db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
 
@@ -71,7 +71,7 @@ class CollectionObject(AVTables):
         primary_key=True,
         autoincrement=True)
 
-    name = db.Column("name", db.String)
+    name = db.Column("name", db.Text)
 
     collection_id = \
         db.Column(db.Integer, db.ForeignKey("collection.collection_id"))
@@ -102,10 +102,10 @@ class CollectionItem(AVTables):
 
     id = db.Column("item_id", db.Integer, primary_key=True, autoincrement=True)
 
-    name = db.Column("name", db.String)
-    barcode = db.Column("barcode", db.String)
-    file_name = db.Column("file_name", db.String)
-    medusa_uuid = db.Column("medusa_uuid", db.String)
+    name = db.Column("name", db.Text)
+    barcode = db.Column("barcode", db.Text)
+    file_name = db.Column("file_name", db.Text)
+    medusa_uuid = db.Column("medusa_uuid", db.Text)
     original_rec_date = db.Column("original_rec_date", db.Date)
     original_return_date = db.Column("original_return_date", db.Date)
 
@@ -146,7 +146,7 @@ class NoteTypes(AVTables):
     id = db.Column(
         "note_types_id", db.Integer, primary_key=True, autoincrement=True)
 
-    name = db.Column("type_name", db.String)
+    name = db.Column("type_name", db.Text)
 
 
 class Treatment(AVTables):
@@ -166,7 +166,7 @@ class FormatTypes(AVTables):
     id = db.Column(
         "format_id", db.Integer, primary_key=True, autoincrement=True)
 
-    name = db.Column("name", db.String)
+    name = db.Column("name", db.Text)
 
 
 class OpenReel(AVTables):
@@ -320,17 +320,17 @@ class VendorTransfer(AVTables):
 # edit existing value ids
 
 note_types = {
-    "Inspection": (0, ),
-    "Playback": (1, ),
+    "Inspection": (1, ),
+    "Playback": (2, ),
 }
 
 
 format_types = {
-    "audio video": (0, AudioVideo),
-    "audio": (1,),
-    "video": (2,),
-    "open reel": (3, OpenReel),
-    "grooved disc": (4, GroovedDisc),
-    "film": (5, Film)
+    "audio video": (1, AudioVideo),
+    "audio": (2,),
+    "video": (3,),
+    "open reel": (4, OpenReel),
+    "grooved disc": (5, GroovedDisc),
+    "film": (6, Film)
 }
 # =============================================================================
