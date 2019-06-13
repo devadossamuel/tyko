@@ -1,0 +1,19 @@
+version: '3.1'
+services:
+  db:
+    image: mariadb:5.5.64-trusty
+    restart: 'always'
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=my-secret-pw
+      - MYSQL_DATABASE=av_preservation
+      - MYSQL_USER=avuser
+      - MYSQL_PASSWORD=avpsw
+  python:
+    depends_on:
+      - db
+    build: .
+
+
+
