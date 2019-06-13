@@ -1,13 +1,24 @@
-import sqlalchemy as db
+import argparse
+import sys
 
-import avforms.database
+from avforms.commands import commands
 
-# TODO: FILL in this Information
-DATABASE_CONNECTION = "mysql+mysqldb://avuser:avpsw@db:3306/av_preservation"
+
+def setup_cli_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(title="Extra", dest="subcommand")
+    for k, v in commands.items():
+        subparsers.add_parser(k, help=v[0])
+
+    return parser
 
 
 def main() -> None:
-    engine = db.create_engine(DATABASE_CONNECTION)
-    avforms.database.init_database(engine)
-    is_valid = avforms.database.validate_tables(engine)
-    # with engine.connect() as connection:
+    parser = setup_cli_parser()
+    args = parser.parse_args()
+
+    if args.subcommand:
+        commands[args.subcommand][1]()
+        sys.exit()
+
+    print("Running normal program")

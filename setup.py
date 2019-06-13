@@ -15,5 +15,10 @@ setup(
     install_requires=[
         "sqlalchemy",
         "mysqlclient"
+        ],
+    entry_points={
+        "console_scripts": [
+            "avdata=avforms.run:main"
         ]
+    }
 )
