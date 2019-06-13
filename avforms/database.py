@@ -12,7 +12,14 @@ def init_database(engine):
 
     initial_session = sessionmaker(bind=engine)
     session = initial_session()
+    session.commit()
+
+    for i in session.query(scheme.NoteTypes):
+        session.delete(i)
     _populate_note_type_table(session)
+
+    for i in session.query(scheme.FormatTypes):
+        session.delete(i)
     _populate_format_types_table(session)
 
     session.commit()
