@@ -124,6 +124,7 @@ pipeline {
         booleanParam(name: "FRESH_WORKSPACE", defaultValue: false, description: "Purge workspace before staring and checking out source")
         booleanParam(name: "BUILD_CLIENT", defaultValue: true, description: "Build Client program")
         booleanParam(name: "TEST_RUN_TOX", defaultValue: true, description: "Run Tox Tests")
+        booleanParam(name: "DEPLOY_SERVER", defaultValue: false, description: "Deploy server software to server")
     }
     stages {
         stage('Configure Environment') {
@@ -191,6 +192,13 @@ pipeline {
                     steps{
                         dir("scm"){
                             bat "python setup.py build -b ${WORKSPACE}/build/server"
+                        }
+                    }
+                    post{
+                        success{
+                            dir("scm"){
+                                stash includes: "deploy/**,database/**", name: 'SERVER_DEPLOY_FILES'
+                            }
                         }
                     }
                 }
@@ -662,6 +670,55 @@ foreach($file in $opengl32_libraries){
                 }
                 cleanup{
                     cleanWs deleteDirs: true, patterns: [[pattern: 'dist/*.whl,dist/*.tar.gz,dist/*.zip', type: 'INCLUDE']]
+                }
+            }
+        }
+        stage("Deploy"){
+            parallel{
+                stage("Deploy Server"){
+                    agent any
+                    options {
+                      skipDefaultCheckout true
+                    }
+                    when{
+                        equals expected: true, actual: params.DEPLOY_SERVER
+                    }
+                    stages{
+                        stage("Deploy"){
+
+                            input {
+                              message 'Deploy to server'
+                              parameters {
+                                string(defaultValue: 'avdatabase.library.illinois.edu', description: 'Location where to install the server application', name: 'SERVER_URL', trim: false)
+                                credentials credentialType: 'com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl', defaultValue: 'henryUserName', description: '', name: 'SERVER_CREDS', required: false
+                              }
+                            }
+
+                            steps{
+                                unstash "PYTHON_PACKAGES"
+                                unstash "SERVER_DEPLOY_FILES"
+                                script{
+                                    def remote = [:]
+
+                                    withCredentials([usernamePassword(credentialsId: SERVER_CREDS, passwordVariable: 'password', usernameVariable: 'username')]) {
+                                        remote.name = 'test'
+                                        remote.host = SERVER_URL
+                                        remote.user = username
+                                        remote.password = password
+                                        remote.allowAnyHosts = true
+                                    }
+                                    sshRemove remote: remote, path: "dist", failOnError: false
+                                    sshRemove remote: remote, path: "deploy", failOnError: false
+                                    sshRemove remote: remote, path: "database", failOnError: false
+                                    sshPut remote: remote, from: 'dist/', into: '.'
+                                    sshPut remote: remote, from: 'deploy/', into: '.'
+                                    sshPut remote: remote, from: 'database/', into: '.'
+                                    sshCommand remote: remote, command: "docker-compose -f deploy/docker-compose.yml build"
+                                }
+                            }
+                        }
+                    }
+
                 }
             }
         }
