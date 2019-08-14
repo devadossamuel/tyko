@@ -122,6 +122,7 @@ pipeline {
     }
     parameters {
         booleanParam(name: "FRESH_WORKSPACE", defaultValue: false, description: "Purge workspace before staring and checking out source")
+        booleanParam(name: "BUILD_CLIENT", defaultValue: true, description: "Build Client program")
         booleanParam(name: "TEST_RUN_TOX", defaultValue: true, description: "Run Tox Tests")
     }
     stages {
@@ -196,6 +197,9 @@ pipeline {
                 stage("Build Client with Docker Container"){
                     agent{
                         label "Docker"
+                    }
+                    when {
+                        equals expected: true, actual: params.BUILD_CLIENT
                     }
                     environment{
                         DOCKER_PATH = tool name: 'Docker', type: 'org.jenkinsci.plugins.docker.commons.tools.DockerTool'
@@ -566,9 +570,12 @@ foreach($file in $opengl32_libraries){
                 stage("Packaging Client in Docker Container"){
                     agent{
                         label "Docker"
+
+                    }
+                    when {
+                        equals expected: true, actual: params.BUILD_CLIENT
                     }
                     environment{
-
                         DOCKER_PATH = tool name: 'Docker', type: 'org.jenkinsci.plugins.docker.commons.tools.DockerTool'
                         PATH = "${DOCKER_PATH};$PATH"
                     }
