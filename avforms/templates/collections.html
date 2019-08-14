@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h3>Collections</h3>
+<div class="row onePadding">
+    <div class="col-md-12 col-sm-12">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                </tr>
+                {% for collection in collections %}
+                    <tr>
+                        <td>{{collection['id']}}</td>
+                        <td>{{collection['collection_name']}}</td>
+                        <td>{{collection['department']}}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

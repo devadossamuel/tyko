@@ -110,7 +110,7 @@ pipeline {
     }
     options {
         disableConcurrentBuilds()  //each branch has 1 job running at a time
-        timeout(60)  // Timeout after 60 minutes. This shouldn't take this long but it hangs for some reason
+        timeout(180)  // Timeout after 180 minutes. This shouldn't take this long
         checkoutToSubdirectory("scm")
     }
     environment{
@@ -118,6 +118,7 @@ pipeline {
         PKG_VERSION = pythonPackageVersion(toolName: "CPython-3.7")
         DOC_ZIP_FILENAME = "${env.PKG_NAME}-${env.PKG_VERSION}.doc.zip"
         DEVPI = credentials("DS_devpi")
+        DOCKER_IMAGE_TAG="avmetadata/${env.BRANCH_NAME.toLowerCase()}"
     }
     parameters {
         booleanParam(name: "FRESH_WORKSPACE", defaultValue: false, description: "Purge workspace before staring and checking out source")
@@ -127,6 +128,9 @@ pipeline {
         stage('Configure Environment') {
             environment{
                 PATH = "${tool 'CPython-3.7'};$PATH"
+            }
+            options{
+                timeout(5)
             }
             stages{
                 stage("Purge All Existing Data in Workspace"){
@@ -155,17 +159,17 @@ pipeline {
                                 bat "venv\\37\\Scripts\\python.exe -m pip install -U pip --no-cache-dir"
                             }
                         }
-                        bat "venv\\37\\Scripts\\pip.exe install -U setuptools wheel sqlalchemy mysqlclient"
+                        bat "venv\\37\\Scripts\\pip.exe install -U setuptools wheel sqlalchemy  -r scm/requirements.txt --upgrade-strategy only-if-needed"
 //                        bat "venv36\\Scripts\\pip.exe install pytest-cov lxml flake8 mypy -r source\\requirements.txt --upgrade-strategy only-if-needed"
                     }
-                post{
-                    success{
-                        bat "if not exist logs mkdir logs"
-                        bat "venv\\37\\Scripts\\pip.exe list > ${WORKSPACE}\\logs\\pippackages_venv_${NODE_NAME}.log"
-                        archiveArtifacts artifacts: "logs/pippackages_venv_${NODE_NAME}.log"
+                    post{
+                        success{
+                            bat "if not exist logs mkdir logs"
+                            bat "venv\\37\\Scripts\\pip.exe list > ${WORKSPACE}\\logs\\pippackages_venv_${NODE_NAME}.log"
+                            archiveArtifacts artifacts: "logs/pippackages_venv_${NODE_NAME}.log"
+                        }
                     }
                 }
-            }
             }
             post{
                 failure {
@@ -177,18 +181,146 @@ pipeline {
             }
         }
         stage("Building"){
-            environment{
-                PATH = "${WORKSPACE}\\venv\\37\\Scripts;$PATH"
-            }
-            steps{
-                dir("scm"){
-                    bat "python setup.py build -b ${WORKSPACE}\\build"
+            failFast true
+            parallel{
+                stage("Building Server"){
+                    environment{
+                        PATH = "${WORKSPACE}\\venv\\37\\Scripts;$PATH"
+                    }
+                    steps{
+                        dir("scm"){
+                            bat "python setup.py build -b ${WORKSPACE}/build/server"
+                        }
+                    }
                 }
+                stage("Build Client with Docker Container"){
+                    agent{
+                        label "Docker"
+                    }
+                    environment{
+                        DOCKER_PATH = tool name: 'Docker', type: 'org.jenkinsci.plugins.docker.commons.tools.DockerTool'
+                        PATH = "${DOCKER_PATH};$PATH"
+                    }
+                    options{
+                        timestamps()
+                    }
+
+                    stages{
+                        stage("Build Docker Container"){
+                            steps{
+
+                                dir("scm"){
+                                     powershell(
+                                        label: "Searching for opengl32.dll",
+                                        script: '''
+$opengl32_libraries = Get-ChildItem -Path c:\\Windows -Recurse -Include opengl32.dll
+foreach($file in $opengl32_libraries){
+    Copy-Item $file.FullName
+    break
+}'''
+                                )
+                                    bat("docker build . --isolation=process -f CI/build_VS2019/Dockerfile -m 10GB -t %DOCKER_IMAGE_TAG%")
+                                }
+                            }
+                        }
+                        stage("Install Dependencies"){
+                            steps{
+                                bat "if not exist build mkdir build"
+                                bat(
+                                    label: "Using conan to install dependencies to build directory.",
+                                    script: "docker run --isolation=process -v \"${WORKSPACE}\\build:c:\\build\" -v \"${WORKSPACE}\\scm:c:\\source:ro\" --workdir=\"c:\\build\" --rm %DOCKER_IMAGE_TAG% conan install c:\\source"
+                                    )
+                            }
+                        }
+                        stage("Configure and Build Client"){
+                            steps{
+                                bat(
+                                    label: "Configuring CMake",
+                                    script: "docker run --isolation=process --rm -v \"${WORKSPACE}\\build:c:\\build\" -v \"${WORKSPACE}\\scm:c:\\source:ro\" --workdir=\"c:\\build\" %DOCKER_IMAGE_TAG% cmake -S c:\\source -B c:\\build -DCMAKE_TOOLCHAIN_FILE=conan_paths.cmake -DCMAKE_GENERATOR_PLATFORM=x64"
+                                )
+                                bat(
+                                    label: "Running build command from CMake",
+                                    script: "docker run --isolation=process --rm -v \"${WORKSPACE}\\build:c:\\build\" -v \"${WORKSPACE}\\scm:c:\\source:ro\" --workdir=\"c:\\build\" %DOCKER_IMAGE_TAG% cmake --build c:\\build --config Release"
+                                )
+
+                            }
+                        }
+                    }
+                    post{
+                        success{
+                            stash includes: "build/**", name: 'CLIENT_BUILD_DOCKER'
+                        }
+                        cleanup{
+                            cleanWs(
+                                deleteDirs: true,
+                                patterns: [
+                                    [pattern: 'build', type: 'INCLUDE'],
+                                    ]
+                            )
+                        }
+
+                    }
+                }
+//                stage("Building Client"){
+//                    agent {
+//                        label 'VS2015'
+//                        }
+//                    stages{
+//
+//                        stage("Install Conan"){
+//                            environment{
+//                                PYTHON = "${tool 'CPython-3.6'}"
+//                            }
+//                            steps{
+//                                bat(
+//                                    label: "Installing Conan",
+//                                    script:'if NOT exist "venv\\Scripts\\conan.exe" ("%PYTHON%\\python.exe" -m venv venv && venv\\Scripts\\pip install conan ) && venv\\Scripts\\conan remote add -f bincrafters https://api.bintray.com/conan/bincrafters/public-conan '
+//                                    )
+//                            }
+//                        }
+//                        stage("Getting Dependencies"){
+//                            options{
+//                                timeout(90)
+//                            }
+//                            environment{
+//
+//                                PATH = "${WORKSPACE}\\venv\\Scripts;$PATH"
+//                            }
+//                            steps{
+//                                bat "conan install ${WORKSPACE}/scm -if build/client/Release"
+////                                }
+//                            }
+//                        }
+//                        stage("Building Client App"){
+//                            options{
+//                                timeout(10)
+//                            }
+//                            steps{
+//                                cmakeBuild(
+//                                    buildDir: 'build/client',
+//                                    installation: 'cmake3.15',
+//                                    sourceDir: 'scm',
+//                                    cmakeArgs: "-DCMAKE_GENERATOR_PLATFORM=x64 -DCMAKE_TOOLCHAIN_FILE=${WORKSPACE}/build/client/Release/conan_paths.cmake",
+//                                    steps: [[args: '--config Release', withCmake: true]]
+//
+//                                )
+//                            }
+//                        }
+//                    }
+//                    post{
+//                        success{
+//                            stash includes: "build/client/**", name: 'CLIENT_BUILD'
+//                        }
+//                    }
+//                }
             }
         }
         stage('Testing') {
             environment{
                 PATH = "${WORKSPACE}\\venv\\37\\Scripts;$PATH"
+            }
+            options{
+                timeout(10)
             }
             stages{
                 stage("Installing Python Testing Packages"){
@@ -205,7 +337,7 @@ pipeline {
                                     catchError(buildResult: 'UNSTABLE', message: 'Did not pass all pytest tests', stageResult: 'UNSTABLE') {
                                         bat(
                                             label: "Run PyTest",
-                                            script: "coverage run --parallel-mode --branch --source=avforms,tests,setup.py -m pytest --junitxml=${WORKSPACE}/reports/pytest/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest"
+                                            script: "coverage run --parallel-mode --branch --source=avforms,tests -m pytest --junitxml=${WORKSPACE}/reports/pytest/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest"
                                         )
                                     }
                                 }
@@ -263,8 +395,8 @@ pipeline {
                                 dir("scm"){
                                     catchError(buildResult: 'SUCCESS', message: 'MyPy found issues', stageResult: 'UNSTABLE') {
 
-                                        bat(returnStatus: true,
-                                            script: "mypy -p avforms ${env.scannerHome} --cache-dir=${WORKSPACE}/mypy_cache --html-report ${WORKSPACE}\\reports\\mypy\\html > ${WORKSPACE}\\logs\\mypy.log && type ${WORKSPACE}\\logs\\mypy.log",
+                                        bat(
+                                            script: "mypy -p avforms --cache-dir=${WORKSPACE}/mypy_cache --html-report ${WORKSPACE}\\reports\\mypy\\html > ${WORKSPACE}\\logs\\mypy.log && type ${WORKSPACE}\\logs\\mypy.log",
                                             label: "Running MyPy"
                                             )
                                     }
@@ -406,6 +538,7 @@ pipeline {
                             [pattern: 'reports/coverage.xml', type: 'INCLUDE'],
                             [pattern: 'reports/coverage', type: 'INCLUDE'],
                             [pattern: 'scm/.coverage', type: 'INCLUDE'],
+                            [pattern: 'scm/**/__pycache__', type: 'INCLUDE'],
                             [pattern: 'reports/pytest/junit-*.xml', type: 'INCLUDE']
                         ]
                     )
@@ -417,42 +550,103 @@ pipeline {
             environment{
                 PATH = "${WORKSPACE}\\venv\\37\\Scripts;$PATH"
             }
+            options{
+                timeout(10)
+            }
             failFast true
-            stages{
+            parallel{
                 stage("Creating Python Packages"){
 
                     steps{
                         dir("scm"){
-                            bat script: "python setup.py build -b ${WORKSPACE}/build sdist -d ${WORKSPACE}/dist --format zip bdist_wheel -d ${WORKSPACE}/dist"
+                            bat script: "python setup.py build -b ${WORKSPACE}/build/server sdist -d ${WORKSPACE}/dist --format zip bdist_wheel -d ${WORKSPACE}/dist"
                         }
                     }
                 }
-                stage("Testing Python Packages"){
-                    parallel{
-                        stage("Testing sdist Package"){
-                            steps{
-                                testPythonPackage(
-                                    pythonToolName: "CPython-3.7",
-                                    pkgRegex: "dist/*.tar.gz,dist/*.zip",
-                                    testNodeLabels: "Windows",
-                                    testEnvs: ["py36", "py37"]
+                stage("Packaging Client in Docker Container"){
+                    agent{
+                        label "Docker"
+                    }
+                    environment{
 
-                                )
-                            }
+                        DOCKER_PATH = tool name: 'Docker', type: 'org.jenkinsci.plugins.docker.commons.tools.DockerTool'
+                        PATH = "${DOCKER_PATH};$PATH"
+                    }
+                    steps{
+                            unstash "CLIENT_BUILD_DOCKER"
+                            bat "if not exist dist mkdir dist"
+                            bat(
+                                label: "Running build command from CMake on node ${NODE_NAME}",
+                                script: "docker run --isolation=process --rm -v \"${WORKSPACE}\\build:c:\\build:rw\" -v \"${WORKSPACE}\\dist:c:\\dist\" -v \"${WORKSPACE}\\scm:c:\\source:ro\" -v \"${WORKSPACE}\\scm\\CI\\shared_docker_scripts:c:\\ci_scripts:ro\" --workdir=\"c:\\TEMP\" %DOCKER_IMAGE_TAG% C:\\ci_scripts\\package.bat"
+                            )
+                    }
+                    post{
+                        cleanup{
+                            cleanWs(
+                                deleteDirs: true,
+                                patterns: [
+                                    [pattern: 'build', type: 'INCLUDE'],
+                                    [pattern: 'dist', type: 'INCLUDE'],
+                                    ]
+                            )
                         }
-                        stage("Testing whl Package"){
-                            steps{
-                                testPythonPackage(
-                                    pythonToolName: "CPython-3.7",
-                                    pkgRegex: "dist/*.whl",
-                                    testNodeLabels: "Windows",
-                                    testEnvs: ["py36", "py37"]
-
-                                )
-                            }
+                        failure{
+                            archiveArtifacts allowEmptyArchive: true, artifacts: 'build/**/*.log'
+                        }
+                        success{
+                            archiveArtifacts allowEmptyArchive: true, artifacts: 'dist/*.exe,dist/*.msi,dist/*.zip'
+                            stash includes: 'dist/*.exe,dist/*.msi,dist/*.zip,', name: "CLIENT_INSTALLERS"
                         }
                     }
                 }
+//                stage("Packaging Client"){
+//                    agent {
+//                        label 'VS2015'
+//                    }
+//
+//                    environment{
+//                        wix_path = tool name: 'WixToolset_311', type: 'com.cloudbees.jenkins.plugins.customtools.CustomTool'
+//                        PATH = "${wix_path};$PATH"
+//                    }
+//                    steps{
+//                        unstash 'CLIENT_BUILD'
+//                        cpack arguments: '-G WIX  --verbose', installation: 'cmake3.15', workingDir: 'build/client'
+////                        bat "dir build\\client"
+//                    }
+//                    post{
+//                        success{
+//                            archiveArtifacts allowEmptyArchive: true, artifacts: 'build/client/*.msi'
+//                        }
+//                    }
+//                }
+
+//                stage("Testing Python Packages"){
+//                    parallel{
+//                        stage("Testing sdist Package"){
+//                            steps{
+//                                testPythonPackage(
+//                                    pythonToolName: "CPython-3.7",
+//                                    pkgRegex: "dist/*.tar.gz,dist/*.zip",
+////                                    testNodeLabels: "Windows",
+//                                    testNodeLabels: "Windows&&!Docker",
+//                                    testEnvs: ["py36", "py37"]
+//
+//                                )
+//                            }
+//                        }
+//                        stage("Testing whl Package"){
+//                            steps{
+//                                testPythonPackage(
+//                                    pythonToolName: "CPython-3.7",
+//                                    pkgRegex: "dist/*.whl",
+//                                    testNodeLabels: "Windows&&!Docker",
+//                                    testEnvs: ["py36", "py37"]
+//
+//                                )
+//                            }
+//                        }
+//                    }
+//                }
             }
             post {
                 success {

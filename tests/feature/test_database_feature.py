@@ -182,7 +182,7 @@ def create_new_object(dummy_database, new_collection, new_project,
 def new_project(dummy_database):
 
     return scheme.Project(
-        code=SAMPLE_PROJECT_CODE,
+        project_code=SAMPLE_PROJECT_CODE,
         title=SAMPLE_PROJECT_TITLE,
         current_location=SAMPLE_LOCATION,
         status=SAMPLE_PROJECT_STATUS,
@@ -202,7 +202,7 @@ def collection_has_project(dummy_database):
 
     new_added_project = dummy_database.query(scheme.Project).first()
 
-    assert new_added_project.code == SAMPLE_PROJECT_CODE
+    assert new_added_project.project_code == SAMPLE_PROJECT_CODE
     assert new_added_project.title == SAMPLE_PROJECT_TITLE
     assert new_added_project.current_location == SAMPLE_LOCATION
     assert new_added_project.specs == SAMPLE_PROJECT_SPECS

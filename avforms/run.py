@@ -1,24 +1,29 @@
-import argparse
 import sys
 
-from avforms.commands import commands
+from flask import Flask
+from avforms import routes
+from avforms.config import setup_cli_parser
 
 
-def setup_cli_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(title="Extra", dest="subcommand")
-    for k, v in commands.items():
-        subparsers.add_parser(k, help=v[0])
+def create_app(db_engine, app=None):
+    if app is None:
+        app = Flask(__name__)
+    app_routes = routes.Routes(db_engine, app)
+    if not app_routes.is_valid():
+        sys.exit(1)
 
-    return parser
+    app_routes.init_api_routes()
+    app_routes.init_website_routes()
+    return app
 
 
 def main() -> None:
+    """Run as a local program and not for production"""
+
     parser = setup_cli_parser()
     args = parser.parse_args()
 
-    if args.subcommand:
-        commands[args.subcommand][1]()
-        sys.exit()
-
-    print("Running normal program")
+    # Validate that the database can be connected to
+    print(args)
+    my_app = create_app(args.db_engine)
+    my_app.run()

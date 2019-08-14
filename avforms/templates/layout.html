@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% block head %}
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+
+    <!-- United theme from https://bootswatch.com/united/ -->
+    <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
+
+    <link rel="stylesheet" href="{{url_for('static', filename='css/styles.css')}}"/>
+    <title>AV Database</title>
+    {% endblock %}
+</head>
+<body>
+<div id="container">
+
+    {% block navigation %}
+    <!-- Static navbar -->
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                        aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{{url_for('page_index')}}">Web API</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+
+                    {% if selected_menu_item == "index" %}
+                    <li class="active"><a href="#">Home</a></li>
+                    {% else %}
+                    <li><a href="{{url_for('page_index')}}">Home</a></li>
+                    {% endif %}
+
+                    {% if selected_menu_item == "about" %}
+                    <li class="active"><a href="#">About</a></li>
+                    {% else %}
+                    <li><a href="{{url_for('page_about')}}">About</a></li>
+                    {% endif %}
+
+
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                           aria-expanded="false">Entities <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+
+                            {% if selected_menu_item == "collections" %}
+                            <li><a href="#">Candidates</a></li>
+                            {% else %}
+                            <li><a href="{{url_for('page_collections')}}">Collections</a></li>
+                            {% endif %}
+
+
+                            {% if selected_menu_item == "projects" %}
+                            <li><a href="#">Projects</a></li>
+                            {% else %}
+                            <li><a href="{{url_for('page_projects')}}">Projects</a></li>
+                            {% endif %}
+
+
+                            {% if selected_menu_item == "formats" %}
+                            <li><a href="#">Formats</a></li>
+                            {% else %}
+                            <li><a href="{{url_for('page_formats')}}">Formats</a></li>
+                            {% endif %}
+
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <!--/.nav-collapse -->
+        </div>
+        <!--/.container-fluid -->
+    </nav>
+    {% endblock %}
+
+    {% block content %}
+
+
+    {% endblock %}
+</div>
+
+<footer class="footer">
+    <div class="container">
+        {% block footer %}
+        <p class="text-muted text-center">&copy; Copyright 2019 by <a href="http://www.library.illinois.edu">University of Illinois at Urbana-Champaign</a>.</p>
+        {% endblock %}
+    </div>
+</footer>
+
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>-->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<!--&lt;!&ndash; jQuery &ndash;&gt;-->
+<!--<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>-->
+<!--&lt;!&ndash; Latest compiled and minified JavaScript &ndash;&gt;-->
+<!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>-->
+{% endblock %}
+
+
+</body>
+</html>

@@ -1,0 +1,38 @@
+version: '2.4'
+
+services:
+
+  api:
+    depends_on:
+      db:
+        condition: service_healthy
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    ports:
+      - "8000:8000"
+    command: gunicorn --bind 0.0.0.0:8000  "avforms.run:create_app(\"mysql://avuser:avpsw@db:3306/av_preservation\")"
+  db:
+    build:
+      context: ..
+      dockerfile: database/Dockerfile
+    ports:
+      - "8006:3306"
+    environment:
+      - MARIADB_ROOT_PASSWORD=my-secret-pw
+      - MARIADB_DATABASE=av_preservation
+      - MARIADB_USER=avuser
+      - MARIADB_PASSWORD=avpsw
+      - ALLOW_EMPTY_PASSWORD=no
+    volumes:
+      - avdata:/bitnami/mariadb
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u root --password=$$MARIADB_ROOT_PASSWORD
+      interval: 2s
+      timeout: 20s
+      retries: 10
+      start_period: 40s
+
+
+volumes:
+  avdata:

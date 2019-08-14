@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h3>Formats</h3>
+<div class="row onePadding">
+    <div class="col-md-12 col-sm-12">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <tr>
+                    <th>Format Id</th>
+                    <th>Format Name</th>
+                </tr>
+                {% for format_type in formats %}
+                    <tr>
+                        <td>{{format_type['id']}}</td>
+                        <td>{{format_type['name']}}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

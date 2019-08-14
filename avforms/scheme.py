@@ -41,11 +41,20 @@ class Project(AVTables):
         primary_key=True,
         autoincrement=True)
 
-    code = db.Column("code", db.Text)
+    project_code = db.Column("project_code", db.Text)
     title = db.Column("title", db.Text)
     current_location = db.Column("current_location", db.Text)
     status = db.Column("status", db.Text)
     specs = db.Column("specs", db.Text)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "project_code": self.project_code,
+            "current_location": self.current_location,
+            "status": self.status,
+            "title": self.title
+        }
 
 
 class Collection(AVTables):
@@ -60,6 +69,15 @@ class Collection(AVTables):
     department = db.Column("department", db.Text)
     contact = relationship("Contact")
     contact_id = db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "record_series": self.record_series,
+            "collection_name": self.collection_name,
+            "contact_id": self.contact_id,
+            "department": self.department
+        }
 
 
 class CollectionObject(AVTables):
@@ -167,6 +185,12 @@ class FormatTypes(AVTables):
         "format_id", db.Integer, primary_key=True, autoincrement=True)
 
     name = db.Column("name", db.Text)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name
+        }
 
 
 class OpenReel(AVTables):
