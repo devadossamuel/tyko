@@ -22,14 +22,14 @@ class Routes:
         return True
 
     def init_api_routes(self):
-        init_api_routes(self.app)
+        init_api_routes(self.app, db_engine=self.db_engine)
 
     def init_website_routes(self):
         init_website_routes(self.app, db_engine=self.db_engine)
 
 
-def init_api_routes(app):
-    mw = middleware.Middleware("sqlite:///dummy.db?check_same_thread=False")
+def init_api_routes(app, db_engine):
+    mw = middleware.Middleware(db_engine)
     if app:
 
         # ###### projects
