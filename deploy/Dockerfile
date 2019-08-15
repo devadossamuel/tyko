@@ -4,7 +4,7 @@ RUN apk add --no-cache gcc musl-dev linux-headers mariadb-client mariadb-dev lib
 #COPY setup.py /app/
 #COPY setup.cfg /app/
 #COPY avforms /app/avforms
-COPY dist/* /dist/
+COPY dist/*.whl /dist/
 RUN python -m pip install pip --upgrade
 
 #RUN pip install wheel -r requirements.txt
