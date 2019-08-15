@@ -709,10 +709,11 @@ foreach($file in $opengl32_libraries){
                                     }
                                     sshRemove remote: remote, path: "package", failOnError: false
 //                                    sshRemove remote: remote, path: "deploy", failOnError: false
+                                    sshCommand remote: remote, command: "mkdir package"
 //                                    sshRemove remote: remote, path: "database", failOnError: false
-                                    sshPut remote: remote, from: 'dist/', into: './package/'
-                                    sshPut remote: remote, from: 'deploy/', into: './package/'
-                                    sshPut remote: remote, from: 'database/', into: './package/'
+                                    sshPut remote: remote, from: 'dist', into: './package/'
+                                    sshPut remote: remote, from: 'deploy', into: './package/'
+                                    sshPut remote: remote, from: 'database', into: './package/'
                                     sshCommand remote: remote, command: "cd package && docker-compose -f deploy/docker-compose.yml build"
                                 }
                             }
