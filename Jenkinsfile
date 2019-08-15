@@ -707,13 +707,14 @@ foreach($file in $opengl32_libraries){
                                         remote.password = password
                                         remote.allowAnyHosts = true
                                     }
-                                    sshRemove remote: remote, path: "dist", failOnError: false
-                                    sshRemove remote: remote, path: "deploy", failOnError: false
-                                    sshRemove remote: remote, path: "database", failOnError: false
-                                    sshPut remote: remote, from: 'dist/', into: '.'
-                                    sshPut remote: remote, from: 'deploy/', into: '.'
-                                    sshPut remote: remote, from: 'database/', into: '.'
-                                    sshCommand remote: remote, command: "docker-compose -f deploy/docker-compose.yml build"
+                                    sshRemove remote: remote, path: "package", failOnError: false
+//                                    sshRemove remote: remote, path: "deploy", failOnError: false
+//                                    sshRemove remote: remote, path: "database", failOnError: false
+                                    sshPut remote: remote, from: '.', into: './package'
+//                                    sshPut remote: remote, from: 'dist/', into: '.'
+//                                    sshPut remote: remote, from: 'deploy/', into: '.'
+//                                    sshPut remote: remote, from: 'database/', into: '.'
+                                    sshCommand remote: remote, command: "cd package && docker-compose -f deploy/docker-compose.yml build"
                                 }
                             }
                         }
