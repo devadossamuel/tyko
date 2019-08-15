@@ -24,8 +24,8 @@ services:
       - MYSQL_USER=avuser
       - MYSQL_PASSWORD=avpsw
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-#    volumes:
-#      - avdata:/bitnami/mariadb
+    volumes:
+      - avdata:/var/lib/mysql
     healthcheck:
       test: mysqladmin ping -h 127.0.0.1 -u root --password=$$MYSQL_ROOT_PASSWORD
       interval: 2s
