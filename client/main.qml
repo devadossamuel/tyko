@@ -1,16 +1,17 @@
 import QtQuick 2.9
+import QtQuick.Window 2.2
 import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.3
 import Api 1.0
 
-ApplicationWindow {
+Window {
     id: window
     visible: true
     width: 640
     height: 480
     property int dataRefreshRate: 4000
-    property url sourceURL:"http://127.0.0.1:8000/"
-    title: qsTr("Projects")
+    property url sourceURL:"http://avdatabase.library.illinois.edu:8000/"
+    title: qsTr("Projects: " + sourceURL)
     SystemPalette { id: appPalette; colorGroup: SystemPalette.Active }
     ProjectAdder{
         id: myAdder
@@ -168,38 +169,53 @@ ApplicationWindow {
             }
         }
     }
-    header: ToolBar{
-        id: toolbar
-        Flow{
+    ColumnLayout{
+        anchors.fill: parent
+        ToolBar{
+            id: toolbar
+            Layout.fillWidth: parent
+            Flow{
 
-            width: parent.width
-            Row{
-                id: editToolsRow
-                ToolButton{
-                    action: newItemAction
+                width: parent.width
+                Row{
+                    id: editToolsRow
+                    ToolButton{
+                        action: newItemAction
+                    }
+                    ToolButton{
+                        action: openItemAction
+                    }
+
+                    ToolButton{
+                        action: deleteItemAction
+                    }
+                    ToolSeparator{
+                        contentItem.visible: editToolsRow.y === searchToolsRow.y
+                    }
                 }
-                ToolButton{
-                    action: openItemAction
+                Row{
+                    id: searchToolsRow
+                    TextField{
+                        placeholderText: "Search..."
+                        width: toolbar.width - editToolsRow.width - toolbar.spacing
+                    }
+                    visible: false
                 }
 
-                ToolButton{
-                    action: deleteItemAction
-                }
-                ToolSeparator{
-                    contentItem.visible: editToolsRow.y === searchToolsRow.y
-                }
             }
-            Row{
-                id: searchToolsRow
-                TextField{
-                    placeholderText: "Search..."
-                    width: toolbar.width - editToolsRow.width - toolbar.spacing
-                }
-                visible: false
-            }
-
         }
+        ProjectsViewTable {
+                id: projectsView
+                clip: true
+                contextMenu: component_contextMenu
+                onActivated: {
+                    openEditor(row)
+                }
+                Layout.fillWidth: parent
+                Layout.fillHeight: parent
+            }
     }
+
     ApiModel {
         id: projectsModel
         sourceURL: window.sourceURL
@@ -208,21 +224,14 @@ ApplicationWindow {
     }
 
 
-    ProjectsViewTable {
-        id: projectsView
-        clip: true
-        contextMenu: component_contextMenu
-        onActivated: {
-            openEditor(row)
-        }
-    }
-    footer:ToolBar{
-        RowLayout{
-            Label{
-                id: statusMessage
-            }
-        }
-    }
+
+//     footer:ToolBar{
+//         RowLayout{
+//             Label{
+//                 id: statusMessage
+//             }
+//         }
+//     }
 
     function createNewProject(dialog){
         var projectTitle = dialog.projectTitle
