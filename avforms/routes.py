@@ -22,87 +22,128 @@ class Routes:
         return True
 
     def init_api_routes(self):
-        init_api_routes(self.app, db_engine=self.db_engine)
+        mw = middleware.Middleware("sqlite:///dummy.db?check_same_thread=False")
+        ar = APIRoutes(self.db_engine)
+        # TODO: refactor this into a API Routes class
+        # mw = middleware.Middleware("sqlite:///dummy.db?check_same_thread=False")
+        if self.app:
+            # ###### projects
+            self.app.add_url_rule(
+                "/api/project",
+                "projects",
+                ar.get_projects
+            )
+
+            self.app.add_url_rule(
+                "/api/project/<string:id>",
+                "project_by_id",
+                mw.get_project_by_id,
+                methods=["GET"]
+            )
+
+            self.app.add_url_rule(
+                "/api/project/",
+                "add_project",
+                mw.add_project,
+                methods=["POST"]
+            )
+
+            self.app.add_url_rule(
+                "/api/project/<string:id>",
+                "update_project",
+                mw.update_project,
+                methods=["PUT"]
+            )
+            self.app.add_url_rule(
+                "/api/project/<string:id>",
+                "delete_project",
+                mw.delete_project,
+                methods=["DELETE"]
+            )
+
+            # ###### collections
+            self.app.add_url_rule(
+                "/api/collection/<string:id>",
+                "collection_by_id",
+                mw.collection_by_id,
+                methods=["GET"]
+            )
+
+            self.app.add_url_rule(
+                "/api/collection",
+                "collection",
+                ar.get_collections,
+                methods=["GET"]
+            )
+
+            self.app.add_url_rule(
+                "/api/collection/",
+                "add_collection",
+                mw.add_collection,
+                methods=["POST"]
+            )
+
+            # ###### Formats
+            self.app.add_url_rule(
+                "/api/format",
+                "formats",
+                mw.get_formats
+            )
+
+            # ##############
+            self.app.add_url_rule(
+                "/api",
+                "list_routes",
+                list_routes,
+                methods=["get"],
+                defaults={"app": self.app}
+            )
 
     def init_website_routes(self):
-        init_website_routes(self.app, db_engine=self.db_engine)
+        wr = WebsiteRoutes(self.db_engine)
+        if self.app:
+            self.app.add_url_rule(
+                "/",
+                "page_index",
+                wr.page_index
+            )
+
+            self.app.add_url_rule(
+                "/about",
+                "page_about",
+                wr.page_about
+            )
+
+            self.app.add_url_rule(
+                "/collection",
+                "page_collections",
+                wr.page_collections
+            )
+
+            self.app.add_url_rule(
+                "/project",
+                "page_projects",
+                wr.page_projects
+            )
+
+            self.app.add_url_rule(
+                "/format`",
+                "page_formats",
+                wr.page_formats
+            )
+
+class APIRoutes:
+    def __init__(self, db_engine) -> None:
+        self.db_engine = db_engine
+        self.middleware = middleware.Middleware(self.db_engine)
 
 
-def init_api_routes(app, db_engine):
-    mw = middleware.Middleware(db_engine)
-    if app:
+    def get_projects(self, serialize=True):
 
-        # ###### projects
-        app.add_url_rule(
-            "/api/project",
-            "projects",
-            mw.get_projects
-        )
+        return self.middleware.get_projects(serialize)
 
-        app.add_url_rule(
-            "/api/project/<string:id>",
-            "project_by_id",
-            mw.get_project_by_id,
-            methods=["GET"]
-        )
-
-        app.add_url_rule(
-            "/api/project/",
-            "add_project",
-            mw.add_project,
-            methods=["POST"]
-        )
-
-        app.add_url_rule(
-            "/api/project/<string:id>",
-            "update_project",
-            mw.update_project,
-            methods=["PUT"]
-        )
-        app.add_url_rule(
-            "/api/project/<string:id>",
-            "delete_project",
-            mw.delete_project,
-            methods=["DELETE"]
-        )
-
-        # ###### collections
-        app.add_url_rule(
-            "/api/collection/<string:id>",
-            "collection_by_id",
-            mw.collection_by_id,
-            methods=["GET"]
-        )
-
-        app.add_url_rule(
-            "/api/collection",
-            "collection",
-            mw.get_collections,
-            methods=["GET"]
-        )
-
-        app.add_url_rule(
-            "/api/collection/",
-            "add_collection",
-            mw.add_collection,
-            methods=["POST"]
-        )
-
-        # ###### Formats
-        app.add_url_rule(
-            "/api/format",
-            "formats",
-            mw.get_formats
-        )
-
-        # ##############
-        app.add_url_rule(
-            "/api",
-            "list_routes",
-            list_routes,
-            methods=["get"],
-            defaults={"app": app}
-        )
+    def get_collections(self, serialize=True):
+        return  self.middleware.get_collections(serialize)
 
 
 class WebsiteRoutes:
@@ -142,39 +183,6 @@ class WebsiteRoutes:
             formats=formats
         )
 
-
-def init_website_routes(app, db_engine):
-    wr = WebsiteRoutes(db_engine)
-    if app:
-        app.add_url_rule(
-            "/",
-            "page_index",
-            wr.page_index
-        )
-
-        app.add_url_rule(
-            "/about",
-            "page_about",
-            wr.page_about
-        )
-
-        app.add_url_rule(
-            "/collection",
-            "page_collections",
-            wr.page_collections
-        )
-
-        app.add_url_rule(
-            "/project",
-            "page_projects",
-            wr.page_projects
-        )
-
-        app.add_url_rule(
-            "/format`",
-            "page_formats",
-            wr.page_formats
-        )
 
 
 def list_routes(app):

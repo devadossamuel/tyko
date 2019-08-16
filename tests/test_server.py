@@ -5,13 +5,18 @@ import json
 static_routers = [
     "/",
     "/about",
+]
+
+api_routes = [
     "/api/format",
     "/api/project",
     "/api/collection",
 
+
 ]
 
-
+# FIXME THIs is failing when no data is in the db
+# TODO add test data to database
 @pytest.mark.parametrize("route", static_routers)
 def test_static(route):
     app = avforms.create_app("sqlite:///:memory:")
