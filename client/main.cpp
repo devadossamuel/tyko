@@ -2,8 +2,7 @@
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QQmlContext>
-#include "Config.h"
+#include <QQuickView>
 
 int main(int argc, char *argv[])
 {
@@ -12,15 +11,12 @@ int main(int argc, char *argv[])
 #endif
 
     QGuiApplication app(argc, argv);
-    Config config;
     qmlRegisterType<ProjectAdder>("Api", 1, 0, "ProjectAdder");
+    QQuickView *view = new QQuickView;
+    view->setSource(QStringLiteral("qrc:/main.qml"));
 
-    QQmlApplicationEngine engine;
-    QQmlContext* ctx = engine.rootContext();
-    ctx->setContextProperty("url", &config);
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
-    if (engine.rootObjects().isEmpty())
-        return -1;
-    config.setServerUrl("http://avdatabase.library.illinois.edu:8000");
+    QObject *item = view->rootObject();
+    item->setProperty("sourceURL", "http://avdatabase.library.illinois.edu:8000/");
+    view->show();
     return app.exec();
 }

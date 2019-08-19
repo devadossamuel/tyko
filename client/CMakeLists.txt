@@ -43,7 +43,7 @@ target_link_libraries(ProjectAdder
 add_executable(avdatabaseEditor
         "main.cpp"
         "qml.qrc"
-        Config.cpp Config.h)
+        )
 set_target_properties(avdatabaseEditor PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
     )

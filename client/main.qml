@@ -4,15 +4,20 @@ import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.3
 import Api 1.0
 
-Window {
+Item {
     id: window
-    visible: true
+//     visible: true
     width: 640
     height: 480
     property int dataRefreshRate: 4000
-    property url sourceURL:"http://avdatabase.library.illinois.edu:8000/"
-    title: qsTr("Projects: " + sourceURL)
+    property url sourceURL
+//     title: qsTr("Projects: " + sourceURL)
     SystemPalette { id: appPalette; colorGroup: SystemPalette.Active }
+    onSourceURLChanged: {
+        console.log(" SourceURL Changed to " + sourceURL)
+        projectsModel.update()
+//         projectsModel.sourceURL = sourceURL
+    }
     ProjectAdder{
         id: myAdder
         property url sourceURL: window.sourceURL
