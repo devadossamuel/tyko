@@ -5,7 +5,6 @@ import QtQuick.Controls.Styles 1.4
 
 Item{
     id: root
-//     anchors.fill: parent
     property alias model: projectsView.model
     property alias contextMenu: loader_contextMenu.sourceComponent
     property bool validSelection: false
