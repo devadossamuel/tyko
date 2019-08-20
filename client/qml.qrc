@@ -7,5 +7,6 @@
         <file>resource.js</file>
         <file>EditingDialog.qml</file>
         <file>ConfigDialog.qml</file>
+        <file>ProjectsPage.qml</file>
     </qresource>
 </RCC>
