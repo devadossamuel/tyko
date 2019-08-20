@@ -3,20 +3,29 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.3
 import Api 1.0
-
-Item {
+import Qt.labs.settings 1.0
+Window {
     id: window
-//     visible: true
+    visible: true
     width: 640
     height: 480
     property int dataRefreshRate: 4000
     property url sourceURL
-//     title: qsTr("Projects: " + sourceURL)
+    Settings{
+        property alias sourceURL: window.sourceURL
+    }
     SystemPalette { id: appPalette; colorGroup: SystemPalette.Active }
+    title: "Current :" + sourceURL
     onSourceURLChanged: {
         console.log(" SourceURL Changed to " + sourceURL)
         projectsModel.update()
-//         projectsModel.sourceURL = sourceURL
+    }
+    ConfigDialog{
+        id: setttingsDialog
+        sourceURL: window.sourceURL
+        onAccepted:{
+            window.sourceURL = sourceURL
+        }
     }
     ProjectAdder{
         id: myAdder
@@ -26,7 +35,13 @@ Item {
 
 
     }
-
+    Action{
+        id: changeConfigAction
+        text: "Settings"
+        onTriggered: {
+            setttingsDialog.open()
+        }
+    }
     Action{
         id: newItemAction
         text: "New"
@@ -206,6 +221,11 @@ Item {
                     }
                     visible: false
                 }
+                Row{
+                    ToolButton{
+                        action: changeConfigAction
+                    }
+                }
 
             }
         }
@@ -298,9 +318,15 @@ Item {
             projectsModel.updateData()
         }
     }
-
     Component.onCompleted: {
         console.log(projectsModel.model)
         projectsView.model = projectsModel.model
+        if(sourceURL == ""){
+            console.log("is empty")
+            setttingsDialog.open()
+        }
+
+
     }
+
 }
