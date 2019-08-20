@@ -668,6 +668,11 @@ foreach($file in $opengl32_libraries){
                     archiveArtifacts artifacts: "dist/*.whl,dist/*.zip", fingerprint: true
                     stash includes: "dist/*.whl,dist/*.zip", name: 'PYTHON_PACKAGES'
                 }
+                unstable {
+                    archiveArtifacts artifacts: "dist/*.whl,dist/*.zip", fingerprint: true
+                    stash includes: "dist/*.whl,dist/*.zip", name: 'PYTHON_PACKAGES'
+                }
+
                 cleanup{
                     cleanWs deleteDirs: true, patterns: [[pattern: 'dist/*.whl,dist/*.tar.gz,dist/*.zip', type: 'INCLUDE']]
                 }
