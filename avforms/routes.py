@@ -22,10 +22,12 @@ class Routes:
         return True
 
     def init_api_routes(self):
-        mw = middleware.Middleware("sqlite:///dummy.db?check_same_thread=False")
+        mw = middleware.Middleware(
+            "sqlite:///dummy.db?check_same_thread=False"
+        )
+
         ar = APIRoutes(self.db_engine)
         # TODO: refactor this into a API Routes class
-        # mw = middleware.Middleware("sqlite:///dummy.db?check_same_thread=False")
         if self.app:
             # ###### projects
             self.app.add_url_rule(
@@ -132,18 +134,18 @@ class Routes:
                 wr.page_formats
             )
 
+
 class APIRoutes:
     def __init__(self, db_engine) -> None:
         self.db_engine = db_engine
         self.middleware = middleware.Middleware(self.db_engine)
-
 
     def get_projects(self, serialize=True):
 
         return self.middleware.get_projects(serialize)
 
     def get_collections(self, serialize=True):
-        return  self.middleware.get_collections(serialize)
+        return self.middleware.get_collections(serialize)
 
 
 class WebsiteRoutes:
@@ -182,7 +184,6 @@ class WebsiteRoutes:
             selected_menu_item="formats",
             formats=formats
         )
-
 
 
 def list_routes(app):
