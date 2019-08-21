@@ -718,10 +718,8 @@ foreach($file in $opengl32_libraries){
                                     sshPut remote: remote, from: 'deploy', into: './package/'
                                     sshPut remote: remote, from: 'database', into: './package/'
                                     sshCommand remote: remote, command: """cd package &&
-docker-compose -f deploy/docker-compose.yml build &&
-docker-compose -f deploy/docker-compose.yml up -d
-                                    """
-//                                    sshCommand remote: remote, command: "cd package && docker-compose -f deploy/docker-compose.yml up -d"
+docker-compose -f deploy/docker-compose.yml -p avdatabase build &&
+docker-compose -f deploy/docker-compose.yml -p avdatabase up -d"""
                                 }
                             }
                         }
