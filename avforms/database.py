@@ -7,7 +7,7 @@ from sqlalchemy.orm.session import sessionmaker
 from avforms import scheme
 
 
-def init_database(engine):
+def init_database(engine) -> None:
     scheme.AVTables.metadata.create_all(bind=engine)
 
     initial_session = sessionmaker(bind=engine)

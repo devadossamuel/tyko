@@ -9,9 +9,10 @@ the_app = Flask(__name__)
 
 class Routes:
 
-    def __init__(self, db_engine, app) -> None:
+    def __init__(self, db_engine: str, app) -> None:
         self.db_engine = db_engine
         self.app = app
+        self.mw = middleware.Middleware(self.db_engine)
 
     def is_valid(self):
         try:
@@ -21,11 +22,7 @@ class Routes:
             return False
         return True
 
-    def init_api_routes(self):
-        mw = middleware.Middleware(
-            "sqlite:///dummy.db?check_same_thread=False"
-        )
-
+    def init_api_routes(self) -> None:
         ar = APIRoutes(self.db_engine)
         # TODO: refactor this into a API Routes class
         if self.app:
@@ -39,27 +36,27 @@ class Routes:
             self.app.add_url_rule(
                 "/api/project/<string:id>",
                 "project_by_id",
-                mw.get_project_by_id,
+                self.mw.get_project_by_id,
                 methods=["GET"]
             )
 
             self.app.add_url_rule(
                 "/api/project/",
                 "add_project",
-                mw.add_project,
+                self.mw.add_project,
                 methods=["POST"]
             )
 
             self.app.add_url_rule(
                 "/api/project/<string:id>",
                 "update_project",
-                mw.update_project,
+                self.mw.update_project,
                 methods=["PUT"]
             )
             self.app.add_url_rule(
                 "/api/project/<string:id>",
                 "delete_project",
-                mw.delete_project,
+                self.mw.delete_project,
                 methods=["DELETE"]
             )
 
@@ -67,7 +64,7 @@ class Routes:
             self.app.add_url_rule(
                 "/api/collection/<string:id>",
                 "collection_by_id",
-                mw.collection_by_id,
+                self.mw.collection_by_id,
                 methods=["GET"]
             )
 
@@ -81,7 +78,7 @@ class Routes:
             self.app.add_url_rule(
                 "/api/collection/",
                 "add_collection",
-                mw.add_collection,
+                self.mw.add_collection,
                 methods=["POST"]
             )
 
@@ -89,7 +86,7 @@ class Routes:
             self.app.add_url_rule(
                 "/api/format",
                 "formats",
-                mw.get_formats
+                self.mw.get_formats
             )
 
             # ##############

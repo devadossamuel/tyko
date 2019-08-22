@@ -1,6 +1,9 @@
 import avforms
+from avforms import routes
+import avforms.database
 import pytest
 import json
+from flask import Flask
 
 static_routers = [
     "/",
@@ -28,7 +31,12 @@ def test_static(route):
 
 @pytest.fixture(scope="module")
 def test_app():
-    app = avforms.create_app("sqlite:///:memory:")
+    db_engine = "sqlite:///:memory:"
+    app = Flask(__name__)
+    app_routes = routes.Routes(db_engine, app)
+    avforms.database.init_database(app_routes.mw.data_provider.db_engine)
+    app_routes.init_api_routes()
+    app_routes.init_website_routes()
     app.config["TESTING"] = True
     return app.test_client()
 
@@ -84,7 +92,13 @@ test_data_read = [
 
 @pytest.mark.parametrize("data_type,data_value", test_data_read)
 def test_create_and_read2(data_type, data_value):
-    app = avforms.create_app("sqlite:///:memory:")
+
+    db_engine = "sqlite:///:memory:"
+    app = Flask(__name__)
+    app_routes = routes.Routes(db_engine, app)
+    avforms.database.init_database(app_routes.mw.data_provider.db_engine)
+    app_routes.init_api_routes()
+    app_routes.init_website_routes()
     app.config["TESTING"] = True
     with app.test_client() as server:
 

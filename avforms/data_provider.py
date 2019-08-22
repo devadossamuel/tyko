@@ -7,9 +7,9 @@ from avforms import database, scheme
 class DataProvider:
     def __init__(self, engine):
         self.engine = engine
-        db_engine = sqlalchemy.create_engine(engine)
+        self.db_engine = sqlalchemy.create_engine(engine)
         self.init_database()
-        db_session = orm.sessionmaker(bind=db_engine)
+        db_session = orm.sessionmaker(bind=self.db_engine)
         self.session = db_session()
 
     def init_database(self):
