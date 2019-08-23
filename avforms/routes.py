@@ -1,27 +1,17 @@
-import sys
-
-import sqlalchemy.exc
 from flask import Flask, jsonify, render_template
 from avforms import middleware
+from avforms.data_provider import DataProvider
 
 the_app = Flask(__name__)
 
 
 class Routes:
 
-    def __init__(self, db_engine: str, app) -> None:
+    def __init__(self, db_engine: DataProvider, app) -> None:
         self.db_engine = db_engine
         self.app = app
         self.mw = middleware.Middleware(self.db_engine)
         self.wr = WebsiteRoutes(self.db_engine)
-
-    def is_valid(self):
-        try:
-            middleware.DataProvider(self.db_engine)
-        except sqlalchemy.exc.OperationalError as e:
-            print(e, file=sys.stderr)
-            return False
-        return True
 
     def init_api_routes(self) -> None:
         ar = APIRoutes(self.db_engine)
@@ -134,9 +124,9 @@ class Routes:
 
 
 class APIRoutes:
-    def __init__(self, db_engine) -> None:
-        self.db_engine = db_engine
-        self.middleware = middleware.Middleware(self.db_engine)
+    def __init__(self, db_engine: DataProvider) -> None:
+        # self.db_engine = db_engine
+        self.middleware = middleware.Middleware(db_engine)
 
     def get_projects(self, serialize=True):
         return self.middleware.get_projects(serialize)
@@ -146,7 +136,7 @@ class APIRoutes:
 
 
 class WebsiteRoutes:
-    def __init__(self, db_engine) -> None:
+    def __init__(self, db_engine: DataProvider) -> None:
         self.db_engine = db_engine
         self.middleware = middleware.Middleware(self.db_engine)
 

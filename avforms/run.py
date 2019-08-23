@@ -1,16 +1,18 @@
 import sys
 
 from flask import Flask
-from avforms import routes
+from avforms import routes, database
 from avforms.config import setup_cli_parser
+from avforms.data_provider import DataProvider
 
 
-def create_app(db_engine_source: str, app=None):
+def create_app(db_engine_source: str, app=None, init_db=False):
     if app is None:
         app = Flask(__name__)
-    app_routes = routes.Routes(db_engine_source, app)
-    if not app_routes.is_valid():
-        sys.exit(1)
+    data_provider = DataProvider(db_engine_source)
+    app_routes = routes.Routes(data_provider, app)
+    if init_db:
+        database.init_database(data_provider.db_engine)
 
     app_routes.init_api_routes()
     app_routes.init_website_routes()

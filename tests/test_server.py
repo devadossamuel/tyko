@@ -41,11 +41,7 @@ def test_static_pages(route):
 @pytest.mark.parametrize("route", dynamic_page_routes)
 def test_dynamic_pages(route):
     app = Flask(__name__, template_folder="../avforms/templates")
-    app_routes = routes.Routes(TEMP_DATABASE, app)
-    init_database(engine=app_routes.mw.data_provider.db_engine)
-    init_database(engine=app_routes.wr.middleware.data_provider.db_engine)
-    app_routes.init_api_routes()
-    app_routes.init_website_routes()
+    avforms.create_app(TEMP_DATABASE, app, init_db=True)
     app.config["TESTING"] = True
     with app.test_client() as server:
         resp = server.get(route)
@@ -54,11 +50,9 @@ def test_dynamic_pages(route):
 
 @pytest.fixture(scope="module")
 def test_app():
-    app = Flask(__name__)
-    app_routes = routes.Routes(TEMP_DATABASE, app)
-    avforms.database.init_database(app_routes.mw.data_provider.db_engine)
-    app_routes.init_api_routes()
-    app_routes.init_website_routes()
+    app = Flask(__name__, template_folder="../avforms/templates")
+    avforms.create_app(TEMP_DATABASE, app, init_db=True)
+    app.config["TESTING"] = True
     app.config["TESTING"] = True
     return app.test_client()
 
@@ -115,11 +109,8 @@ test_data_read = [
 @pytest.mark.parametrize("data_type,data_value", test_data_read)
 def test_create_and_read2(data_type, data_value):
 
-    app = Flask(__name__)
-    app_routes = routes.Routes(TEMP_DATABASE, app)
-    avforms.database.init_database(app_routes.mw.data_provider.db_engine)
-    app_routes.init_api_routes()
-    app_routes.init_website_routes()
+    app = Flask(__name__, template_folder="../avforms/templates")
+    avforms.create_app(TEMP_DATABASE, app, init_db=True)
     app.config["TESTING"] = True
     with app.test_client() as server:
 
