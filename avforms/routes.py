@@ -127,7 +127,7 @@ class Routes:
             )
 
             self.app.add_url_rule(
-                "/format`",
+                "/format",
                 "page_formats",
                 self.wr.page_formats
             )
