@@ -5,10 +5,10 @@ from avforms import routes
 from avforms.config import setup_cli_parser
 
 
-def create_app(db_engine: str, app=None):
+def create_app(db_engine_source: str, app=None):
     if app is None:
         app = Flask(__name__)
-    app_routes = routes.Routes(db_engine, app)
+    app_routes = routes.Routes(db_engine_source, app)
     if not app_routes.is_valid():
         sys.exit(1)
 

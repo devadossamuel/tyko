@@ -1,16 +1,24 @@
 import avforms
 from avforms import routes
 import avforms.database
+from avforms.database import init_database
 import pytest
 import json
 from flask import Flask
 
-static_routers = [
+static_page_routes = [
     "/",
     "/about",
 ]
 
+dynamic_page_routes = [
+    "/collection",
+    "/project",
+    "/format",
+]
+
 api_routes = [
+    "/api",
     "/api/format",
     "/api/project",
     "/api/collection",
@@ -18,11 +26,26 @@ api_routes = [
 
 ]
 
-# FIXME THIs is failing when no data is in the db
-# TODO add test data to database
-@pytest.mark.parametrize("route", static_routers)
-def test_static(route):
-    app = avforms.create_app("sqlite:///:memory:")
+TEMP_DATABASE = "sqlite:///:memory:"
+
+
+@pytest.mark.parametrize("route", static_page_routes)
+def test_static_pages(route):
+    app = avforms.create_app(TEMP_DATABASE)
+    app.config["TESTING"] = True
+    with app.test_client() as server:
+        resp = server.get(route)
+        assert resp.status == "200 OK"
+
+
+@pytest.mark.parametrize("route", dynamic_page_routes)
+def test_dynamic_pages(route):
+    app = Flask(__name__, template_folder="../avforms/templates")
+    app_routes = routes.Routes(TEMP_DATABASE, app)
+    init_database(engine=app_routes.mw.data_provider.db_engine)
+    init_database(engine=app_routes.wr.middleware.data_provider.db_engine)
+    app_routes.init_api_routes()
+    app_routes.init_website_routes()
     app.config["TESTING"] = True
     with app.test_client() as server:
         resp = server.get(route)
@@ -31,9 +54,8 @@ def test_static(route):
 
 @pytest.fixture(scope="module")
 def test_app():
-    db_engine = "sqlite:///:memory:"
     app = Flask(__name__)
-    app_routes = routes.Routes(db_engine, app)
+    app_routes = routes.Routes(TEMP_DATABASE, app)
     avforms.database.init_database(app_routes.mw.data_provider.db_engine)
     app_routes.init_api_routes()
     app_routes.init_website_routes()
@@ -93,9 +115,8 @@ test_data_read = [
 @pytest.mark.parametrize("data_type,data_value", test_data_read)
 def test_create_and_read2(data_type, data_value):
 
-    db_engine = "sqlite:///:memory:"
     app = Flask(__name__)
-    app_routes = routes.Routes(db_engine, app)
+    app_routes = routes.Routes(TEMP_DATABASE, app)
     avforms.database.init_database(app_routes.mw.data_provider.db_engine)
     app_routes.init_api_routes()
     app_routes.init_website_routes()

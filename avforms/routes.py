@@ -13,6 +13,7 @@ class Routes:
         self.db_engine = db_engine
         self.app = app
         self.mw = middleware.Middleware(self.db_engine)
+        self.wr = WebsiteRoutes(self.db_engine)
 
     def is_valid(self):
         try:
@@ -99,36 +100,36 @@ class Routes:
             )
 
     def init_website_routes(self):
-        wr = WebsiteRoutes(self.db_engine)
+
         if self.app:
             self.app.add_url_rule(
                 "/",
                 "page_index",
-                wr.page_index
+                self.wr.page_index
             )
 
             self.app.add_url_rule(
                 "/about",
                 "page_about",
-                wr.page_about
+                self.wr.page_about
             )
 
             self.app.add_url_rule(
                 "/collection",
                 "page_collections",
-                wr.page_collections
+                self.wr.page_collections
             )
 
             self.app.add_url_rule(
                 "/project",
                 "page_projects",
-                wr.page_projects
+                self.wr.page_projects
             )
 
             self.app.add_url_rule(
                 "/format`",
                 "page_formats",
-                wr.page_formats
+                self.wr.page_formats
             )
 
 
