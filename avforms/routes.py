@@ -138,7 +138,6 @@ class APIRoutes:
         self.middleware = middleware.Middleware(self.db_engine)
 
     def get_projects(self, serialize=True):
-
         return self.middleware.get_projects(serialize)
 
     def get_collections(self, serialize=True):
