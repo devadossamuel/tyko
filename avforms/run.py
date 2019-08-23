@@ -1,5 +1,3 @@
-import sys
-
 from flask import Flask
 from avforms import routes, database
 from avforms.config import setup_cli_parser
