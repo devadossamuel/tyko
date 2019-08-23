@@ -53,7 +53,6 @@ def test_app():
     app = Flask(__name__, template_folder="../avforms/templates")
     avforms.create_app(TEMP_DATABASE, app, init_db=True)
     app.config["TESTING"] = True
-    app.config["TESTING"] = True
     return app.test_client()
 
 
@@ -70,6 +69,15 @@ def test_api_formats(test_app):
         else:
             assert False
 
+
+@pytest.mark.parametrize("route", api_routes)
+def test_api_routes(route):
+    app = Flask(__name__, template_folder="../avforms/templates")
+    avforms.create_app(TEMP_DATABASE, app, init_db=True)
+    app.config["TESTING"] = True
+    with app.test_client() as server:
+        resp = server.get(route)
+        assert resp.status == "200 OK"
 
 def test_create(test_app):
     resp = test_app.post(

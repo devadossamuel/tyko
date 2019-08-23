@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, render_template
-from avforms import middleware
+import avforms
 from avforms.data_provider import DataProvider
 
 the_app = Flask(__name__)
@@ -10,44 +10,44 @@ class Routes:
     def __init__(self, db_engine: DataProvider, app) -> None:
         self.db_engine = db_engine
         self.app = app
-        self.mw = middleware.Middleware(self.db_engine)
-        self.wr = WebsiteRoutes(self.db_engine)
+        self.mw = avforms.Middleware(self.db_engine)
+        self.wr = WebsiteRoutes(self.mw)
+        self.ar = APIRoutes(self.mw)
 
     def init_api_routes(self) -> None:
-        ar = APIRoutes(self.db_engine)
-        # TODO: refactor this into a API Routes class
+
         if self.app:
             # ###### projects
             self.app.add_url_rule(
                 "/api/project",
                 "projects",
-                ar.get_projects
+                self.ar.get_projects
             )
 
             self.app.add_url_rule(
                 "/api/project/<string:id>",
                 "project_by_id",
-                self.mw.get_project_by_id,
+                self.ar.get_project_by_id,
                 methods=["GET"]
             )
 
             self.app.add_url_rule(
                 "/api/project/",
                 "add_project",
-                self.mw.add_project,
+                self.ar.add_project,
                 methods=["POST"]
             )
 
             self.app.add_url_rule(
                 "/api/project/<string:id>",
                 "update_project",
-                self.mw.update_project,
+                self.ar.update_project,
                 methods=["PUT"]
             )
             self.app.add_url_rule(
                 "/api/project/<string:id>",
                 "delete_project",
-                self.mw.delete_project,
+                self.ar.delete_project,
                 methods=["DELETE"]
             )
 
@@ -55,21 +55,21 @@ class Routes:
             self.app.add_url_rule(
                 "/api/collection/<string:id>",
                 "collection_by_id",
-                self.mw.collection_by_id,
+                self.ar.collection_by_id,
                 methods=["GET"]
             )
 
             self.app.add_url_rule(
                 "/api/collection",
                 "collection",
-                ar.get_collections,
+                self.ar.get_collections,
                 methods=["GET"]
             )
 
             self.app.add_url_rule(
                 "/api/collection/",
                 "add_collection",
-                self.mw.add_collection,
+                self.ar.add_collection,
                 methods=["POST"]
             )
 
@@ -77,7 +77,7 @@ class Routes:
             self.app.add_url_rule(
                 "/api/format",
                 "formats",
-                self.mw.get_formats
+                self.ar.get_formats
             )
 
             # ##############
@@ -123,22 +123,42 @@ class Routes:
             )
 
 
-class APIRoutes:
-    def __init__(self, db_engine: DataProvider) -> None:
-        # self.db_engine = db_engine
-        self.middleware = middleware.Middleware(db_engine)
+class Routers:
+    def __init__(self, middleware: avforms.Middleware) -> None:
+        self.middleware = middleware
+
+
+class APIRoutes(Routers):
 
     def get_projects(self, serialize=True):
         return self.middleware.get_projects(serialize)
 
+    def get_project_by_id(self, id):
+        return self.middleware.get_project_by_id(id)
+
     def get_collections(self, serialize=True):
         return self.middleware.get_collections(serialize)
 
+    def collection_by_id(self, id):
+        return self.middleware.collection_by_id(id)
 
-class WebsiteRoutes:
-    def __init__(self, db_engine: DataProvider) -> None:
-        self.db_engine = db_engine
-        self.middleware = middleware.Middleware(self.db_engine)
+    def get_formats(self, serialize=True):
+        return self.middleware.get_formats(serialize)
+
+    def add_project(self):
+        return self.middleware.add_project()
+
+    def update_project(self, id):
+        return self.middleware.update_project(id)
+
+    def delete_project(self, id):
+        return self.middleware.delete_project(id)
+
+    def add_collection(self):
+        return self.middleware.add_collection()
+
+
+class WebsiteRoutes(Routers):
 
     @staticmethod
     def page_index():
