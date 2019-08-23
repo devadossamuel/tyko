@@ -10,9 +10,9 @@ class Routes:
     def __init__(self, db_engine: DataProvider, app) -> None:
         self.db_engine = db_engine
         self.app = app
-        self.mw = avforms.Middleware(self.db_engine)
-        self.wr = WebsiteRoutes(self.mw)
-        self.ar = APIRoutes(self.mw)
+        mw = avforms.Middleware(self.db_engine)
+        self.wr = WebsiteRoutes(mw)
+        self.ar = APIRoutes(mw)
 
     def init_api_routes(self) -> None:
 
