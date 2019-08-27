@@ -77,7 +77,6 @@ class Middleware:
             abort(404)
 
     def add_collection(self):
-        print(request.form)
         collection_name = request.form["collection_name"]
         department = request.form.get("department")
         record_series = request.form.get("record_series")

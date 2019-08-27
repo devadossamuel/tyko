@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h3>{{ form_title }}</h3>
+<form method="post">
+<!--    <div>-->
+        <div>
+            {% for field in form_fields %}
+            <div class="form-group">
+                <label for="{{ field.form_id }}">{{ field.form_user_text }}</label>
+                <input type="{{ field.form_type }}" class="form-control" id="{{ field.form_id }}" name="{{ field.form_id }}"
+                       placeholder="{{ field.form_user_text }}"
+                       {% if field.required %}
+                       required{% endif
+                       %}>
+            </div>
+            {% endfor %}
+    </div>
+    <input type="submit" formaction="{{ api_location }}"</input>
+<!--    <button type="submit" class="btn btn-primary">Submit</button>-->
+</form>
+{% endblock %}

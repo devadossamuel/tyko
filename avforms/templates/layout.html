@@ -93,13 +93,22 @@
                     <a class="nav-link" href="{{url_for('page_about')}}">About</a>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarEntitiesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Entities
                     </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="{{url_for('page_collections')}}">Collections</a>
-                        <a class="dropdown-item" href="{{url_for('page_projects')}}">Projects</a>
-                        <a class="dropdown-item" href="{{url_for('page_formats')}}">Formats</a>
+                    <div class="dropdown-menu" aria-labelledby="navbarEntitiesDropdown">
+                        {% for entity in entities %}
+                            <a class="dropdown-item" href="{{url_for(entity[1])}}">{{ entity[0] }}</a>
+                        {% endfor %}
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarFormsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Forms
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarFormsDropdown">
+                        <a class="dropdown-item" href="{{url_for('page_new_project')}}">New Project</a>
+                        <a class="dropdown-item" href="{{url_for('page_new_collection')}}">New Collection</a>
                     </div>
                 </li>
             </ul>
