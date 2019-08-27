@@ -112,6 +112,7 @@ pipeline {
         disableConcurrentBuilds()  //each branch has 1 job running at a time
         timeout(180)  // Timeout after 180 minutes. This shouldn't take this long
         checkoutToSubdirectory("scm")
+        buildDiscarder logRotator(artifactDaysToKeepStr: '30', artifactNumToKeepStr: '30', daysToKeepStr: '100', numToKeepStr: '100')
     }
     environment{
         PKG_NAME = pythonPackageName(toolName: "CPython-3.7")
