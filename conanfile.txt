@@ -1,9 +1,6 @@
 [requires]
-zlib/1.2.11@conan/stable
-bzip2/1.0.8@conan/stable
-OpenSSL/1.1.1d@conan/stable
 libcurl/7.64.1@bincrafters/stable
-qt/5.13.0@bincrafters/stable
+qt/5.13.1@bincrafters/stable
 
 [generators]
 cmake_paths
