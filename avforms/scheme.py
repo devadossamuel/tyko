@@ -114,6 +114,16 @@ class CollectionObject(AVTables):
 
     contact = relationship("Contact", foreign_keys=[contact_id])
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "collection_id": self.collection_id,
+            "project_id": self.project_id,
+            "last_updated_id": self.last_updated_id,
+            "contact_id": self.contact_id
+        }
+
 
 class CollectionItem(AVTables):
     __tablename__ = "item"
@@ -145,6 +155,14 @@ class CollectionItem(AVTables):
                                db.ForeignKey("format_types.format_id"))
 
     format_type = relationship("FormatTypes", foreign_keys=[format_type_id])
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "barcode": self.barcode,
+            "file_name": self.file_name
+        }
 
 
 class Note(AVTables):

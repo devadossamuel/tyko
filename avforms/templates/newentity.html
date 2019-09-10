@@ -2,7 +2,10 @@
 
 {% block content %}
 <h3>{{ form_title }}</h3>
-<form method="post">
+<script type="text/javascript"
+    src = "{{ url_for('static', filename = 'js/submitform.js') }}">
+</script>
+<form id="new-content-form" onsubmit="return submitNewEntity('{{ api_location }}');">
 <!--    <div>-->
         <div>
             {% for field in form_fields %}
@@ -10,13 +13,14 @@
                 <label for="{{ field.form_id }}">{{ field.form_user_text }}</label>
                 <input type="{{ field.form_type }}" class="form-control" id="{{ field.form_id }}" name="{{ field.form_id }}"
                        placeholder="{{ field.form_user_text }}"
-                       {% if field.required %}
+                       {% if field.required -%}
                        required{% endif
-                       %}>
+                       -%}>
             </div>
             {% endfor %}
     </div>
-    <input type="submit" formaction="{{ api_location }}"</input>
-<!--    <button type="submit" class="btn btn-primary">Submit</button>-->
+{#        <input type="submit" value="Submit">#}
+        <button type="submit" class="btn btn-primary">Submit</button>
+{#        <button type="submit" class="btn btn-primary" onclick = "submitNewEntity('{{ api_location }}')">Submit</button>#}
 </form>
 {% endblock %}

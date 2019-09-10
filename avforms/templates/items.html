@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h3>Items</h3>
+<div class="row onePadding">
+    <div class="col-md-12 col-sm-12">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <tr>
+                    <th>Name</th>
+                    <th>Barcode</th>
+                    <th>File Name</th>
+                </tr>
+                {% for item in items %}
+                    <tr>
+                        <td>{{item['name']}}</td>
+                        <td>{{item['barcode']}}</td>
+                        <td>{{item['file_name']}}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

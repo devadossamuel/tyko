@@ -15,6 +15,7 @@ dynamic_page_routes = [
     "/collection",
     "/project",
     "/format",
+    "/item",
 ]
 
 api_routes = [
@@ -22,6 +23,8 @@ api_routes = [
     "/api/format",
     "/api/project",
     "/api/collection",
+    "/api/item",
+    "/api/object",
 
 
 ]
@@ -110,6 +113,18 @@ test_data_read = [
             "department": "my department"
         }
 
+    ),
+    (
+        "item", {
+            "name": "my stupid new item",
+            "barcode": "8umb",
+            "file_name": "stupid.mov"
+        }
+    ),
+    (
+        "object", {
+            "name": "my stupid object"
+        }
     )
 ]
 
@@ -121,18 +136,18 @@ def test_create_and_read2(data_type, data_value):
     avforms.create_app(TEMP_DATABASE, app, init_db=True)
     app.config["TESTING"] = True
     with app.test_client() as server:
-
+        route ="/api/{}/".format(data_type)
         create_resp = server.post(
-            "/api/{}/".format(data_type),
+            route,
             data=data_value)
 
-        assert create_resp.status == "200 OK"
+        assert create_resp.status == "200 OK", "Failed to create a new entity with {}".format(route)
 
         new_id = json.loads(create_resp.data)["id"]
         assert new_id is not None
 
         read_res = server.get("/api/{}/{}".format(data_type, new_id))
-        assert read_res.status_code == 200
+        assert read_res.status_code == 200 , "{} failed with status {}".format(route, read_res.status_code)
 
         read_resp_data = json.loads(read_res.data)
         data_object = read_resp_data[data_type][0]
