@@ -258,7 +258,7 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
 
 class ItemMiddlwareEntity(AbsMiddlwareEntity):
 
-    def get(self,  serialize=False, *args, **kwargs):
+    def get(self, serialize=False, *args, **kwargs):
         if "id" in kwargs:
             return self.item_by_id(kwargs["id"])
 
