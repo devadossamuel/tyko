@@ -129,7 +129,7 @@ pipeline {
         PKG_VERSION = pythonPackageVersion(toolName: "CPython-3.7")
         DOC_ZIP_FILENAME = "${env.PKG_NAME}-${env.PKG_VERSION}.doc.zip"
         DEVPI = credentials("DS_devpi")
-        DOCKER_IMAGE_TAG="avmetadata/${env.BRANCH_NAME.toLowerCase()}"
+        DOCKER_IMAGE_TAG="tyko/${env.BRANCH_NAME.toLowerCase()}"
     }
     parameters {
         booleanParam(name: "FRESH_WORKSPACE", defaultValue: false, description: "Purge workspace before staring and checking out source")
