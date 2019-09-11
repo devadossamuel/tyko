@@ -10,64 +10,6 @@ def parseBanditReport(htmlReport){
         }
     }
 }
-//
-//def test_python_package(python_exec, pkgRegex, nodeLabels, tox_environments){
-//    script{
-//        def python_pkgs = findFiles glob: "${pkgRegex}"
-//        def environments = []
-//
-//        tox_environments.each{
-//            environments.add("-e ${it}")
-//        }
-//
-//        def test_environments = environments.join(" ")
-//
-//        python_pkgs.each{
-//            run_tox_test_in_node(python_exec, it, test_environments, nodeLabels)
-//        }
-//    }
-//}
-//
-//def run_tox_test_in_node(python_exec, pythonPkgFile, test_args, nodeLabels){
-//    script{
-//        def stashCode = UUID.randomUUID().toString()
-//        stash includes: "${pythonPkgFile}", name: "${stashCode}"
-//        def python_version = bat(
-//            label: "Checking Python version for ${python_exec}",
-//            returnStdout: true,
-//            script: '@python --version').trim()
-//
-//        node("${nodeLabels}"){
-//            try{
-//                checkout scm
-//                withEnv(['VENVPATH=venv']) {
-//                    bat(label: "Create virtualenv based on ${python_version} on ${NODE_NAME}",
-//                        script: "${python_exec} -m venv %VENVPATH%"
-//                        )
-//                    bat(label: "Update pip version in virtualenv",
-//                        script: "%VENVPATH%\\Scripts\\python.exe -m pip install pip --upgrade"
-//                    )
-//
-////                    bat(label: "Update setuptools version in virtualenv",
-////                        script: "%VENVPATH%\\Scripts\\pip install setuptools --upgrade"
-////                    )
-//
-//                    bat(label: "Install Tox in virtualenv",
-//                        script: "%VENVPATH%\\Scripts\\pip install tox"
-//                    )
-//
-//                    unstash "${stashCode}"
-//                    bat(label: "Testing ${pythonPkgFile}",
-//                        script: "%VENVPATH%\\Scripts\\tox.exe -c ${WORKSPACE}/tox.ini --parallel=auto -o --workdir=${WORKSPACE}/tox --installpkg=${pythonPkgFile} ${test_args} -vv"
-//                        )
-//                }
-//            }
-//            finally{
-//                deleteDir()
-//            }
-//        }
-//    }
-//}
 
 def get_sonarqube_unresolved_issues(report_task_file){
     script{
@@ -77,8 +19,8 @@ def get_sonarqube_unresolved_issues(report_task_file){
         def outstandingIssues = readJSON text: response.content
         return outstandingIssues
     }
-//https://sonarqube.library.illinois.edu/api/issues/search?componentKeys=speedwagon&resolved=no
 }
+
 def get_sonarqube_scan_data(report_task_file){
     script{
 
@@ -284,58 +226,6 @@ foreach($file in $opengl32_libraries){
 
                     }
                 }
-//                stage("Building Client"){
-//                    agent {
-//                        label 'VS2015'
-//                        }
-//                    stages{
-//
-//                        stage("Install Conan"){
-//                            environment{
-//                                PYTHON = "${tool 'CPython-3.6'}"
-//                            }
-//                            steps{
-//                                bat(
-//                                    label: "Installing Conan",
-//                                    script:'if NOT exist "venv\\Scripts\\conan.exe" ("%PYTHON%\\python.exe" -m venv venv && venv\\Scripts\\pip install conan ) && venv\\Scripts\\conan remote add -f bincrafters https://api.bintray.com/conan/bincrafters/public-conan '
-//                                    )
-//                            }
-//                        }
-//                        stage("Getting Dependencies"){
-//                            options{
-//                                timeout(90)
-//                            }
-//                            environment{
-//
-//                                PATH = "${WORKSPACE}\\venv\\Scripts;$PATH"
-//                            }
-//                            steps{
-//                                bat "conan install ${WORKSPACE}/scm -if build/client/Release"
-////                                }
-//                            }
-//                        }
-//                        stage("Building Client App"){
-//                            options{
-//                                timeout(10)
-//                            }
-//                            steps{
-//                                cmakeBuild(
-//                                    buildDir: 'build/client',
-//                                    installation: 'cmake3.15',
-//                                    sourceDir: 'scm',
-//                                    cmakeArgs: "-DCMAKE_GENERATOR_PLATFORM=x64 -DCMAKE_TOOLCHAIN_FILE=${WORKSPACE}/build/client/Release/conan_paths.cmake",
-//                                    steps: [[args: '--config Release', withCmake: true]]
-//
-//                                )
-//                            }
-//                        }
-//                    }
-//                    post{
-//                        success{
-//                            stash includes: "build/client/**", name: 'CLIENT_BUILD'
-//                        }
-//                    }
-//                }
             }
         }
         stage('Testing') {
@@ -629,54 +519,6 @@ foreach($file in $opengl32_libraries){
                         }
                     }
                 }
-//                stage("Packaging Client"){
-//                    agent {
-//                        label 'VS2015'
-//                    }
-//
-//                    environment{
-//                        wix_path = tool name: 'WixToolset_311', type: 'com.cloudbees.jenkins.plugins.customtools.CustomTool'
-//                        PATH = "${wix_path};$PATH"
-//                    }
-//                    steps{
-//                        unstash 'CLIENT_BUILD'
-//                        cpack arguments: '-G WIX  --verbose', installation: 'cmake3.15', workingDir: 'build/client'
-////                        bat "dir build\\client"
-//                    }
-//                    post{
-//                        success{
-//                            archiveArtifacts allowEmptyArchive: true, artifacts: 'build/client/*.msi'
-//                        }
-//                    }
-//                }
-
-//                stage("Testing Python Packages"){
-//                    parallel{
-//                        stage("Testing sdist Package"){
-//                            steps{
-//                                testPythonPackage(
-//                                    pythonToolName: "CPython-3.7",
-//                                    pkgRegex: "dist/*.tar.gz,dist/*.zip",
-////                                    testNodeLabels: "Windows",
-//                                    testNodeLabels: "Windows&&!Docker",
-//                                    testEnvs: ["py36", "py37"]
-//
-//                                )
-//                            }
-//                        }
-//                        stage("Testing whl Package"){
-//                            steps{
-//                                testPythonPackage(
-//                                    pythonToolName: "CPython-3.7",
-//                                    pkgRegex: "dist/*.whl",
-//                                    testNodeLabels: "Windows&&!Docker",
-//                                    testEnvs: ["py36", "py37"]
-//
-//                                )
-//                            }
-//                        }
-//                    }
-//                }
             }
             post {
                 success {
