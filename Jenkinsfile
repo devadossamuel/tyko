@@ -739,7 +739,7 @@ docker-compose -f deploy/docker-compose.yml -p avdatabase up -d"""
                             }
                             post {
                                 success {
-                                    addBadge icon: ' success.gif', id: '', link: 'http://avdatabase.library.illinois.edu:8000/', text: 'Server Application Deployed'
+                                    addBadge icon: 'success.gif', id: '', link: 'http://avdatabase.library.illinois.edu:8000/', text: 'Server Application Deployed'
                                 }
                             }
                         }
