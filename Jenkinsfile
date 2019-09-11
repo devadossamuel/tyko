@@ -1,5 +1,31 @@
 @Library(["devpi", "PythonHelpers"]) _
+def parseBanditReport(jsonFile, fullReport){
+    script {
+        try{
+            def jsonData = readJSON file: jsonFile
+            def summary = createSummary icon: 'warning.gif', text: "Bandit Security Issues Detected"
 
+            summary.appendText("<ul>")
+
+            jsonData['results'].each {
+
+                def code = it['code'].replaceAll("\n", "<br />")
+
+                summary.appendText("<li>")
+                summary.appendText("${it['filename']}:")
+                summary.appendText("<br /><br />${it['issue_text']}")
+                summary.appendText("<p><code>${code}</code></p>")
+                summary.appendText("</li>")
+            }
+            summary.appendText("</ul>")
+
+            addWarningBadge text: "Bandit security issues detected", link: "${fullReport}"
+
+        } catch (Exception e){
+            echo "Failed to reading ${jsonFile}"
+        }
+    }
+}
 //
 //def test_python_package(python_exec, pkgRegex, nodeLabels, tox_environments){
 //    script{
@@ -429,7 +455,7 @@ foreach($file in $opengl32_libraries){
                                     catchError(buildResult: 'SUCCESS', message: 'Bandit found issues', stageResult: 'UNSTABLE') {
                                         bat(
                                             label: "Running bandit",
-                                            script: "bandit --format json --output ${WORKSPACE}/reports/bandit-report.json --recursive ${WORKSPACE}\\scm\\avforms"
+                                            script: "bandit --format json --output ${WORKSPACE}/reports/bandit-report.json --recursive ${WORKSPACE}\\scm\\avforms || bandit -f html --recursive ${WORKSPACE}\\scm\\avforms --output ${WORKSPACE}/reports/bandit-report.html"
                                             )
                                     }
 
@@ -437,7 +463,10 @@ foreach($file in $opengl32_libraries){
                             }
                             post {
                                 always {
-                                    archiveArtifacts "reports/bandit-report.json"
+                                    archiveArtifacts "reports/bandit-report.json,reports/bandit-report.html"
+                                }
+                                unstable{
+                                    parseBanditReport("reports/bandit-report.json", "${currentBuild.absoluteUrl}/artifact/reports/bandit-report.html")
                                 }
                             }
                         }
