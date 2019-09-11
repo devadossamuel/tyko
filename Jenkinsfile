@@ -467,6 +467,7 @@ foreach($file in $opengl32_libraries){
                                 }
                                 unstable{
                                     parseBanditReport("reports/bandit-report.json", "${currentBuild.absoluteUrl}/artifact/reports/bandit-report.html")
+                                    publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports', reportFiles: 'bandit-report.html', reportName: 'Bandit Report', reportTitles: ''])
                                 }
                             }
                         }
