@@ -737,15 +737,14 @@ docker-compose -f deploy/docker-compose.yml -p avdatabase build &&
 docker-compose -f deploy/docker-compose.yml -p avdatabase up -d"""
                                 }
                             }
-                            post {
-                                success {
-                                    echo "Successfully deployed to http://avdatabase.library.illinois.edu:8000/"
-                                    addBadge(icon: 'success.gif', id: '', link: 'http://avdatabase.library.illinois.edu:8000/', text: 'Server Application Deployed')
-                                }
-                            }
                         }
                     }
-
+                    post {
+                        success {
+                            echo "Successfully deployed to http://avdatabase.library.illinois.edu:8000/"
+                            addBadge(icon: 'success.gif', id: '', link: 'http://avdatabase.library.illinois.edu:8000/', text: 'Server Application Deployed')
+                        }
+                    }
                 }
             }
         }
