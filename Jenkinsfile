@@ -532,7 +532,7 @@ foreach($file in $opengl32_libraries){
 -Dsonar.analysis.scmRevision=${env.GIT_COMMIT} \
 -Dsonar.working.directory=${WORKSPACE}\\.scannerwork \
 -Dsonar.projectDescription=\"%PROJECT_DESCRIPTION%\" \
--X "
+"
                                     )
                                 }
                         }
