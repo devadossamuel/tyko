@@ -1,28 +1,12 @@
 @Library(["devpi", "PythonHelpers"]) _
-def parseBanditReport(jsonFile, fullReport){
+def parseBanditReport(htmlReport){
     script {
         try{
-            def jsonData = readJSON file: jsonFile
             def summary = createSummary icon: 'warning.gif', text: "Bandit Security Issues Detected"
-
-            summary.appendText("<ul>")
-
-            jsonData['results'].each {
-
-                def code = it['code'].replaceAll("\n", "<br />")
-
-                summary.appendText("<li>")
-                summary.appendText("${it['filename']}:")
-                summary.appendText("<br /><br />${it['issue_text']}")
-                summary.appendText("<p><code>${code}</code></p>")
-                summary.appendText("</li>")
-            }
-            summary.appendText("</ul>")
-
-            addWarningBadge text: "Bandit security issues detected", link: "${fullReport}"
+            summary.appendText(readFile("${htmlReport}"))
 
         } catch (Exception e){
-            echo "Failed to reading ${jsonFile}"
+            echo "Failed to reading ${htmlReport}"
         }
     }
 }
@@ -466,8 +450,8 @@ foreach($file in $opengl32_libraries){
                                     archiveArtifacts "reports/bandit-report.json,reports/bandit-report.html"
                                 }
                                 unstable{
-                                    parseBanditReport("reports/bandit-report.json", "${currentBuild.absoluteUrl}/artifact/reports/bandit-report.html")
-                                    publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports', reportFiles: 'bandit-report.html', reportName: 'Bandit Report', reportTitles: ''])
+                                    parseBanditReport("reports/bandit-report.html")
+                                    addWarningBadge text: "Bandit security issues detected", link: "${currentBuild.absoluteUrl}"
                                 }
                             }
                         }
