@@ -1,7 +1,7 @@
 from flask import Flask
-from avforms import routes, database
-from avforms.config import setup_cli_parser
-from avforms.data_provider import DataProvider
+from tyko import routes, database
+from tyko.config import setup_cli_parser
+from tyko.data_provider import DataProvider
 
 
 def create_app(db_engine_source: str, app=None, init_db=False):

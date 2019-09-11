@@ -1,11 +1,11 @@
 import abc
 from typing import NamedTuple, Type
-from avforms import middleware, frontend
-import avforms.data_provider
+from tyko import middleware, frontend
+import tyko.data_provider
 
 
 class AbsFactory(metaclass=abc.ABCMeta):
-    def __init__(self, provider: avforms.data_provider.DataProvider) -> None:
+    def __init__(self, provider: tyko.data_provider.DataProvider) -> None:
         self._data_provider = provider
 
     @abc.abstractmethod
@@ -19,7 +19,7 @@ class AbsFactory(metaclass=abc.ABCMeta):
 
 class EntityComponent(NamedTuple):
     factory: Type[AbsFactory]
-    data_provider: Type[avforms.data_provider.AbsDataProvider]
+    data_provider: Type[tyko.data_provider.AbsDataProvider]
 
 
 class ProjectFactory(AbsFactory):
@@ -56,7 +56,7 @@ class ObjectFactory(AbsFactory):
         return frontend.ObjectFrontend(self._data_provider)
 
 
-def load_entity(name, data_provider: avforms.data_provider.DataProvider) \
+def load_entity(name, data_provider: tyko.data_provider.DataProvider) \
         -> AbsFactory:
 
     new_entity = entities[name][0]
@@ -66,18 +66,18 @@ def load_entity(name, data_provider: avforms.data_provider.DataProvider) \
 entities = {
     "project": EntityComponent(
         factory=ProjectFactory,
-        data_provider=avforms.data_provider.ProjectData
+        data_provider=tyko.data_provider.ProjectData
     ),
     "collection": EntityComponent(
         factory=CollectionFactory,
-        data_provider=avforms.data_provider.CollectionData
+        data_provider=tyko.data_provider.CollectionData
     ),
     "item": EntityComponent(
         factory=ItemFactory,
-        data_provider=avforms.data_provider.ItemData
+        data_provider=tyko.data_provider.ItemData
     ),
     "object": EntityComponent(
         factory=ObjectFactory,
-        data_provider=avforms.data_provider.ObjectData
+        data_provider=tyko.data_provider.ObjectData
     ),
 }

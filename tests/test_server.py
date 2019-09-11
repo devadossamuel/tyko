@@ -1,7 +1,7 @@
-import avforms
-from avforms import routes
-import avforms.database
-from avforms.database import init_database
+import tyko
+from tyko import routes
+import tyko.database
+from tyko.database import init_database
 import pytest
 import json
 from flask import Flask
@@ -34,7 +34,7 @@ TEMP_DATABASE = "sqlite:///:memory:"
 
 @pytest.mark.parametrize("route", static_page_routes)
 def test_static_pages(route):
-    app = avforms.create_app(TEMP_DATABASE)
+    app = tyko.create_app(TEMP_DATABASE)
     app.config["TESTING"] = True
     with app.test_client() as server:
         resp = server.get(route)
@@ -43,8 +43,8 @@ def test_static_pages(route):
 
 @pytest.mark.parametrize("route", dynamic_page_routes)
 def test_dynamic_pages(route):
-    app = Flask(__name__, template_folder="../avforms/templates")
-    avforms.create_app(TEMP_DATABASE, app, init_db=True)
+    app = Flask(__name__, template_folder="../tyko/templates")
+    tyko.create_app(TEMP_DATABASE, app, init_db=True)
     app.config["TESTING"] = True
     with app.test_client() as server:
         resp = server.get(route)
@@ -53,8 +53,8 @@ def test_dynamic_pages(route):
 
 @pytest.fixture(scope="module")
 def test_app():
-    app = Flask(__name__, template_folder="../avforms/templates")
-    avforms.create_app(TEMP_DATABASE, app, init_db=True)
+    app = Flask(__name__, template_folder="../tyko/templates")
+    tyko.create_app(TEMP_DATABASE, app, init_db=True)
     app.config["TESTING"] = True
     return app.test_client()
 
@@ -64,7 +64,7 @@ def test_api_formats(test_app):
     assert resp.status == "200 OK"
     tmp_data = json.loads(resp.data)
 
-    for k, v in avforms.scheme.format_types.items():
+    for k, v in tyko.scheme.format_types.items():
         for entry in tmp_data:
             if entry["name"] == k:
                 assert entry["id"] == v[0]
@@ -75,8 +75,8 @@ def test_api_formats(test_app):
 
 @pytest.mark.parametrize("route", api_routes)
 def test_api_routes(route):
-    app = Flask(__name__, template_folder="../avforms/templates")
-    avforms.create_app(TEMP_DATABASE, app, init_db=True)
+    app = Flask(__name__, template_folder="../tyko/templates")
+    tyko.create_app(TEMP_DATABASE, app, init_db=True)
     app.config["TESTING"] = True
     with app.test_client() as server:
         resp = server.get(route)
@@ -132,8 +132,8 @@ test_data_read = [
 @pytest.mark.parametrize("data_type,data_value", test_data_read)
 def test_create_and_read2(data_type, data_value):
 
-    app = Flask(__name__, template_folder="../avforms/templates")
-    avforms.create_app(TEMP_DATABASE, app, init_db=True)
+    app = Flask(__name__, template_folder="../tyko/templates")
+    tyko.create_app(TEMP_DATABASE, app, init_db=True)
     app.config["TESTING"] = True
     with app.test_client() as server:
         route ="/api/{}/".format(data_type)

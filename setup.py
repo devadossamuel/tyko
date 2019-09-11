@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='avforms',
+    name='tyko',
     version='0.0.1',
     url='https://github.com/UIUCLibrary/avdatabase',
     license='University of Illinois/NCSA Open Source License',
@@ -9,7 +9,7 @@ setup(
            'Champaign: Preservation Services',
     author_email='prescons@library.illinois.edu',
     description='Database for handling entering metadata for AV content',
-    packages=['avforms'],
+    packages=['tyko'],
     package_data={
         "": [
             "templates/*.html",
@@ -30,7 +30,7 @@ setup(
     python_requires='>3.7',
     entry_points={
         "console_scripts": [
-            "avdata=avforms.run:main"
+            "avdata=tyko.run:main"
         ]
     }
 )

@@ -4,7 +4,7 @@ from typing import Dict, Tuple, Any
 import sqlalchemy as db
 from sqlalchemy.orm.session import sessionmaker
 
-from avforms import scheme
+from tyko import scheme
 
 
 def init_database(engine) -> None:

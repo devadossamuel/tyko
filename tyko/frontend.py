@@ -1,7 +1,7 @@
 import abc
 
 from flask import make_response, render_template
-import avforms.data_provider
+import tyko.data_provider
 from typing import Tuple, Set
 from dataclasses import dataclass
 from .decorators import authenticate
@@ -34,7 +34,7 @@ class AbsFrontend(metaclass=abc.ABCMeta):
 class FrontendEntity(AbsFrontend):
     _entities: Set[Tuple[str, str]] = {("Formats", "page_formats")}
 
-    def __init__(self, provider: avforms.data_provider.DataProvider) -> None:
+    def __init__(self, provider: tyko.data_provider.DataProvider) -> None:
         self._data_provider = provider
 
         FrontendEntity._entities.add(

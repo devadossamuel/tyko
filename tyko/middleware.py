@@ -5,14 +5,14 @@ import json
 from flask import jsonify, make_response, abort, request, url_for
 from typing import Mapping
 
-import avforms.entities
-import avforms.data_provider
-from avforms.data_provider import DataProvider
+import tyko.entities
+import tyko.data_provider
+from tyko.data_provider import DataProvider
 
 
 class AbsMiddlwareEntity(metaclass=abc.ABCMeta):
     def __init__(self,
-                 data_provider: avforms.data_provider.DataProvider) -> None:
+                 data_provider: tyko.data_provider.DataProvider) -> None:
         self._data_provider = data_provider
 
     @abc.abstractmethod
@@ -37,9 +37,9 @@ class Middleware:
         self.data_provider = data_provider
 
         self.entities: Mapping[str, AbsMiddlwareEntity] = dict()
-        for entity in avforms.ENTITIES.keys():
+        for entity in tyko.ENTITIES.keys():
             self.entities[entity] = \
-                avforms.entities.load_entity(
+                tyko.entities.load_entity(
                     entity, self.data_provider).middleware()
 
     def get_formats(self, serialize=True):

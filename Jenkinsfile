@@ -360,7 +360,7 @@ foreach($file in $opengl32_libraries){
                                     catchError(buildResult: 'UNSTABLE', message: 'Did not pass all pytest tests', stageResult: 'UNSTABLE') {
                                         bat(
                                             label: "Run PyTest",
-                                            script: "coverage run --parallel-mode --branch --source=avforms,tests -m pytest --junitxml=${WORKSPACE}/reports/pytest/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest"
+                                            script: "coverage run --parallel-mode --branch --source=tyko,tests -m pytest --junitxml=${WORKSPACE}/reports/pytest/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest"
                                         )
                                     }
                                 }
@@ -419,7 +419,7 @@ foreach($file in $opengl32_libraries){
                                     catchError(buildResult: 'SUCCESS', message: 'MyPy found issues', stageResult: 'UNSTABLE') {
 
                                         bat(
-                                            script: "mypy -p avforms --cache-dir=${WORKSPACE}/mypy_cache --html-report ${WORKSPACE}\\reports\\mypy\\html > ${WORKSPACE}\\logs\\mypy.log && type ${WORKSPACE}\\logs\\mypy.log",
+                                            script: "mypy -p tyko --cache-dir=${WORKSPACE}/mypy_cache --html-report ${WORKSPACE}\\reports\\mypy\\html > ${WORKSPACE}\\logs\\mypy.log && type ${WORKSPACE}\\logs\\mypy.log",
                                             label: "Running MyPy"
                                             )
                                     }
@@ -439,7 +439,7 @@ foreach($file in $opengl32_libraries){
                                     catchError(buildResult: 'SUCCESS', message: 'Bandit found issues', stageResult: 'UNSTABLE') {
                                         bat(
                                             label: "Running bandit",
-                                            script: "bandit --format json --output ${WORKSPACE}/reports/bandit-report.json --recursive ${WORKSPACE}\\scm\\avforms || bandit -f html --recursive ${WORKSPACE}\\scm\\avforms --output ${WORKSPACE}/reports/bandit-report.html"
+                                            script: "bandit --format json --output ${WORKSPACE}/reports/bandit-report.json --recursive ${WORKSPACE}\\scm\\tyko || bandit -f html --recursive ${WORKSPACE}\\scm\\tyko --output ${WORKSPACE}/reports/bandit-report.html"
                                             )
                                     }
 
@@ -461,7 +461,7 @@ foreach($file in $opengl32_libraries){
                                     catchError(buildResult: 'SUCCESS', message: 'Flake8 found issues', stageResult: 'UNSTABLE') {
 
                                         bat(
-                                            script: "flake8 avforms --tee --output-file=${WORKSPACE}\\logs\\flake8.log",
+                                            script: "flake8 tyko --tee --output-file=${WORKSPACE}\\logs\\flake8.log",
                                             label: "Running Flake8"
                                         )
                                     }

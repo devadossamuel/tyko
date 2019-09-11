@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(avdatabase)
+project(tyko)
 find_package(Python3 COMPONENTS Interpreter)
 
 option(${PROJECT_NAME}_QT_CLIENT "Qt based desktop client" ON)

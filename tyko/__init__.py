@@ -1,4 +1,4 @@
-"""AVmetadata database control"""
+"""Tyko database control"""
 
 from .entities import entities as ENTITIES
 from .middleware import Middleware

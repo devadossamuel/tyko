@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, render_template
-import avforms
+import tyko
 
-from avforms.data_provider import DataProvider
+from tyko.data_provider import DataProvider
 from dataclasses import dataclass, field
 from typing import Any, List
 
@@ -38,21 +38,21 @@ class Routes:
     def __init__(self, db_engine: DataProvider, app) -> None:
         self.db_engine = db_engine
         self.app = app
-        self.mw = avforms.Middleware(self.db_engine)
+        self.mw = tyko.Middleware(self.db_engine)
         self.wr = WebsiteRoutes(self.mw)
 
     def init_api_routes(self) -> None:
         project = \
-            avforms.ENTITIES["project"].factory(self.db_engine).middleware()
+            tyko.ENTITIES["project"].factory(self.db_engine).middleware()
 
         collection = \
-            avforms.ENTITIES["collection"].factory(self.db_engine).middleware()
+            tyko.ENTITIES["collection"].factory(self.db_engine).middleware()
 
         item = \
-            avforms.ENTITIES["item"].factory(self.db_engine).middleware()
+            tyko.ENTITIES["item"].factory(self.db_engine).middleware()
 
         project_object = \
-            avforms.ENTITIES["object"].factory(self.db_engine).middleware()
+            tyko.ENTITIES["object"].factory(self.db_engine).middleware()
 
         if self.app:
             entities = [
@@ -141,7 +141,7 @@ class Routes:
                        ]:
 
             simple_pages.append(
-                avforms.ENTITIES[entity].factory(self.db_engine).web_frontend()
+                tyko.ENTITIES[entity].factory(self.db_engine).web_frontend()
             )
 
         entity_pages = [
@@ -183,7 +183,7 @@ class Routes:
 
                     self.app.add_url_rule(rule.rule, rule.method,
                                           rule.viewFunction)
-            for form_page in avforms.frontend.all_forms:
+            for form_page in tyko.frontend.all_forms:
                 all_forms.add((form_page.form_title, form_page.form_page_name))
                 self.app.add_url_rule(form_page.form_page_rule,
                                       form_page.form_page_name,
@@ -191,7 +191,7 @@ class Routes:
 
 
 class Routers:
-    def __init__(self, middleware: avforms.Middleware) -> None:
+    def __init__(self, middleware: tyko.Middleware) -> None:
         self.middleware = middleware
 
 

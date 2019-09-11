@@ -3,7 +3,7 @@ RUN apk add --no-cache gcc musl-dev linux-headers mariadb-client mariadb-dev lib
 #COPY requirements.txt .
 #COPY setup.py /app/
 #COPY setup.cfg /app/
-#COPY avforms /app/avforms
+#COPY tyko /app/tyko
 COPY dist/*.whl /dist/
 RUN python -m pip install pip --upgrade
 

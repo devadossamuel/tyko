@@ -1,5 +1,5 @@
-import avforms.database
-from avforms import scheme
+import tyko.database
+from tyko import scheme
 from datetime import date
 
 from pytest_bdd import scenario, given, then, when, parsers
@@ -52,7 +52,7 @@ def test_database_feature():
 @given("a blank database")
 def dummy_database():
     engine = create_engine("sqlite:///:memory:")
-    avforms.database.init_database(engine)
+    tyko.database.init_database(engine)
 
     dummy_session = sessionmaker(bind=engine)
     session = dummy_session()
