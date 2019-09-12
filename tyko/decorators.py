@@ -1,10 +1,12 @@
 from functools import wraps
 from flask import request
 from flask import make_response
+from flask import current_app as app
 
 
 def validate_users(username, password):
-    return username == "john" and password == "doe123"
+    return username == app.config['USERNAME'] and \
+           password == app.config['PASSWORD']
 
 
 def authenticate(func):
