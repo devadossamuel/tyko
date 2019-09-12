@@ -377,14 +377,21 @@ foreach($file in $opengl32_libraries){
                                     catchError(buildResult: 'SUCCESS', message: 'Pylint found issues', stageResult: 'UNSTABLE') {
                                         bat(
                                             script: 'pylint tyko  -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > %WORKSPACE%\\reports\\pylint.txt',
-                                            label: "Running pylint"
+                                            label: "Running pylint for SonarQube"
+                                        )
+                                    }
+                                    catchError(buildResult: 'SUCCESS', message: 'Pylint found issues', stageResult: 'UNSTABLE') {
+                                        bat(
+                                            script: 'pylint tyko  -r n --msg-template={path}:{module}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > %WORKSPACE%\\reports\\pylint_issues.txt',
+                                            label: "Running pylint for Jenkins Warnings"
                                         )
                                     }
                                 }
                             }
                             post{
                                 always{
-                                    archiveArtifacts allowEmptyArchive: true, artifacts: "reports\\pylint.txt"
+                                    archiveArtifacts allowEmptyArchive: true, artifacts: "reports/pylint.txt"
+                                    recordIssues(tools: [pyLint(pattern: 'reports/pylint_issues.txt')])
                                 }
                             }
                         }
