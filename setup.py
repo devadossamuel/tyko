@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='tyko',
-    version='0.0.1dev0',
+    version='0.0.1.dev0',
     url='https://github.com/UIUCLibrary/avdatabase',
     license='University of Illinois/NCSA Open Source License',
     author='University Library at The University of Illinois at Urbana '
