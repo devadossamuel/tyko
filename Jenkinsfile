@@ -340,8 +340,12 @@ foreach($file in $opengl32_libraries){
                                     archiveArtifacts "reports/bandit-report.json,reports/bandit-report.html"
                                 }
                                 unstable{
-                                    parseBanditReport("reports/bandit-report.html")
-                                    addWarningBadge text: "Bandit security issues detected", link: "${currentBuild.absoluteUrl}"
+                                    script{
+                                        if(fileExists('reports/bandit-report.html')){
+                                            parseBanditReport("reports/bandit-report.html")
+                                            addWarningBadge text: "Bandit security issues detected", link: "${currentBuild.absoluteUrl}"
+                                        }
+                                    }
                                 }
                             }
                         }
