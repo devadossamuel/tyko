@@ -1,3 +1,4 @@
+# pylint: disable=redefined-builtin
 import sqlalchemy
 from sqlalchemy import orm
 import abc

@@ -1,3 +1,5 @@
+# pylint: disable=redefined-builtin
+
 import abc
 import hashlib
 import json
