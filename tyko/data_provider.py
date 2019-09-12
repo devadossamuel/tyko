@@ -24,19 +24,19 @@ class AbsDataProvider(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def get(self, id=None, serialize=False):
-        pass
+        """Perform the get command"""
 
     @abc.abstractmethod
     def create(self, *args, **kwargs):
-        pass
+        """Create a new entity"""
 
     @abc.abstractmethod
     def update(self, id, changed_data):
-        pass
+        """Update an existing entity"""
 
     @abc.abstractmethod
     def delete(self, id):
-        pass
+        """Delete an existing entity"""
 
 
 class ProjectData(AbsDataProvider):
