@@ -18,7 +18,7 @@ class AbsMiddlwareEntity(metaclass=abc.ABCMeta):
         self._data_provider = data_provider
 
     @abc.abstractmethod
-    def get(self, serialize=False, *args, **kwargs):
+    def get(self, serialize=False, **kwargs):
         """Add a new entity"""
 
     @abc.abstractmethod
@@ -55,7 +55,7 @@ class Middleware:
 
 class ObjectMiddlwareEntity(AbsMiddlwareEntity):
 
-    def get(self, serialize=False, *args, **kwargs):
+    def get(self, serialize=False, **kwargs):
         if "id" in kwargs:
             return self.object_by_id(id=kwargs["id"])
 
@@ -111,7 +111,7 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
 
 class CollectionMiddlwareEntity(AbsMiddlwareEntity):
 
-    def get(self, serialize=False, *args, **kwargs):
+    def get(self, serialize=False, **kwargs):
         if "id" in kwargs:
             return self.collection_by_id(id=kwargs["id"])
 
@@ -172,7 +172,7 @@ class CollectionMiddlwareEntity(AbsMiddlwareEntity):
 
 class ProjectMiddlwareEntity(AbsMiddlwareEntity):
 
-    def get(self, serialize=False, *args, **kwargs):
+    def get(self, serialize=False, **kwargs):
         if "id" in kwargs:
             return self.get_project_by_id(kwargs["id"])
 
@@ -261,7 +261,7 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
 
 class ItemMiddlwareEntity(AbsMiddlwareEntity):
 
-    def get(self, serialize=False, *args, **kwargs):
+    def get(self, serialize=False, **kwargs):
         if "id" in kwargs:
             return self.item_by_id(kwargs["id"])
 
