@@ -160,6 +160,6 @@ def test_empty_database_error():
     # Creating a server without a validate database should raise a DataError
     # exception
 
-    with pytest.raises(data_provider.DataError):
+    with pytest.raises(tyko.exceptions.DataError):
         empty_data_provider = data_provider.DataProvider(TEMP_DATABASE)
         empty_data_provider.get_formats()

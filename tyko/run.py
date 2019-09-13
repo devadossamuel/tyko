@@ -1,6 +1,9 @@
 from flask import Flask, make_response
-from tyko import routes, database
-from tyko.data_provider import DataProvider, DataError
+
+from .exceptions import DataError
+from .data_provider import DataProvider
+from .database import init_database
+from .routes import Routes
 
 
 def create_app(db_src=None, app=None, init_db=False):
@@ -16,9 +19,9 @@ def create_app(db_src=None, app=None, init_db=False):
     app.register_error_handler(DataError, handle_error)
 
     data_provider = DataProvider(db_src)
-    app_routes = routes.Routes(data_provider, app)
+    app_routes = Routes(data_provider, app)
     if init_db:
-        database.init_database(data_provider.db_engine)
+        init_database(data_provider.db_engine)
 
     app_routes.init_api_routes()
     app_routes.init_website_routes()

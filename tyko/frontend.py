@@ -5,7 +5,7 @@ from typing import Tuple, Set
 from dataclasses import dataclass
 
 from flask import make_response, render_template
-import tyko.data_provider
+from . import data_provider
 from .decorators import authenticate
 
 
@@ -36,7 +36,7 @@ class AbsFrontend(metaclass=abc.ABCMeta):
 class FrontendEntity(AbsFrontend):
     _entities: Set[Tuple[str, str]] = {("Formats", "page_formats")}
 
-    def __init__(self, provider: tyko.data_provider.DataProvider) -> None:
+    def __init__(self, provider: data_provider.DataProvider) -> None:
         self._data_provider = provider
 
         FrontendEntity._entities.add(
@@ -76,8 +76,14 @@ class FrontendEntity(AbsFrontend):
 
 class ProjectFrontend(FrontendEntity):
 
+    def __init__(self, provider: data_provider.DataProvider) -> None:
+        super().__init__(provider)
+
+        self._data_connector = \
+            data_provider.ProjectDataConnector(provider.session)
+
     def list(self):
-        projects = self._data_provider.entities["project"].get(serialize=False)
+        projects = self._data_connector.get(serialize=False)
         return self._render_page(tempate="projects.html", projects=projects)
 
     @property
@@ -94,8 +100,14 @@ class ProjectFrontend(FrontendEntity):
 
 
 class ItemFrontend(FrontendEntity):
+    def __init__(self, provider: data_provider.DataProvider) -> None:
+        super().__init__(provider)
+
+        self._data_connector = \
+            data_provider.ItemDataConnector(provider.session)
+
     def list(self):
-        items = self._data_provider.entities['item'].get(serialize=False)
+        items = self._data_connector.get(serialize=False)
         return self._render_page(tempate="items.html", items=items)
 
     @property
@@ -112,8 +124,14 @@ class ItemFrontend(FrontendEntity):
 
 
 class ObjectFrontend(FrontendEntity):
+    def __init__(self, provider: data_provider.DataProvider) -> None:
+        super().__init__(provider)
+
+        self._data_connector = \
+            data_provider.ObjectDataConnector(provider.session)
+
     def list(self):
-        objects = self._data_provider.entities['object'].get(serialize=False)
+        objects = self._data_connector.get(serialize=False)
         return self._render_page(tempate="objects.html", objects=objects)
 
     @property
@@ -130,9 +148,14 @@ class ObjectFrontend(FrontendEntity):
 
 
 class CollectiontFrontend(FrontendEntity):
+    def __init__(self, provider: data_provider.DataProvider) -> None:
+        super().__init__(provider)
+
+        self._data_connector = \
+            data_provider.CollectionDataConnector(provider.session)
+
     def list(self):
-        collections = \
-            self._data_provider.entities["collection"].get(serialize=False)
+        collections = self._data_connector.get(serialize=False)
 
         return self._render_page(tempate="collections.html",
                                  collections=collections)
