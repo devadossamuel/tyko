@@ -3,9 +3,9 @@
 import abc
 import hashlib
 import json
+from typing import Mapping
 
 from flask import jsonify, make_response, abort, request, url_for
-from typing import Mapping
 
 import tyko.entities
 import tyko.data_provider

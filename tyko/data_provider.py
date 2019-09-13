@@ -1,7 +1,7 @@
 # pylint: disable=redefined-builtin, invalid-name
+import abc
 import sqlalchemy
 from sqlalchemy import orm
-import abc
 import tyko
 
 

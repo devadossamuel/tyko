@@ -1,11 +1,11 @@
 # pylint: disable=invalid-name
 
 import abc
+from typing import Tuple, Set
+from dataclasses import dataclass
 
 from flask import make_response, render_template
 import tyko.data_provider
-from typing import Tuple, Set
-from dataclasses import dataclass
 from .decorators import authenticate
 
 

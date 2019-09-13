@@ -1,11 +1,10 @@
 # pylint: disable=invalid-name, not-an-iterable
 
-from flask import Flask, jsonify, render_template
-import tyko
-
-from tyko.data_provider import DataProvider
 from dataclasses import dataclass, field
 from typing import Any, List
+from flask import Flask, jsonify, render_template
+import tyko
+from tyko.data_provider import DataProvider
 
 the_app = Flask(__name__)
 
