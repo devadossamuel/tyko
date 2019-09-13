@@ -40,7 +40,7 @@ class Routes:
         self.db_engine = db_engine
         self.app = app
         self.mw = tyko.Middleware(self.db_engine)
-        self.wr = WebsiteRoutes(self.mw)
+        self.wr = WebsiteRoutes()
 
     def init_api_routes(self) -> None:
         project = \
@@ -153,7 +153,8 @@ class Routes:
                     Route(
                         "/format",
                         "page_formats",
-                        self.wr.page_formats),
+                        lambda : page_formats(self.mw)
+                    ),
                 ]),
         ]
 
@@ -191,12 +192,7 @@ class Routes:
                                       form_page.create)
 
 
-class Routers:
-    def __init__(self, middleware: tyko.Middleware) -> None:
-        self.middleware = middleware
-
-
-class WebsiteRoutes(Routers):
+class WebsiteRoutes:
 
     @staticmethod
     def page_index():
@@ -212,17 +208,16 @@ class WebsiteRoutes(Routers):
                                all_forms=all_forms
                                )
 
-    def page_formats(self):
 
-        formats = self.middleware.get_formats(serialize=False)
-        return render_template(
-            "formats.html",
-            selected_menu_item="formats",
-            formats=formats,
-            entities=all_entities,
-            all_forms=all_forms
-        )
-
+def page_formats(middleware):
+    formats = middleware.get_formats(serialize=False)
+    return render_template(
+        "formats.html",
+        selected_menu_item="formats",
+        formats=formats,
+        entities=all_entities,
+        all_forms=all_forms
+    )
 
 def list_routes(app):
     results = []
