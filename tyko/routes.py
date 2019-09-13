@@ -72,7 +72,7 @@ class Routes:
                     Route("/api/project/<string:id>", "delete_project",
                           lambda id: project.delete(id=id),
                           methods=["DELETE"]),
-                  ]),
+                    ]),
                 APIEntity("Collection", rules=[
                     Route("/api/collection", "collection",
                           lambda serialize=True: collection.get(serialize)),
@@ -81,12 +81,12 @@ class Routes:
                     Route("/api/collection/", "add_collection",
                           collection.create,
                           methods=["POST"])
-                ]),
+                    ]),
                 APIEntity("Formats", rules=[
                     Route("/api/format", "formats",
                           self.mw.get_formats
                           )
-                ]),
+                    ]),
                 APIEntity("Item", rules=[
                     Route("/api/item", "item",
                           lambda serialize=True: item.get(serialize),
@@ -98,7 +98,7 @@ class Routes:
                           item.create,
                           methods=["POST"])
 
-                ]),
+                    ]),
                 APIEntity("Object", rules=[
                     Route("/api/object", "object",
                           lambda serialize=True: project_object.get(serialize),
@@ -109,7 +109,7 @@ class Routes:
                     Route("/api/object/", "add_object",
                           project_object.create,
                           methods=["POST"])
-                ])
+                    ])
 
             ]
 

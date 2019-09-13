@@ -204,13 +204,13 @@ class NewProjectForm(NewEntityForm):
             form_title="New Project",
             api_location="api/project/",
             form_fields=[
-                    FormField("text", "title", "Project Title", True),
-                    FormField("text", "project_code", "Project Code", False),
-                    FormField("text", "status", "Project Status", False),
-                    FormField("text", "current_location", "Current Location",
-                              False),
-                    FormField("text", "specs", "Specs", False),
-                ],
+                FormField("text", "title", "Project Title", True),
+                FormField("text", "project_code", "Project Code", False),
+                FormField("text", "status", "Project Status", False),
+                FormField("text", "current_location", "Current Location",
+                          False),
+                FormField("text", "specs", "Specs", False),
+            ],
         )
 
     @property

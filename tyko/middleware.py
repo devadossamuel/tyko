@@ -313,8 +313,10 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
             barcode=barcode,
             file_name=file_name
         )
-        return jsonify({
-            "id": new_item_id,
-            "url": url_for("item_by_id", id=new_item_id)
+
+        return jsonify(
+            {
+                "id": new_item_id,
+                "url": url_for("item_by_id", id=new_item_id)
             }
         )
