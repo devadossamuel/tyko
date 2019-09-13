@@ -25,10 +25,10 @@ def init_database(engine) -> None:
     session.commit()
     session.close()
 
-    if not(validate_tables(engine)):
+    if not validate_tables(engine):
         raise IOError("Newly created database is invalid")
 
-    if not(validate_enumerated_tables(engine)):
+    if not validate_enumerated_tables(engine):
         raise IOError("Table data has changed")
 
 
