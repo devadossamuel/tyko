@@ -1,4 +1,4 @@
-# pylint: disable=redefined-builtin
+# pylint: disable=redefined-builtin, invalid-name
 import sqlalchemy
 from sqlalchemy import orm
 import abc

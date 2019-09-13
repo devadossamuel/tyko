@@ -1,3 +1,5 @@
+# pylint: disable=invalid-name
+
 import abc
 
 from flask import make_response, render_template

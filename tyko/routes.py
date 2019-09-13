@@ -1,3 +1,5 @@
+# pylint: disable=invalid-name
+
 from flask import Flask, jsonify, render_template
 import tyko
 
