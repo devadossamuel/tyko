@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name, not-an-iterable
 
 from flask import Flask, jsonify, render_template
 import tyko
