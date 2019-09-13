@@ -1,6 +1,7 @@
 import tyko
-from tyko import routes
+from tyko import routes, data_provider
 import tyko.database
+import sqlalchemy
 from tyko.database import init_database
 import pytest
 import json
@@ -155,3 +156,10 @@ def test_create_and_read2(data_type, data_value):
         for k, v in data_value.items():
             assert data_object[k] == v
 
+def test_empty_database_error():
+    # Creating a server without a validate database should raise a DataError
+    # exception
+
+    with pytest.raises(data_provider.DataError):
+        empty_data_provider = data_provider.DataProvider(TEMP_DATABASE)
+        empty_data_provider.get_formats()
