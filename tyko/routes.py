@@ -153,7 +153,7 @@ class Routes:
                     Route(
                         "/format",
                         "page_formats",
-                        lambda : page_formats(self.mw)
+                        lambda: page_formats(self.mw)
                     ),
                 ]),
         ]
@@ -218,6 +218,7 @@ def page_formats(middleware):
         entities=all_entities,
         all_forms=all_forms
     )
+
 
 def list_routes(app):
     results = []
