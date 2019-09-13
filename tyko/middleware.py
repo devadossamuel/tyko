@@ -76,19 +76,20 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
             response.headers["ETag"] = str(hash_value)
             response.headers["Cache-Control"] = "private, max-age=300"
             return response
-        else:
-            result = objects
+
+        result = objects
         return result
 
     def object_by_id(self, id):
         current_object = \
             self._data_provider.entities['object'].get(id, serialize=True)
+
         if current_object:
             return jsonify({
                 "object": current_object
             })
-        else:
-            abort(404)
+
+        abort(404)
 
     def delete(self, id):
         """TODO"""
@@ -132,8 +133,8 @@ class CollectionMiddlwareEntity(AbsMiddlwareEntity):
             response.headers["ETag"] = str(hash_value)
             response.headers["Cache-Control"] = "private, max-age=300"
             return response
-        else:
-            result = collections
+
+        result = collections
         return result
 
     def collection_by_id(self, id):
@@ -144,8 +145,8 @@ class CollectionMiddlwareEntity(AbsMiddlwareEntity):
             return jsonify({
                 "collection": current_collection
             })
-        else:
-            abort(404)
+
+        abort(404)
 
     def delete(self, id):
         """TODO"""
@@ -192,8 +193,8 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
             response.headers["ETag"] = str(hash_value)
             response.headers["Cache-Control"] = "private, max-age=300"
             return response
-        else:
-            result = projects
+
+        result = projects
         return result
 
     def get_project_by_id(self, id):
@@ -206,14 +207,14 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
                     "project": current_project
                 }
             )
-        else:
-            abort(404)
+
+        abort(404)
 
     def delete(self, id):
         if self._data_provider.entities['project'].delete(id):
             return make_response("", 204)
-        else:
-            make_response("", 404)
+
+        return make_response("", 404)
 
     def update(self, id):
         new_project = {
@@ -228,10 +229,10 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
 
         if not updated_project:
             return make_response("", 204)
-        else:
-            return jsonify(
-                {"project": updated_project}
-            )
+
+        return jsonify(
+            {"project": updated_project}
+        )
 
     def create(self):
         project_code = request.form.get('project_code')
@@ -281,8 +282,7 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
             response.headers["Cache-Control"] = "private, max-age=300"
             return response
 
-        else:
-            result = items
+        result = items
         return result
 
     def item_by_id(self, id):
@@ -295,8 +295,8 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
                     "item": current_item
                 }
             )
-        else:
-            abort(404)
+
+        abort(404)
 
     def delete(self, id):
         pass

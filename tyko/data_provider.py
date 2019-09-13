@@ -50,10 +50,11 @@ class ProjectData(AbsDataProvider):
 
         else:
             all_projects = self._session.query(tyko.scheme.Project).all()
+
         if serialize:
             return [project.serialize() for project in all_projects]
-        else:
-            return all_projects
+
+        return all_projects
 
     def create(self, *args, **kwargs):
         title = kwargs["title"]
@@ -83,8 +84,8 @@ class ProjectData(AbsDataProvider):
 
         if len(projects) != 1:
             return updated_project
-        else:
-            project = projects[0]
+
+        project = projects[0]
 
         if project:
             project.title = changed_data['title']
@@ -123,8 +124,8 @@ class ObjectData(AbsDataProvider):
                 collection_object.serialize()
                 for collection_object in all_collection_object
             ]
-        else:
-            return all_collection_object
+
+        return all_collection_object
 
     def create(self, *args, **kwargs):
         # TODO!
@@ -163,8 +164,8 @@ class ItemData(AbsDataProvider):
                 collection_item.serialize()
                 for collection_item in all_collection_item
             ]
-        else:
-            return all_collection_item
+
+        return all_collection_item
 
     def create(self, *args, **kwargs):
         name = kwargs["name"]
@@ -202,8 +203,8 @@ class CollectionData(AbsDataProvider):
 
         if serialize:
             return [collection.serialize() for collection in all_collections]
-        else:
-            return all_collections
+
+        return all_collections
 
     def create(self, *args, **kwargs):
         collection_name = kwargs.get("collection_name")
@@ -253,5 +254,5 @@ class DataProvider:
 
         if serialize:
             return [format_.serialize() for format_ in all_formats]
-        else:
-            return all_formats
+
+        return all_formats
