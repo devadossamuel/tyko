@@ -99,7 +99,7 @@ class ProjectData(AbsDataProvider):
     def delete(self, id):
         if id:
             items_deleted = \
-                self.session.query(tyko.scheme.Project)\
+                self._session.query(tyko.scheme.Project)\
                     .filter(tyko.scheme.Project.id == id)\
                     .delete()
             return items_deleted > 0
