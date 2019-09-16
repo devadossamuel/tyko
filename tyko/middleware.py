@@ -81,7 +81,7 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
                 "object": current_object
             })
 
-        abort(404)
+        return abort(404)
 
     def delete(self, id):
         """TODO"""
@@ -141,7 +141,7 @@ class CollectionMiddlwareEntity(AbsMiddlwareEntity):
                 "collection": current_collection
             })
 
-        abort(404)
+        return abort(404)
 
     def delete(self, id):
         """TODO"""
@@ -205,7 +205,7 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
                 }
             )
 
-        abort(404)
+        return abort(404)
 
     def delete(self, id):
         if self._data_connector.delete(id):
@@ -295,7 +295,7 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
                 }
             )
 
-        abort(404)
+        return abort(404)
 
     def delete(self, id):
         pass
