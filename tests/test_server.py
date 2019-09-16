@@ -163,3 +163,22 @@ def test_empty_database_error():
     with pytest.raises(tyko.exceptions.DataError):
         empty_data_provider = data_provider.DataProvider(TEMP_DATABASE)
         empty_data_provider.get_formats()
+
+def test_get_object_pbcore():
+    app = Flask(__name__, template_folder="../tyko/templates")
+    tyko.create_app(TEMP_DATABASE, app, init_db=True)
+    app.config["TESTING"] = True
+    with app.test_client() as server:
+        create_resp = server.post(
+            "/api/object/", data={
+                "name": "my stupid object"
+            }
+        )
+
+        assert create_resp.status == "200 OK", "Failed to create a new entity with {}".format(route)
+
+        new_id = json.loads(create_resp.data)["id"]
+        assert new_id is not None
+
+        pbcore_req_res = server.get("/api/object/{}-pbcore.xml".format(new_id))
+        assert pbcore_req_res.status == "200 OK", "Failed create a PBCore record for id {}".format(new_id)

@@ -131,7 +131,12 @@ class ObjectFrontend(FrontendEntity):
             data_provider.ObjectDataConnector(provider.session)
 
     def list(self):
+        # objects = []
         objects = self._data_connector.get(serialize=False)
+        # for o in  self._data_connector.get(serialize=False):
+        #     objects.append(o)
+
+        # objects["pbcore_route"] = "/api/object/{}-pbcore.xml".format(object)
         return self._render_page(tempate="objects.html", objects=objects)
 
     @property

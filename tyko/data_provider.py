@@ -99,14 +99,17 @@ class ProjectDataConnector(AbsDataProviderConnector):
 class ObjectDataConnector(AbsDataProviderConnector):
 
     def get(self, id=None, serialize=False):
-        if id:
-            all_collection_object = \
-                self._session.query(scheme.CollectionObject) \
-                    .filter(scheme.CollectionObject.id == id) \
-                    .all()
-        else:
-            all_collection_object = \
-                self._session.query(scheme.CollectionObject).all()
+        try:
+            if id is not None:
+                all_collection_object = \
+                    self._session.query(scheme.CollectionObject) \
+                        .filter(scheme.CollectionObject.id == id) \
+                        .all()
+            else:
+                all_collection_object = \
+                    self._session.query(scheme.CollectionObject).all()
+        except sqlalchemy.exc.DatabaseError as e:
+            raise DataError("Unable to find object: {}".format(e))
 
         if serialize:
             return [

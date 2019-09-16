@@ -9,7 +9,11 @@ setup(
            'Champaign: Preservation Services',
     author_email='prescons@library.illinois.edu',
     description='Database for handling entering metadata for AV content',
-    packages=['tyko'],
+    packages=[
+        'tyko',
+        'tyko.pbcore',
+        'tyko.pbcore.templates',
+    ],
     package_data={
         "": [
             "templates/*.html",
@@ -17,7 +21,9 @@ setup(
             "static/css/*.css.map",
             "static/js/*.js",
             "static/js/*.js.map",
-
+        ],
+        "tyko.pbcore.templates":[
+            "*.xml"
         ]
     },
     setup_requires=["pytest-runner"],
@@ -25,7 +31,9 @@ setup(
     install_requires=[
         "sqlalchemy",
         # "mysqlclient",
-        "flask"
+        "flask",
+        "lxml",
+        "Jinja2"
         ],
     python_requires='>3.7',
     entry_points={

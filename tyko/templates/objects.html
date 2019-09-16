@@ -9,11 +9,13 @@
                 <tr>
                     <th>ID</th>
                     <th>Name</th>
+                    <th>Metadata</th>
                 </tr>
                 {% for object in objects %}
                     <tr>
                         <td>{{object['id']}}</td>
                         <td>{{object['name']}}</td>
+                        <td><a href="{{ url_for('.page_index')}}api/object/{{object['id']}}-pbcore.xml">PBCore record</a> </td>
                     </tr>
                 {% endfor %}
             </table>

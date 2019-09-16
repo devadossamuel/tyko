@@ -6,6 +6,7 @@ import json
 
 from flask import jsonify, make_response, abort, request, url_for
 from . import data_provider as dp
+from . import pbcore
 
 
 class AbsMiddlwareEntity(metaclass=abc.ABCMeta):
@@ -74,6 +75,7 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
         return result
 
     def object_by_id(self, id):
+
         current_object = self._data_connector.get(id, serialize=True)
 
         if current_object:
@@ -82,6 +84,14 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
             })
 
         return abort(404)
+
+    def pbcore(self, id):
+        xml = pbcore.create_pbcore_from_object(
+            object_id=id,
+            data_provider=self._data_provider)
+        return xml
+        # self._data_provider
+        # return jsonify({})
 
     def delete(self, id):
         """TODO"""

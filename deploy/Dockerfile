@@ -1,5 +1,5 @@
 FROM python:3.7-alpine
-RUN apk add --no-cache gcc musl-dev linux-headers mariadb-client mariadb-dev libressl-dev
+RUN apk add --no-cache gcc musl-dev linux-headers mariadb-client mariadb-dev libressl-dev libxml2-dev libxslt-dev
 ARG TYKO_USERNAME
 ARG TYKO_PASSWORD
 ARG DB_URI=sqlite:///:memory:

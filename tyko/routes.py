@@ -105,6 +105,10 @@ class Routes:
                           ),
                     Route("/api/object/<string:id>", "object_by_id",
                           lambda id: project_object.get(id=id)),
+                    Route("/api/object/<string:id>-pbcore.xml",
+                          "object_pbcore",
+                          lambda id: project_object.pbcore(id=id)
+                          ),
                     Route("/api/object/", "add_object",
                           project_object.create,
                           methods=["POST"])
