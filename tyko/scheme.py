@@ -21,6 +21,13 @@ object_has_notes_table = db.Table(
     db.Column("object_id", db.Integer, db.ForeignKey("notes.note_id"))
 )
 
+project_has_notes_table = db.Table(
+    "project_has_notes",
+    AVTables.metadata,
+    db.Column("notes_id", db.Integer, db.ForeignKey("project.project_id")),
+    db.Column("project_id", db.Integer, db.ForeignKey("notes.note_id"))
+)
+
 
 class Contact(AVTables):
     __tablename__ = "contact"
@@ -43,19 +50,29 @@ class Project(AVTables):
         primary_key=True,
         autoincrement=True)
 
+
     project_code = db.Column("project_code", db.Text)
     title = db.Column("title", db.Text)
     current_location = db.Column("current_location", db.Text)
     status = db.Column("status", db.Text)
     specs = db.Column("specs", db.Text)
 
+    notes = relationship("Note",
+                 secondary=project_has_notes_table,
+                 backref="project_sources"
+                 )
+
     def serialize(self):
+        notes = []
+        for note in self.notes:
+            notes.append(note.serialize())
         return {
             "id": self.id,
             "project_code": self.project_code,
             "current_location": self.current_location,
             "status": self.status,
-            "title": self.title
+            "title": self.title,
+            "notes": notes
         }
 
 
@@ -178,6 +195,12 @@ class Note(AVTables):
 
     note_type = relationship("NoteTypes", foreign_keys=[note_type_id])
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "text": self.text,
+            "type": self.note_type_id
+        }
 
 class NoteTypes(AVTables):
     __tablename__ = "note_types"
