@@ -213,8 +213,8 @@ class WebsiteRoutes:
                                )
 
 
-def page_formats(middleware):
-    formats = middleware.get_formats(serialize=False)
+def page_formats(middleware_source):
+    formats = middleware_source.get_formats(serialize=False)
     return render_template(
         "formats.html",
         selected_menu_item="formats",
