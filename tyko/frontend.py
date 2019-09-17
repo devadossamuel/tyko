@@ -29,7 +29,7 @@ class AbsFrontend(metaclass=abc.ABCMeta):
         context["all_forms"] = sorted(form_list)
 
     @abc.abstractmethod
-    def _render_page(self, tempate, **context):
+    def _render_page(self, template, **context):
         pass
 
 
@@ -46,13 +46,13 @@ class FrontendEntity(AbsFrontend):
     def list(self):
         return make_response("not implimented", 404)
 
-    def _render_page(self, tempate, **context):
+    def _render_page(self, template="newentity.html", **context):
         self.build_header_context(
             current_item=self.entity_title,
             context=context
         )
 
-        return render_template(tempate, **context)
+        return render_template(template, **context)
 
     @property
     @abc.abstractmethod
@@ -84,7 +84,7 @@ class ProjectFrontend(FrontendEntity):
 
     def list(self):
         projects = self._data_connector.get(serialize=False)
-        return self._render_page(tempate="projects.html", projects=projects)
+        return self._render_page(template="projects.html", projects=projects)
 
     @property
     def entity_title(self) -> str:
@@ -108,7 +108,7 @@ class ItemFrontend(FrontendEntity):
 
     def list(self):
         items = self._data_connector.get(serialize=False)
-        return self._render_page(tempate="items.html", items=items)
+        return self._render_page(template="items.html", items=items)
 
     @property
     def entity_title(self) -> str:
@@ -132,7 +132,7 @@ class ObjectFrontend(FrontendEntity):
 
     def list(self):
         objects = self._data_connector.get(serialize=False)
-        return self._render_page(tempate="objects.html", objects=objects)
+        return self._render_page(template="objects.html", objects=objects)
 
     @property
     def entity_title(self) -> str:
@@ -157,7 +157,7 @@ class CollectiontFrontend(FrontendEntity):
     def list(self):
         collections = self._data_connector.get(serialize=False)
 
-        return self._render_page(tempate="collections.html",
+        return self._render_page(template="collections.html",
                                  collections=collections)
 
     @property
@@ -200,12 +200,12 @@ class NewEntityForm(AbsFrontend):
         )
 
     @authenticate
-    def _render_page(self, **context):
+    def _render_page(self, template="newentity.html", **context):
         self.build_header_context(
             current_item=self.form_title,
             context=context
         )
-        return render_template("newentity.html", **context)
+        return render_template(template, **context)
 
     @abc.abstractmethod
     def create(self):
