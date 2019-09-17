@@ -54,6 +54,14 @@ class Contact(AVTables):
     last_name = db.Column("last_name", db.Text)
     email_address = db.Column("email_address", db.Text)
 
+    def serialize(self) -> dict:
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email_address": self.email_address
+        }
+
 
 class Project(AVTables):
     __tablename__ = "project"
@@ -358,6 +366,19 @@ class Vendor(AVTables):
                             secondary=vendor_has_contacts_table,
                             backref="vendor_id"
                             )
+
+    def serialize(self) -> dict:
+        contacts = [contact.serialize() for contact in self.contacts]
+        return {
+            "id": self.id,
+            "name": self.name,
+            "address": self.address,
+            "city": self.city,
+            "state": self.state,
+            "zipcode": self.zipcode,
+            "contacts": contacts,
+
+        }
 
 
 vendor_transfer_has_an_object = db.Table(
