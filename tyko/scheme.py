@@ -1,10 +1,22 @@
 # pylint: disable=too-few-public-methods, invalid-name
+import abc
 
 import sqlalchemy as db
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from sqlalchemy.orm import relationship
 
-AVTables = declarative_base()
+
+class DeclarativeABCMeta(DeclarativeMeta, abc.ABCMeta):
+    pass
+
+
+class AVTables(declarative_base(metaclass=DeclarativeABCMeta)):
+    __abstract__ = True
+
+    def serialize(self) -> dict:  # pylint: disable=no-self-use
+        """Serialize the data so that it can be turned into a JSON format"""
+        return {}
+
 
 item_has_notes_table = db.Table(
     "item_has_notes",
@@ -31,11 +43,13 @@ project_has_notes_table = db.Table(
 
 class Contact(AVTables):
     __tablename__ = "contact"
+
     id = db.Column(
         "contact_id",
         db.Integer,
         primary_key=True,
         autoincrement=True)
+
     first_name = db.Column("first_name", db.Text)
     last_name = db.Column("last_name", db.Text)
     email_address = db.Column("email_address", db.Text)
@@ -50,22 +64,21 @@ class Project(AVTables):
         primary_key=True,
         autoincrement=True)
 
-
     project_code = db.Column("project_code", db.Text)
     title = db.Column("title", db.Text)
     current_location = db.Column("current_location", db.Text)
     status = db.Column("status", db.Text)
     specs = db.Column("specs", db.Text)
 
-    notes = relationship("Note",
-                 secondary=project_has_notes_table,
-                 backref="project_sources"
-                 )
+    notes = relationship(
+        "Note",
+        secondary=project_has_notes_table,
+        backref="project_sources"
+    )
 
     def serialize(self):
-        notes = []
-        for note in self.notes:
-            notes.append(note.serialize())
+        notes = [note.serialize() for note in self.notes]
+
         return {
             "id": self.id,
             "project_code": self.project_code,
@@ -134,13 +147,15 @@ class CollectionObject(AVTables):
     contact = relationship("Contact", foreign_keys=[contact_id])
 
     def serialize(self):
+        notes = [note.serialize() for note in self.notes]
         return {
             "id": self.id,
             "name": self.name,
             "collection_id": self.collection_id,
             "project_id": self.project_id,
             "last_updated_id": self.last_updated_id,
-            "contact_id": self.contact_id
+            "contact_id": self.contact_id,
+            "notes": notes
         }
 
 
@@ -176,11 +191,13 @@ class CollectionItem(AVTables):
     format_type = relationship("FormatTypes", foreign_keys=[format_type_id])
 
     def serialize(self):
+        notes = [note.serialize() for note in self.notes]
         return {
             "id": self.id,
             "name": self.name,
             "barcode": self.barcode,
-            "file_name": self.file_name
+            "file_name": self.file_name,
+            "notes": notes
         }
 
 
@@ -201,6 +218,7 @@ class Note(AVTables):
             "text": self.text,
             "type": self.note_type_id
         }
+
 
 class NoteTypes(AVTables):
     __tablename__ = "note_types"
