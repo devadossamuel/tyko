@@ -4,10 +4,12 @@ ARG TYKO_USERNAME
 ARG TYKO_PASSWORD
 ARG DB_URI=sqlite:///:memory:
 
-COPY dist/*.whl /dist/
 RUN python -m pip install pip --upgrade
-RUN pip install gunicorn mysqlclient && \
-    pip install dist/tyko-*.whl
+RUN pip install gunicorn mysqlclient lxml
+
+COPY dist/*.whl /dist/
+RUN pip install dist/tyko-*.whl
+
 WORKDIR /app
 VOLUME /database
 
