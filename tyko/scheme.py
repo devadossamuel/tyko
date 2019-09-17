@@ -171,7 +171,7 @@ class Note(AVTables):
     __tablename__ = "notes"
 
     id = db.Column("note_id", db.Integer, primary_key=True, autoincrement=True)
-    text = db.Column("text", db.Text)
+    text = db.Column("text", db.Text, nullable=False)
 
     note_type_id = db.Column(
         db.Integer, db.ForeignKey("note_types.note_types_id"))
