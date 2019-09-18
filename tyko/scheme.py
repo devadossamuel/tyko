@@ -139,10 +139,6 @@ class CollectionObject(AVTables):
     project_id = db.Column(db.Integer, db.ForeignKey("project.project_id"))
     project = relationship("Project", foreign_keys=[project_id])
 
-    # last_updated_id = \
-    #     db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
-    # last_updated = relationship("Contact", foreign_keys=[last_updated_id])
-
     notes = relationship("Note",
                          secondary=object_has_notes_table,
                          backref="object_sources"
