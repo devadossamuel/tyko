@@ -46,7 +46,7 @@ class FrontendEntity(AbsFrontend):
 
     def list(self):
         return make_response(
-            "{}.list not implimented".format(self.__class__), 404)
+            "{}.list not implemented".format(self.__class__), 404)
 
     def render_page(self, template="newentity.html", **context):
         self.build_header_context(
