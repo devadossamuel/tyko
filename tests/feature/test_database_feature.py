@@ -161,8 +161,8 @@ def create_new_object(dummy_database, new_collection, new_project):
         collection=new_collection,
         project=new_project,
         barcode=SAMPLE_BAR_CODE,
-        original_rec_date=SAMPLE_DATE,
-        original_return_date=SAMPLE_DATE,
+        originals_rec_date=SAMPLE_DATE,
+        originals_return_date=SAMPLE_DATE,
     )
     return new_object
 
