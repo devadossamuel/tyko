@@ -122,9 +122,15 @@ class ObjectDataConnector(AbsDataProviderConnector):
     def create(self, *args, **kwargs):
         # TODO!
         name = kwargs["name"]
+
         new_object = scheme.CollectionObject(
             name=name,
         )
+
+        barcode = kwargs.get("barcode")
+        if barcode is not None:
+            new_object.barcode = barcode
+
         self._session.add(new_object)
         self._session.commit()
 
@@ -161,11 +167,9 @@ class ItemDataConnector(AbsDataProviderConnector):
 
     def create(self, *args, **kwargs):
         name = kwargs["name"]
-        barcode = kwargs.get("barcode")
         file_name = kwargs.get("file_name")
         new_item = scheme.CollectionItem(
             name=name,
-            barcode=barcode,
             file_name=file_name
         )
         self._session.add(new_item)

@@ -130,7 +130,7 @@ class CollectionObject(AVTables):
         autoincrement=True)
 
     name = db.Column("name", db.Text)
-
+    barcode = db.Column("barcode", db.Text)
     collection_id = \
         db.Column(db.Integer, db.ForeignKey("collection.collection_id"))
 
@@ -156,6 +156,7 @@ class CollectionObject(AVTables):
             "id": self.id,
             "name": self.name,
             "collection_id": self.collection_id,
+            "barcode": self.barcode,
             "project_id": self.project_id,
             "contact_id": self.contact_id,
             "notes": notes
@@ -168,7 +169,7 @@ class CollectionItem(AVTables):
     id = db.Column("item_id", db.Integer, primary_key=True, autoincrement=True)
 
     name = db.Column("name", db.Text)
-    barcode = db.Column("barcode", db.Text)
+    #
     file_name = db.Column("file_name", db.Text)
     medusa_uuid = db.Column("medusa_uuid", db.Text)
     original_rec_date = db.Column("original_rec_date", db.Date)
@@ -198,7 +199,6 @@ class CollectionItem(AVTables):
         return {
             "id": self.id,
             "name": self.name,
-            "barcode": self.barcode,
             "file_name": self.file_name,
             "notes": notes
         }
@@ -416,7 +416,6 @@ class VendorTransfer(AVTables):
     returned_originals_rec_date = \
         db.Column("returned_originals_rec_date", db.Date)
 
-
     transfer_objects = relationship(
         "CollectionObject",
         secondary=vendor_transfer_has_an_object,
@@ -429,7 +428,6 @@ class VendorTransfer(AVTables):
             "vendor_deliverables_rec_date": self.vendor_deliverables_rec_date,
             "returned_originals_rec_date": self.returned_originals_rec_date
         }
-
 
 
 # =============================================================================

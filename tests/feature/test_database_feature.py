@@ -153,27 +153,16 @@ def add_new_object(dummy_database, create_new_object):
     return dummy_database
 
 
-@given(parsers.parse("a new object for the collection "
-                     "created by {staff_first_name} {staff_last_name}"))
+@given(parsers.parse("a new object for the collection with a barcode"))
 def create_new_object(dummy_database, new_collection, new_project,
                       staff_first_name, staff_last_name):
 
-    all_contacts = dummy_database.query(scheme.Contact)
-
-    staff_contact = \
-        all_contacts.filter(
-            scheme.Contact.last_name == staff_last_name,
-            scheme.Contact.first_name == staff_first_name
-        ).one()
-
-    assert staff_contact.last_name == staff_last_name
-    assert staff_contact.first_name == staff_first_name
 
     new_object = scheme.CollectionObject(
         name=SAMPLE_OBJECT_NAME,
         collection=new_collection,
         project=new_project,
-        # last_updated=staff_contact,
+        barcode=SAMPLE_BAR_CODE,
     )
     return new_object
 
@@ -243,7 +232,6 @@ def new_item(dummy_database, new_collection, new_project, staff_contact,
 
     collection_item = scheme.CollectionItem(
         name=SAMPLE_ITEM_NAME,
-        barcode=SAMPLE_BAR_CODE,
         file_name=SAMPLE_FILE,
         medusa_uuid=SAMPLE_MEDUSA_ID,
         original_rec_date=SAMPLE_DATE,
@@ -264,10 +252,10 @@ def add_item(dummy_database, new_item):
     return dummy_database
 
 
-@then("the new item record contains the correct barcode")
-def item_has_correct_barcode(dummy_database):
-    new_added_item = dummy_database.query(scheme.CollectionItem).first()
-    assert new_added_item.barcode == SAMPLE_BAR_CODE
+@then("the new object record contains the correct barcode")
+def object_has_correct_barcode(dummy_database):
+    new_added_object = dummy_database.query(scheme.CollectionObject).first()
+    assert new_added_object.barcode == SAMPLE_BAR_CODE
 
 
 @scenario("database.feature", "Create a new inspection note for item")
@@ -318,23 +306,6 @@ def test_project_node():
     pass
 
 
-# @then(parsers.parse("the CollectionObject record was last updated "
-#                     "by {staff_first_name} {staff_last_name}"))
-# def object_updated_by_staff(dummy_database, staff_first_name, staff_last_name):
-#     all_contacts = dummy_database.query(scheme.Contact)
-#
-#     staff_contact = \
-#         all_contacts.filter(
-#             scheme.Contact.last_name == staff_last_name,
-#             scheme.Contact.first_name == staff_first_name
-#         ).one()
-#
-#     assert staff_contact.last_name == staff_last_name
-#     assert staff_contact.first_name == staff_first_name
-#
-#     collection_object = dummy_database.query(scheme.CollectionObject).first()
-#     assert collection_object.last_updated.last_name == staff_last_name
-#     assert collection_object.last_updated.first_name == staff_first_name
 
 
 @scenario("database.feature", "Item is sent for treatment")
@@ -393,7 +364,6 @@ def add_new_item_to_object(dummy_database, create_new_object, media_type,
 
     new_item = scheme.CollectionItem(
         name=SAMPLE_ITEM_NAME,
-        barcode=SAMPLE_BAR_CODE,
         file_name=file_name,
         medusa_uuid=SAMPLE_MEDUSA_ID,
         original_rec_date=SAMPLE_DATE,

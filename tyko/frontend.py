@@ -288,7 +288,6 @@ class NewItemForm(NewEntityForm):
             api_location="api/item/",
             form_fields=[
                 FormField("text", "name", "Name", True),
-                FormField("text", "barcode", "Barcode", True),
                 FormField("text", "file_name", "File name", True),
             ]
         )
@@ -314,6 +313,7 @@ class NewObjectForm(NewEntityForm):
             api_location="api/object/",
             form_fields=[
                 FormField("text", "name", "Name", True),
+                FormField("text", "barcode", "Barcode", True),
             ]
         )
 

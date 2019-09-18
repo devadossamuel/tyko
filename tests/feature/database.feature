@@ -26,29 +26,30 @@ Feature: database
   Scenario: Create a new object
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new object for the collection created by Henry Borchers
+    And a new object for the collection with a barcode
     When a object is added to the collection
     Then the database has 1 Project records
     And the database has 2 Contact records
     And the database has 1 Collection records
     And the database has 1 CollectionObject records
+    And the new object record contains the correct barcode
 
   Scenario: Create a new item
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new object for the collection created by Henry Borchers
+    And a new object for the collection with a barcode
     And a new audio video item is created by the staff
     When the item is added to the object
     Then the database has 1 Project records
     And the database has 1 Collection records
     And the database has 1 CollectionObject records
     And the database has 1 CollectionItem records
-    And the new item record contains the correct barcode
+
 
   Scenario: Create a new inspection note for item
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new object for the collection created by Henry Borchers
+    And a new object for the collection with a barcode
     And a new audio video item is created by the staff
     And a new Inspection note is created
     When the item is added to the object
@@ -59,7 +60,7 @@ Feature: database
   Scenario: Create a new inspection note for project
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new object for the collection created by Henry Borchers
+    And a new object for the collection with a barcode
     And a new audio video item is created by the staff
     And a new Inspection note is created
     When the item is added to the object
@@ -70,7 +71,7 @@ Feature: database
   Scenario: Create a new inspection note for CollectionObject
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new object for the collection created by Henry Borchers
+    And a new object for the collection with a barcode
     And a new audio video item is created by the staff
     And a new Inspection note is created
     When the item is added to the object
@@ -81,7 +82,7 @@ Feature: database
   Scenario: Item is sent for treatment
     Given a database with a collection
     And a staff contact named Henry Borchers
-    And a new object for the collection created by Henry Borchers
+    And a new object for the collection with a barcode
     And a new audio video item is created by the staff
     And a new treatment record is created that needs "X, Y, Z treatment" and got "Y treatment only"
     When the new treatment record is added to the item
@@ -94,7 +95,7 @@ Feature: database
   Scenario Outline: Create a new media project
     Given a database with a collection
     And a staff contact named <first_name> <last_name>
-    And a new object for the collection created by <first_name> <last_name>
+    And a new object for the collection with a barcode
     And a new <media_type> item with <file_name> added to the object
     Then the database has 1 CollectionItem records
     And the database has 1 CollectionObject records
@@ -112,7 +113,7 @@ Feature: database
   Scenario Outline: Create a open reel project
     Given a database with a collection
     And a staff contact named <first_name> <last_name>
-    And a new object for the collection created by <first_name> <last_name>
+    And a new object for the collection with a barcode
     When a new open reel item recorded on <date_recorded> to <tape_size> tape on a <base> base with <file_name> added to the object
     Then the database has 1 CollectionItem records
     And the database has 1 CollectionObject records
@@ -153,7 +154,7 @@ Feature: database
   Scenario Outline: Send an object to a vendor
     Given an empty database
     And a staff contact named <staff_first_name> <staff_last_name>
-    And a new object for the collection created by <staff_first_name> <staff_last_name>
+    And a new object for the collection with a barcode
     When a new vendor named <vendor_name> from <address> in <city>, <state> <zipcode> is added
     And the object is sent to the vendor <vendor_name>
     Then the database has 1 VendorTransfer records
