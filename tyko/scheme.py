@@ -21,23 +21,23 @@ class AVTables(declarative_base(metaclass=DeclarativeABCMeta)):
 item_has_notes_table = db.Table(
     "item_has_notes",
     AVTables.metadata,
-    db.Column("notes_id", db.Integer, db.ForeignKey("item.item_id")),
-    db.Column("item_id", db.Integer, db.ForeignKey("notes.note_id"))
+    db.Column("notes_id", db.Integer, db.ForeignKey("notes.note_id")),
+    db.Column("item_id", db.Integer, db.ForeignKey("item.item_id"))
 )
 
 
 object_has_notes_table = db.Table(
     "object_has_notes",
     AVTables.metadata,
-    db.Column("notes_id", db.Integer, db.ForeignKey("object.object_id")),
-    db.Column("object_id", db.Integer, db.ForeignKey("notes.note_id"))
+    db.Column("notes_id", db.Integer, db.ForeignKey("notes.note_id")),
+    db.Column("object_id", db.Integer, db.ForeignKey("object.object_id"))
 )
 
 project_has_notes_table = db.Table(
     "project_has_notes",
     AVTables.metadata,
-    db.Column("notes_id", db.Integer, db.ForeignKey("project.project_id")),
-    db.Column("project_id", db.Integer, db.ForeignKey("notes.note_id"))
+    db.Column("notes_id", db.Integer, db.ForeignKey("notes.note_id")),
+    db.Column("project_id", db.Integer, db.ForeignKey("project.project_id"))
 )
 
 
@@ -344,10 +344,17 @@ class AudioVideo(AVTables):
 
 
 vendor_has_contacts_table = db.Table(
+    "vendor_has_contacts",
+    AVTables.metadata,
+    db.Column("contact_id", db.Integer, db.ForeignKey("contact.contact_id")),
+    db.Column("vendor_id", db.Integer, db.ForeignKey("vendor.vendor_id"))
+)
+
+item_has_contacts_table = db.Table(
     "item_has_contacts",
     AVTables.metadata,
-    db.Column("contact_id", db.Integer, db.ForeignKey("vendor.vendor_id")),
-    db.Column("vendor_id", db.Integer, db.ForeignKey("contact.contact_id"))
+    db.Column("contact_id", db.Integer, db.ForeignKey("item.item_id")),
+    db.Column("item_id", db.Integer, db.ForeignKey("contact.contact_id"))
 )
 
 
