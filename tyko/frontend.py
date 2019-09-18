@@ -313,7 +313,7 @@ class NewObjectForm(NewEntityForm):
             api_location="api/object/",
             form_fields=[
                 FormField("text", "name", "Name", True),
-                FormField("text", "barcode", "Barcode", True),
+                FormField("text", "barcode", "Barcode", False),
             ]
         )
 
