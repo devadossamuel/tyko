@@ -173,7 +173,7 @@ def create_new_object(dummy_database, new_collection, new_project,
         name=SAMPLE_OBJECT_NAME,
         collection=new_collection,
         project=new_project,
-        last_updated=staff_contact,
+        # last_updated=staff_contact,
     )
     return new_object
 
@@ -318,23 +318,23 @@ def test_project_node():
     pass
 
 
-@then(parsers.parse("the CollectionObject record was last updated "
-                    "by {staff_first_name} {staff_last_name}"))
-def object_updated_by_staff(dummy_database, staff_first_name, staff_last_name):
-    all_contacts = dummy_database.query(scheme.Contact)
-
-    staff_contact = \
-        all_contacts.filter(
-            scheme.Contact.last_name == staff_last_name,
-            scheme.Contact.first_name == staff_first_name
-        ).one()
-
-    assert staff_contact.last_name == staff_last_name
-    assert staff_contact.first_name == staff_first_name
-
-    collection_object = dummy_database.query(scheme.CollectionObject).first()
-    assert collection_object.last_updated.last_name == staff_last_name
-    assert collection_object.last_updated.first_name == staff_first_name
+# @then(parsers.parse("the CollectionObject record was last updated "
+#                     "by {staff_first_name} {staff_last_name}"))
+# def object_updated_by_staff(dummy_database, staff_first_name, staff_last_name):
+#     all_contacts = dummy_database.query(scheme.Contact)
+#
+#     staff_contact = \
+#         all_contacts.filter(
+#             scheme.Contact.last_name == staff_last_name,
+#             scheme.Contact.first_name == staff_first_name
+#         ).one()
+#
+#     assert staff_contact.last_name == staff_last_name
+#     assert staff_contact.first_name == staff_first_name
+#
+#     collection_object = dummy_database.query(scheme.CollectionObject).first()
+#     assert collection_object.last_updated.last_name == staff_last_name
+#     assert collection_object.last_updated.first_name == staff_first_name
 
 
 @scenario("database.feature", "Item is sent for treatment")
@@ -592,8 +592,8 @@ def vendor_gets_object(dummy_database, create_new_object, vendor_name):
 
     vendor_transfer = scheme.VendorTransfer(
         vendor=vendor,
-        vendor_rec_date=SAMPLE_DATE,
-        returned_rec_date=SAMPLE_DATE,
+        vendor_deliverables_rec_date=SAMPLE_DATE,
+        returned_originals_rec_date=SAMPLE_DATE,
     )
     vendor_transfer.transfer_objects.append(create_new_object)
     dummy_database.add(vendor_transfer)

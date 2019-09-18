@@ -139,9 +139,9 @@ class CollectionObject(AVTables):
     project_id = db.Column(db.Integer, db.ForeignKey("project.project_id"))
     project = relationship("Project", foreign_keys=[project_id])
 
-    last_updated_id = \
-        db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
-    last_updated = relationship("Contact", foreign_keys=[last_updated_id])
+    # last_updated_id = \
+    #     db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
+    # last_updated = relationship("Contact", foreign_keys=[last_updated_id])
 
     notes = relationship("Note",
                          secondary=object_has_notes_table,
@@ -161,7 +161,7 @@ class CollectionObject(AVTables):
             "name": self.name,
             "collection_id": self.collection_id,
             "project_id": self.project_id,
-            "last_updated_id": self.last_updated_id,
+            # "last_updated_id": self.last_updated_id,
             "contact_id": self.contact_id,
             "notes": notes
         }
@@ -411,14 +411,30 @@ class VendorTransfer(AVTables):
         db.Integer, db.ForeignKey("vendor.vendor_id")
     )
     vendor = relationship("Vendor", foreign_keys=[vendor_id])
-    vendor_rec_date = db.Column("vendor_rec_date", db.Date)
-    returned_rec_date = db.Column("returned_rec_date", db.Date)
+
+    # date the digital surrogates and accompanying metadata was received
+    # from vendor
+    vendor_deliverables_rec_date = \
+        db.Column("vendor_deliverables_rec_date", db.Date)
+
+    # date the originals were returned from the vendor
+    returned_originals_rec_date = \
+        db.Column("returned_originals_rec_date", db.Date)
+
 
     transfer_objects = relationship(
         "CollectionObject",
         secondary=vendor_transfer_has_an_object,
         backref="transfer_object"
     )
+
+    def serialize(self) -> dict:
+        return {
+            "vendor_id": self.vendor_id,
+            "vendor_deliverables_rec_date": self.vendor_deliverables_rec_date,
+            "returned_originals_rec_date": self.returned_originals_rec_date
+        }
+
 
 
 # =============================================================================

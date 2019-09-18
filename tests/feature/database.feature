@@ -32,7 +32,6 @@ Feature: database
     And the database has 2 Contact records
     And the database has 1 Collection records
     And the database has 1 CollectionObject records
-    And the CollectionObject record was last updated by Henry Borchers
 
   Scenario: Create a new item
     Given a database with a collection
@@ -45,7 +44,6 @@ Feature: database
     And the database has 1 CollectionObject records
     And the database has 1 CollectionItem records
     And the new item record contains the correct barcode
-    And the CollectionObject record was last updated by Henry Borchers
 
   Scenario: Create a new inspection note for item
     Given a database with a collection
@@ -57,7 +55,6 @@ Feature: database
     And the new note is added to the CollectionItem
     Then the database has 1 Note records
     And the CollectionItem record has the new note
-    And the CollectionObject record was last updated by Henry Borchers
 
   Scenario: Create a new inspection note for project
     Given a database with a collection
@@ -69,7 +66,6 @@ Feature: database
     And the new note is added to the Project
     Then the database has 1 Note records
     And the Project record has the new note
-    And the CollectionObject record was last updated by Henry Borchers
 
   Scenario: Create a new inspection note for CollectionObject
     Given a database with a collection
@@ -81,7 +77,6 @@ Feature: database
     And the new note is added to the CollectionObject
     Then the database has 1 Note records
     And the CollectionObject record has the new note
-    And the CollectionObject record was last updated by Henry Borchers
 
   Scenario: Item is sent for treatment
     Given a database with a collection
@@ -94,7 +89,6 @@ Feature: database
     Then the database has 1 CollectionObject records
     And the database has 1 Treatment records
     And the treatment record of the item states that it needs "X, Y, Z treatment" and got "Y treatment only"
-    And the CollectionObject record was last updated by Henry Borchers
 
 
   Scenario Outline: Create a new media project
