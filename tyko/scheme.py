@@ -176,8 +176,10 @@ class CollectionItem(AVTables):
     file_name = db.Column("file_name", db.Text)
     medusa_uuid = db.Column("medusa_uuid", db.Text)
 
-    collection_object_id = db.Column(db.Integer,
-                                     db.ForeignKey("object.object_id"))
+    collection_object_id = db.Column("object_id",
+                                     db.Integer,
+                                     db.ForeignKey("object.object_id"),
+                                     )
 
     collection_object = relationship("CollectionObject",
                                      foreign_keys=[collection_object_id])
@@ -204,6 +206,7 @@ class CollectionItem(AVTables):
             "medusa_uuid": self.medusa_uuid,
             "obj_sequence": self.obj_sequence,
             "format_type_id": self.format_type_id,
+            "parent_object_id": self.collection_object_id,
             "notes": notes
         }
 
@@ -286,6 +289,24 @@ class OpenReel(AVTables):
     track_duration = db.Column("track_duration", db.Text)
     generation = db.Column("generation", db.Text)
 
+    def serialize(self) -> dict:
+        return {
+            "item_id": self.item_id,
+            "date_recorded": self.date_recorded,
+            "track_count": self.track_count,
+            "tape_size": self.tape_size,
+            "reel_diam": self.reel_diam,
+            "reel_type": self.reel_type,
+            "tape_thickness": self.tape_thickness,
+            "tape_brand": self.tape_brand,
+            "base": self.base,
+            "wind": self.wind,
+            "track_speed": self.track_speed,
+            "track_configuration": self.track_configuration,
+            "track_duration": self.track_duration,
+            "generation": self.generation
+        }
+
 
 class Film(AVTables):
     __tablename__ = "film"
@@ -309,6 +330,24 @@ class Film(AVTables):
     ad_test_date = db.Column("ad_test_date", db.Date)
     ad_test_level = db.Column("ad_test_level", db.Integer)
 
+    def serialize(self) -> dict:
+        return {
+            "item_id": self.item_id,
+            "date_of_film": self.date_of_film,
+            "can_label": self.can_label,
+            "leader_label": self.leader_label,
+            "length": self.length,
+            "duration": self.duration,
+            "format_gauge": self.format_gauge,
+            "base": self.base,
+            "edge_code_date": self.edge_code_date,
+            "sound": self.sound,
+            "color": self.color,
+            "image_type": self.image_type,
+            "ad_test_date": self.ad_test_date,
+            "ad_test_level": self.ad_test_level,
+        }
+
 
 class GroovedDisc(AVTables):
     __tablename__ = "grooved_disc"
@@ -328,6 +367,20 @@ class GroovedDisc(AVTables):
     playback_direction = db.Column("playback_direction", db.Text)
     playback_speed = db.Column("playback_speed", db.Text)
 
+    def serialize(self) -> dict:
+        return {
+            "item_id": self.item_id,
+            "date_recorded": self.date_recorded,
+            "side": self.side,
+            "duration": self.duration,
+            "diameter": self.diameter,
+            "disc_material": self.disc_material,
+            "base": self.base,
+            "playback_direction": self.playback_direction,
+            "playback_speed": self.playback_speed
+
+        }
+
 
 class AudioVideo(AVTables):
     __tablename__ = "audio_video"
@@ -340,6 +393,16 @@ class AudioVideo(AVTables):
     side = db.Column("side", db.Text)
     duration = db.Column("duration", db.Text)
     format_subtype = db.Column("format_subtype", db.Text)
+
+    def serialize(self) -> dict:
+        return {
+            "item_id": self.item_id,
+            "date_recorded": self.date_recorded,
+            "side": self.side,
+            "duration": self.duration,
+            "format_subtype": self.format_subtype
+
+        }
 
 
 vendor_has_contacts_table = db.Table(
