@@ -138,7 +138,8 @@ class CollectionObject(AVTables):
 
     project_id = db.Column(db.Integer, db.ForeignKey("project.project_id"))
     project = relationship("Project", foreign_keys=[project_id])
-
+    originals_rec_date = db.Column("originals_rec_date", db.Date)
+    originals_return_date = db.Column("originals_return_date", db.Date)
     notes = relationship("Note",
                          secondary=object_has_notes_table,
                          backref="object_sources"
@@ -157,6 +158,8 @@ class CollectionObject(AVTables):
             "name": self.name,
             "collection_id": self.collection_id,
             "barcode": self.barcode,
+            "originals_rec_date": self.originals_rec_date,
+            "originals_return_date": self.originals_return_date,
             "project_id": self.project_id,
             "contact_id": self.contact_id,
             "notes": notes
@@ -172,8 +175,6 @@ class CollectionItem(AVTables):
     #
     file_name = db.Column("file_name", db.Text)
     medusa_uuid = db.Column("medusa_uuid", db.Text)
-    original_rec_date = db.Column("original_rec_date", db.Date)
-    original_return_date = db.Column("original_return_date", db.Date)
 
     collection_object_id = db.Column(db.Integer,
                                      db.ForeignKey("object.object_id"))
@@ -200,6 +201,8 @@ class CollectionItem(AVTables):
             "id": self.id,
             "name": self.name,
             "file_name": self.file_name,
+            "medusa_uuid": self.medusa_uuid,
+            "obj_sequence": self.obj_sequence,
             "notes": notes
         }
 

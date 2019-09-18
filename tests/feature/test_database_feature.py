@@ -154,15 +154,15 @@ def add_new_object(dummy_database, create_new_object):
 
 
 @given(parsers.parse("a new object for the collection with a barcode"))
-def create_new_object(dummy_database, new_collection, new_project,
-                      staff_first_name, staff_last_name):
-
+def create_new_object(dummy_database, new_collection, new_project):
 
     new_object = scheme.CollectionObject(
         name=SAMPLE_OBJECT_NAME,
         collection=new_collection,
         project=new_project,
         barcode=SAMPLE_BAR_CODE,
+        original_rec_date=SAMPLE_DATE,
+        original_return_date=SAMPLE_DATE,
     )
     return new_object
 
@@ -234,8 +234,6 @@ def new_item(dummy_database, new_collection, new_project, staff_contact,
         name=SAMPLE_ITEM_NAME,
         file_name=SAMPLE_FILE,
         medusa_uuid=SAMPLE_MEDUSA_ID,
-        original_rec_date=SAMPLE_DATE,
-        original_return_date=SAMPLE_DATE,
         collection_object=create_new_object,
         obj_sequence=SAMPLE_OBJ_SEQUENCE,
         format_type=format_type
@@ -366,8 +364,6 @@ def add_new_item_to_object(dummy_database, create_new_object, media_type,
         name=SAMPLE_ITEM_NAME,
         file_name=file_name,
         medusa_uuid=SAMPLE_MEDUSA_ID,
-        original_rec_date=SAMPLE_DATE,
-        original_return_date=SAMPLE_DATE,
         obj_sequence=SAMPLE_OBJ_SEQUENCE,
         format_type=format_type
 
