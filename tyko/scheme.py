@@ -393,10 +393,10 @@ vendor_transfer_has_an_object = db.Table(
     AVTables.metadata,
     db.Column("object_id",
               db.Integer,
-              db.ForeignKey("vendor_transfer.vendor_transfer_id")),
+              db.ForeignKey("object.object_id")),
     db.Column("vendor_transfer_id",
               db.Integer,
-              db.ForeignKey("object.object_id")
+              db.ForeignKey("vendor_transfer.vendor_transfer_id")
               )
 )
 
