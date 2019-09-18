@@ -288,7 +288,7 @@ class NewItemForm(NewEntityForm):
             api_location="api/item/",
             form_fields=[
                 FormField("text", "name", "Name", True),
-                FormField("text", "file_name", "File name", True),
+                FormField("text", "file_name", "File name", False),
             ]
         )
 
