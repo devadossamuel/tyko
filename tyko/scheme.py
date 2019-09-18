@@ -203,6 +203,7 @@ class CollectionItem(AVTables):
             "file_name": self.file_name,
             "medusa_uuid": self.medusa_uuid,
             "obj_sequence": self.obj_sequence,
+            "format_type_id": self.format_type_id,
             "notes": notes
         }
 

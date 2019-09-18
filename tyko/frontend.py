@@ -5,7 +5,7 @@ from typing import Tuple, Set
 from dataclasses import dataclass
 
 from flask import make_response, render_template
-from . import data_provider
+from . import data_provider, scheme
 from .decorators import authenticate
 
 
@@ -109,7 +109,17 @@ class ItemFrontend(FrontendEntity):
             data_provider.ItemDataConnector(provider.session)
 
     def list(self):
-        items = self._data_connector.get(serialize=False)
+        items = []
+        for i in self._data_connector.get(serialize=False):
+            item = i.serialize()
+
+            # replace the format id with format string name
+            for k, v in scheme.format_types.items():
+                if v[0] == i.format_type_id:
+                    item['format_type'] = k
+                    break
+            items.append(item)
+
         return self.render_page(template="items.html", items=items)
 
     @property
