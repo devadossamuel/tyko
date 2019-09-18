@@ -5,7 +5,7 @@ ARG TYKO_PASSWORD
 ARG DB_URI=sqlite:///:memory:
 
 RUN python -m pip install pip --upgrade
-RUN pip install gunicorn mysqlclient lxml
+RUN pip install gunicorn mysqlclient lxml flask sqlalchemy
 
 COPY dist/*.whl /dist/
 RUN pip install dist/tyko-*.whl
