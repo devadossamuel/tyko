@@ -157,7 +157,6 @@ class CollectionObject(AVTables):
             "name": self.name,
             "collection_id": self.collection_id,
             "project_id": self.project_id,
-            # "last_updated_id": self.last_updated_id,
             "contact_id": self.contact_id,
             "notes": notes
         }
