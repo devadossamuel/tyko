@@ -512,6 +512,7 @@ note_types = {
     "Inspection": (1, ),
     "Playback": (2, ),
     "Project": (3, ),
+    "Other": (4, ),
 }
 
 
