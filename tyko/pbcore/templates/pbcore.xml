@@ -1,7 +1,11 @@
-<pbcoreDescriptionDocument xmlns="http://www.pbcore.org/PBCore/PBCoreNamespace.html"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.pbcore.org/PBCore/PBCoreNamespace.html" >
-    <pbcoreIdentifier source="TYKO-OBJECT-ID">{{ object_id }}</pbcoreIdentifier>
-    <pbcoreTitle titleType="Main">{{ name }}</pbcoreTitle>
-    <pbcoreDescription/>
-</pbcoreDescriptionDocument>
+<?xml version="1.0" encoding="UTF-8"?>
+<pbcoreCollection xmlns="http://www.pbcore.org/PBCore/PBCoreNamespace.html"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://www.pbcore.org/PBCore/PBCoreNamespace.html
+                  https://raw.githubusercontent.com/WGBH/PBCore_2.1/master/pbcore-2.1.xsd">
+    <pbcoreDescriptionDocument>
+        <pbcoreIdentifier source="TYKO-OBJECT-ID">{{ object_id }}</pbcoreIdentifier>
+        <pbcoreTitle titleType="Main">{{ name }}</pbcoreTitle>
+        <pbcoreDescription/>
+    </pbcoreDescriptionDocument>
+</pbcoreCollection>

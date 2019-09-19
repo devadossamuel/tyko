@@ -102,8 +102,10 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
     def create(self):
         """TODO"""
         object_name = request.form["name"]
+        barcode = request.form.get('barcode')
         new_object_id = self._data_connector.create(
-            name=object_name
+            name=object_name,
+            barcode=barcode
         )
         return jsonify({
             "id": new_object_id,
@@ -315,12 +317,10 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
 
     def create(self):
         name = request.form.get('name')
-        barcode = request.form.get('barcode')
         file_name = request.form.get('file_name')
         new_item_id = self._data_connector.create(
             name=name,
-            barcode=barcode,
-            file_name=file_name
+            file_name=file_name,
         )
 
         return jsonify(

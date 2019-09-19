@@ -118,7 +118,7 @@ test_data_read = [
     (
         "item", {
             "name": "my stupid new item",
-            "barcode": "8umb",
+            # "barcode": "8umb",
             "file_name": "stupid.mov"
         }
     ),

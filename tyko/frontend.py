@@ -5,7 +5,7 @@ from typing import Tuple, Set
 from dataclasses import dataclass
 
 from flask import make_response, render_template
-from . import data_provider
+from . import data_provider, scheme
 from .decorators import authenticate
 
 
@@ -46,7 +46,7 @@ class FrontendEntity(AbsFrontend):
 
     def list(self):
         return make_response(
-            "{}.list not implimented".format(self.__class__), 404)
+            "{}.list not implemented".format(self.__class__), 404)
 
     def render_page(self, template="newentity.html", **context):
         self.build_header_context(
@@ -109,7 +109,17 @@ class ItemFrontend(FrontendEntity):
             data_provider.ItemDataConnector(provider.session)
 
     def list(self):
-        items = self._data_connector.get(serialize=False)
+        items = []
+        for i in self._data_connector.get(serialize=False):
+            item = i.serialize()
+
+            # replace the format id with format string name
+            for k, v in scheme.format_types.items():
+                if v[0] == i.format_type_id:
+                    item['format_type'] = k
+                    break
+            items.append(item)
+
         return self.render_page(template="items.html", items=items)
 
     @property
@@ -288,8 +298,7 @@ class NewItemForm(NewEntityForm):
             api_location="api/item/",
             form_fields=[
                 FormField("text", "name", "Name", True),
-                FormField("text", "barcode", "Barcode", True),
-                FormField("text", "file_name", "File name", True),
+                FormField("text", "file_name", "File name", False),
             ]
         )
 
@@ -314,6 +323,7 @@ class NewObjectForm(NewEntityForm):
             api_location="api/object/",
             form_fields=[
                 FormField("text", "name", "Name", True),
+                FormField("text", "barcode", "Barcode", False),
             ]
         )
 

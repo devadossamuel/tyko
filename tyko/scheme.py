@@ -21,23 +21,23 @@ class AVTables(declarative_base(metaclass=DeclarativeABCMeta)):
 item_has_notes_table = db.Table(
     "item_has_notes",
     AVTables.metadata,
-    db.Column("notes_id", db.Integer, db.ForeignKey("item.item_id")),
-    db.Column("item_id", db.Integer, db.ForeignKey("notes.note_id"))
+    db.Column("notes_id", db.Integer, db.ForeignKey("notes.note_id")),
+    db.Column("item_id", db.Integer, db.ForeignKey("item.item_id"))
 )
 
 
 object_has_notes_table = db.Table(
     "object_has_notes",
     AVTables.metadata,
-    db.Column("notes_id", db.Integer, db.ForeignKey("object.object_id")),
-    db.Column("object_id", db.Integer, db.ForeignKey("notes.note_id"))
+    db.Column("notes_id", db.Integer, db.ForeignKey("notes.note_id")),
+    db.Column("object_id", db.Integer, db.ForeignKey("object.object_id"))
 )
 
 project_has_notes_table = db.Table(
     "project_has_notes",
     AVTables.metadata,
-    db.Column("notes_id", db.Integer, db.ForeignKey("project.project_id")),
-    db.Column("project_id", db.Integer, db.ForeignKey("notes.note_id"))
+    db.Column("notes_id", db.Integer, db.ForeignKey("notes.note_id")),
+    db.Column("project_id", db.Integer, db.ForeignKey("project.project_id"))
 )
 
 
@@ -53,6 +53,14 @@ class Contact(AVTables):
     first_name = db.Column("first_name", db.Text)
     last_name = db.Column("last_name", db.Text)
     email_address = db.Column("email_address", db.Text)
+
+    def serialize(self) -> dict:
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email_address": self.email_address
+        }
 
 
 class Project(AVTables):
@@ -122,7 +130,7 @@ class CollectionObject(AVTables):
         autoincrement=True)
 
     name = db.Column("name", db.Text)
-
+    barcode = db.Column("barcode", db.Text)
     collection_id = \
         db.Column(db.Integer, db.ForeignKey("collection.collection_id"))
 
@@ -130,11 +138,8 @@ class CollectionObject(AVTables):
 
     project_id = db.Column(db.Integer, db.ForeignKey("project.project_id"))
     project = relationship("Project", foreign_keys=[project_id])
-
-    last_updated_id = \
-        db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
-    last_updated = relationship("Contact", foreign_keys=[last_updated_id])
-
+    originals_rec_date = db.Column("originals_rec_date", db.Date)
+    originals_return_date = db.Column("originals_return_date", db.Date)
     notes = relationship("Note",
                          secondary=object_has_notes_table,
                          backref="object_sources"
@@ -152,8 +157,10 @@ class CollectionObject(AVTables):
             "id": self.id,
             "name": self.name,
             "collection_id": self.collection_id,
+            "barcode": self.barcode,
+            "originals_rec_date": self.originals_rec_date,
+            "originals_return_date": self.originals_return_date,
             "project_id": self.project_id,
-            "last_updated_id": self.last_updated_id,
             "contact_id": self.contact_id,
             "notes": notes
         }
@@ -165,14 +172,14 @@ class CollectionItem(AVTables):
     id = db.Column("item_id", db.Integer, primary_key=True, autoincrement=True)
 
     name = db.Column("name", db.Text)
-    barcode = db.Column("barcode", db.Text)
+    #
     file_name = db.Column("file_name", db.Text)
     medusa_uuid = db.Column("medusa_uuid", db.Text)
-    original_rec_date = db.Column("original_rec_date", db.Date)
-    original_return_date = db.Column("original_return_date", db.Date)
 
-    collection_object_id = db.Column(db.Integer,
-                                     db.ForeignKey("object.object_id"))
+    collection_object_id = db.Column("object_id",
+                                     db.Integer,
+                                     db.ForeignKey("object.object_id"),
+                                     )
 
     collection_object = relationship("CollectionObject",
                                      foreign_keys=[collection_object_id])
@@ -195,8 +202,11 @@ class CollectionItem(AVTables):
         return {
             "id": self.id,
             "name": self.name,
-            "barcode": self.barcode,
             "file_name": self.file_name,
+            "medusa_uuid": self.medusa_uuid,
+            "obj_sequence": self.obj_sequence,
+            "format_type_id": self.format_type_id,
+            "parent_object_id": self.collection_object_id,
             "notes": notes
         }
 
@@ -279,6 +289,24 @@ class OpenReel(AVTables):
     track_duration = db.Column("track_duration", db.Text)
     generation = db.Column("generation", db.Text)
 
+    def serialize(self) -> dict:
+        return {
+            "item_id": self.item_id,
+            "date_recorded": self.date_recorded,
+            "track_count": self.track_count,
+            "tape_size": self.tape_size,
+            "reel_diam": self.reel_diam,
+            "reel_type": self.reel_type,
+            "tape_thickness": self.tape_thickness,
+            "tape_brand": self.tape_brand,
+            "base": self.base,
+            "wind": self.wind,
+            "track_speed": self.track_speed,
+            "track_configuration": self.track_configuration,
+            "track_duration": self.track_duration,
+            "generation": self.generation
+        }
+
 
 class Film(AVTables):
     __tablename__ = "film"
@@ -302,6 +330,24 @@ class Film(AVTables):
     ad_test_date = db.Column("ad_test_date", db.Date)
     ad_test_level = db.Column("ad_test_level", db.Integer)
 
+    def serialize(self) -> dict:
+        return {
+            "item_id": self.item_id,
+            "date_of_film": self.date_of_film,
+            "can_label": self.can_label,
+            "leader_label": self.leader_label,
+            "length": self.length,
+            "duration": self.duration,
+            "format_gauge": self.format_gauge,
+            "base": self.base,
+            "edge_code_date": self.edge_code_date,
+            "sound": self.sound,
+            "color": self.color,
+            "image_type": self.image_type,
+            "ad_test_date": self.ad_test_date,
+            "ad_test_level": self.ad_test_level,
+        }
+
 
 class GroovedDisc(AVTables):
     __tablename__ = "grooved_disc"
@@ -321,6 +367,20 @@ class GroovedDisc(AVTables):
     playback_direction = db.Column("playback_direction", db.Text)
     playback_speed = db.Column("playback_speed", db.Text)
 
+    def serialize(self) -> dict:
+        return {
+            "item_id": self.item_id,
+            "date_recorded": self.date_recorded,
+            "side": self.side,
+            "duration": self.duration,
+            "diameter": self.diameter,
+            "disc_material": self.disc_material,
+            "base": self.base,
+            "playback_direction": self.playback_direction,
+            "playback_speed": self.playback_speed
+
+        }
+
 
 class AudioVideo(AVTables):
     __tablename__ = "audio_video"
@@ -334,12 +394,29 @@ class AudioVideo(AVTables):
     duration = db.Column("duration", db.Text)
     format_subtype = db.Column("format_subtype", db.Text)
 
+    def serialize(self) -> dict:
+        return {
+            "item_id": self.item_id,
+            "date_recorded": self.date_recorded,
+            "side": self.side,
+            "duration": self.duration,
+            "format_subtype": self.format_subtype
+
+        }
+
 
 vendor_has_contacts_table = db.Table(
+    "vendor_has_contacts",
+    AVTables.metadata,
+    db.Column("contact_id", db.Integer, db.ForeignKey("contact.contact_id")),
+    db.Column("vendor_id", db.Integer, db.ForeignKey("vendor.vendor_id"))
+)
+
+item_has_contacts_table = db.Table(
     "item_has_contacts",
     AVTables.metadata,
-    db.Column("contact_id", db.Integer, db.ForeignKey("vendor.vendor_id")),
-    db.Column("vendor_id", db.Integer, db.ForeignKey("contact.contact_id"))
+    db.Column("contact_id", db.Integer, db.ForeignKey("item.item_id")),
+    db.Column("item_id", db.Integer, db.ForeignKey("contact.contact_id"))
 )
 
 
@@ -359,16 +436,29 @@ class Vendor(AVTables):
                             backref="vendor_id"
                             )
 
+    def serialize(self) -> dict:
+        contacts = [contact.serialize() for contact in self.contacts]
+        return {
+            "id": self.id,
+            "name": self.name,
+            "address": self.address,
+            "city": self.city,
+            "state": self.state,
+            "zipcode": self.zipcode,
+            "contacts": contacts,
+
+        }
+
 
 vendor_transfer_has_an_object = db.Table(
     "vendor_transfer_has_an_object",
     AVTables.metadata,
     db.Column("object_id",
               db.Integer,
-              db.ForeignKey("vendor_transfer.vendor_transfer_id")),
+              db.ForeignKey("object.object_id")),
     db.Column("vendor_transfer_id",
               db.Integer,
-              db.ForeignKey("object.object_id")
+              db.ForeignKey("vendor_transfer.vendor_transfer_id")
               )
 )
 
@@ -383,14 +473,28 @@ class VendorTransfer(AVTables):
         db.Integer, db.ForeignKey("vendor.vendor_id")
     )
     vendor = relationship("Vendor", foreign_keys=[vendor_id])
-    vendor_rec_date = db.Column("vendor_rec_date", db.Date)
-    returned_rec_date = db.Column("returned_rec_date", db.Date)
+
+    # date the digital surrogates and accompanying metadata was received
+    # from vendor
+    vendor_deliverables_rec_date = \
+        db.Column("vendor_deliverables_rec_date", db.Date)
+
+    # date the originals were returned from the vendor
+    returned_originals_rec_date = \
+        db.Column("returned_originals_rec_date", db.Date)
 
     transfer_objects = relationship(
         "CollectionObject",
         secondary=vendor_transfer_has_an_object,
         backref="transfer_object"
     )
+
+    def serialize(self) -> dict:
+        return {
+            "vendor_id": self.vendor_id,
+            "vendor_deliverables_rec_date": self.vendor_deliverables_rec_date,
+            "returned_originals_rec_date": self.returned_originals_rec_date
+        }
 
 
 # =============================================================================

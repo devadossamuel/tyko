@@ -48,5 +48,5 @@ def test_pbcore_valid_id(tmpdir):
 
         pbcore_data = pbcore.create_pbcore_from_object(object_id=new_object_id, data_provider=my_db)
 
-        doc = etree.fromstring(pbcore_data)
+        doc = etree.fromstring(bytes(pbcore_data, encoding="utf-8"))
         assert PBCORE_SCHEMA.validate(doc) is True, "Invalid Pbcore data. \n {}".format(pbcore_data)
