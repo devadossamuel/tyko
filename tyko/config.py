@@ -1,2 +1,2 @@
 class Config:
-    DB_ENGINE = "sqlite:///:memory:"
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"

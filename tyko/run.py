@@ -1,24 +1,22 @@
 from flask import Flask, make_response
-
+from flask_sqlalchemy import SQLAlchemy
 from .exceptions import DataError
 from .data_provider import DataProvider
 from .database import init_database
 from .routes import Routes
 
 
-def create_app(db_src=None, app=None, init_db=False):
+def create_app(app=None, init_db=False):
     if app is None:
         app = Flask(__name__)
 
     app.config.from_object("tyko.config.Config")
     app.config.from_envvar("TYKO_SETTINGS", True)
 
-    if db_src is None:
-        db_src = app.config["DB_ENGINE"]
-
     app.register_error_handler(DataError, handle_error)
 
-    data_provider = DataProvider(db_src)
+    database = SQLAlchemy(app)
+    data_provider = DataProvider(database.engine)
     app_routes = Routes(data_provider, app)
     if init_db:
         init_database(data_provider.db_engine)

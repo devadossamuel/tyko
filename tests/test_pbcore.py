@@ -1,8 +1,10 @@
 import pytest
 import flask
+import sqlalchemy
 import urllib.request
 import os
 
+from flask_sqlalchemy import SQLAlchemy
 from lxml import etree
 
 import tyko
@@ -27,21 +29,22 @@ PBCORE_SCHEMA = etree.XMLSchema(xsd)
 
 
 def test_pbcore_fail_invalid_id():
-    empty_data_provider = data_provider.DataProvider("sqlite:///:memory:")
+    db = sqlalchemy.create_engine("sqlite:///:memory:")
+    empty_data_provider = data_provider.DataProvider(db)
 
     with pytest.raises(tyko.exceptions.DataError):
         pbcore.create_pbcore_from_object(object_id=1, data_provider=empty_data_provider)
 
 
 def test_pbcore_valid_id(tmpdir):
-    temp_db_dir = str(tmpdir.mkdir("db"))
-    TEMP_DATABASE = "sqlite:///{}/testdata.sqlite".format(temp_db_dir)
-
-    app = flask.Flask(__name__, template_folder="../tyko/templates")
-    tyko.create_app(TEMP_DATABASE, app, init_db=True)
+    app = flask.Flask(__name__, template_folder="../tyko/"
+                                                "templates")
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    db = SQLAlchemy(app)
+    tyko.create_app(app, init_db=True)
     app.config["TESTING"] = True
     with app.test_client() as server:
-        my_db = data_provider.DataProvider(TEMP_DATABASE)
+        my_db = data_provider.DataProvider(db.engine)
         my_mw = data_provider.ObjectDataConnector(my_db.session)
         new_object_id = my_mw.create(name="my object")
         assert new_object_id == 1

@@ -32,6 +32,7 @@ setup(
         "sqlalchemy",
         # "mysqlclient",
         "flask",
+        "Flask-SQLAlchemy",
         "lxml",
         "Jinja2"
         ],

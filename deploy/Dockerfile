@@ -15,7 +15,7 @@ VOLUME /database
 
 # Create a config file
 
-RUN echo "DB_ENGINE = '${DB_URI}'" > /app/config.cfg \
+RUN echo "SQLALCHEMY_DATABASE_URI = '${DB_URI}'" > /app/config.cfg \
   && echo "USERNAME = '${TYKO_USERNAME}'" >> /app/config.cfg \
   && echo "PASSWORD = '${TYKO_PASSWORD}'" >> /app/config.cfg
 

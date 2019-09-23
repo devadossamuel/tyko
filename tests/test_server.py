@@ -30,12 +30,12 @@ api_routes = [
 
 ]
 
-TEMP_DATABASE = "sqlite:///:memory:"
+# TEMP_DATABASE = "sqlite:///:memory:"
 
 
 @pytest.mark.parametrize("route", static_page_routes)
 def test_static_pages(route):
-    app = tyko.create_app(TEMP_DATABASE)
+    app = tyko.create_app()
     app.config["TESTING"] = True
     with app.test_client() as server:
         resp = server.get(route)
@@ -45,7 +45,7 @@ def test_static_pages(route):
 @pytest.mark.parametrize("route", dynamic_page_routes)
 def test_dynamic_pages(route):
     app = Flask(__name__, template_folder="../tyko/templates")
-    tyko.create_app(TEMP_DATABASE, app, init_db=True)
+    tyko.create_app(app, init_db=True)
     app.config["TESTING"] = True
     with app.test_client() as server:
         resp = server.get(route)
@@ -55,7 +55,7 @@ def test_dynamic_pages(route):
 @pytest.fixture(scope="module")
 def test_app():
     app = Flask(__name__, template_folder="../tyko/templates")
-    tyko.create_app(TEMP_DATABASE, app, init_db=True)
+    tyko.create_app(app, init_db=True)
     app.config["TESTING"] = True
     return app.test_client()
 
@@ -77,7 +77,7 @@ def test_api_formats(test_app):
 @pytest.mark.parametrize("route", api_routes)
 def test_api_routes(route):
     app = Flask(__name__, template_folder="../tyko/templates")
-    tyko.create_app(TEMP_DATABASE, app, init_db=True)
+    tyko.create_app(app, init_db=True)
     app.config["TESTING"] = True
     with app.test_client() as server:
         resp = server.get(route)
@@ -134,7 +134,7 @@ test_data_read = [
 def test_create_and_read2(data_type, data_value):
 
     app = Flask(__name__, template_folder="../tyko/templates")
-    tyko.create_app(TEMP_DATABASE, app, init_db=True)
+    tyko.create_app(app, init_db=True)
     app.config["TESTING"] = True
     with app.test_client() as server:
         route ="/api/{}/".format(data_type)
@@ -159,14 +159,16 @@ def test_create_and_read2(data_type, data_value):
 def test_empty_database_error():
     # Creating a server without a validate database should raise a DataError
     # exception
+    db = sqlalchemy.create_engine("sqlite:///:memory:")
 
     with pytest.raises(tyko.exceptions.DataError):
-        empty_data_provider = data_provider.DataProvider(TEMP_DATABASE)
+        empty_data_provider = data_provider.DataProvider(db)
         empty_data_provider.get_formats()
 
 def test_get_object_pbcore():
     app = Flask(__name__, template_folder="../tyko/templates")
-    tyko.create_app(TEMP_DATABASE, app, init_db=True)
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    tyko.create_app(app, init_db=True)
     app.config["TESTING"] = True
     with app.test_client() as server:
         create_resp = server.post(

@@ -229,14 +229,13 @@ class CollectionDataConnector(AbsDataProviderConnector):
 class DataProvider:
     def __init__(self, engine):
         self.engine = engine
-        self.db_engine = sqlalchemy.create_engine(engine)
-        self.init_database()
+        self.db_engine = engine
+        # self.init_database()
         db_session = orm.sessionmaker(bind=self.db_engine)
         self.session = db_session()
 
     def init_database(self):
-        db_engine = sqlalchemy.create_engine(self.engine)
-        database.init_database(db_engine)
+        database.init_database(self.engine)
 
     def get_formats(self, serialize=False):
         try:
