@@ -21,13 +21,14 @@ class AbsFrontend(metaclass=abc.ABCMeta):
     @classmethod
     def build_header_context(cls, current_item, context):
         context["selected_menu_item"] = current_item
-        context["entities"] = sorted(FrontendEntity.all_entities())
+        context["entities"] = sorted(FrontendEntity.all_entities(),
+                                     key=lambda x: [0])
         form_list = set()
 
         for form in all_forms:
             form_list.add((form.form_title, form.form_page_name))
 
-        context["all_forms"] = sorted(form_list)
+        context["all_forms"] = sorted(form_list, key=lambda x: [0])
 
     @abc.abstractmethod
     def render_page(self, template, **context):
@@ -73,7 +74,7 @@ class FrontendEntity(AbsFrontend):
 
     @classmethod
     def all_entities(cls):
-        return sorted(cls._entities)
+        return sorted(cls._entities,  key=lambda x: [0])
 
 
 class ProjectFrontend(FrontendEntity):
