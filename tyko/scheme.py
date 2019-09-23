@@ -3,7 +3,9 @@ import abc
 
 import sqlalchemy as db
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, scoped_session, sessionmaker
+
+Session = scoped_session(sessionmaker(expire_on_commit=False))
 
 
 class DeclarativeABCMeta(DeclarativeMeta, abc.ABCMeta):
@@ -13,6 +15,7 @@ class DeclarativeABCMeta(DeclarativeMeta, abc.ABCMeta):
 class AVTables(declarative_base(metaclass=DeclarativeABCMeta)):
     __abstract__ = True
 
+    @abc.abstractmethod
     def serialize(self) -> dict:  # pylint: disable=no-self-use
         """Serialize the data so that it can be turned into a JSON format"""
         return {}
@@ -237,6 +240,12 @@ class NoteTypes(AVTables):
 
     name = db.Column("type_name", db.Text)
 
+    def serialize(self) -> dict:
+        return {
+            "id": self.id,
+            "name": self.name
+        }
+
 
 class Treatment(AVTables):
     __tablename__ = "treatment"
@@ -247,6 +256,15 @@ class Treatment(AVTables):
     given = db.Column("given", db.Text)
     date = db.Column("date", db.Date)
     item_id = db.Column(db.Integer, db.ForeignKey("item.item_id"))
+
+    def serialize(self) -> dict:
+        return {
+            "id": self.id,
+            "needed": self.needed,
+            "given": self.given,
+            "date": self.date,
+            "item_id": self.item_id
+        }
 
 
 class FormatTypes(AVTables):

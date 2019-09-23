@@ -1,5 +1,5 @@
 import sys
-from typing import Dict, Tuple, Any
+from typing import Dict, Tuple, Any, Type
 
 import sqlalchemy as db
 from sqlalchemy.orm.session import sessionmaker
@@ -67,7 +67,8 @@ def validate_enumerated_tables(engine):
     return valid
 
 
-def validate_enumerate_table_data(engine, sql_table_type: scheme.AVTables,
+def validate_enumerate_table_data(engine,
+                                  sql_table_type: Type[scheme.AVTables],
                                   expected_table: Dict[str, Tuple[int, Any]]
                                   ) -> bool:
 

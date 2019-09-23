@@ -9,8 +9,8 @@ from . import database
 
 class AbsDataProviderConnector(metaclass=abc.ABCMeta):
 
-    def __init__(self, session) -> None:
-        self._session = session
+    def __init__(self, session_maker) -> None:
+        self.session_maker = session_maker
 
     @abc.abstractmethod
     def get(self, id=None, serialize=False):
@@ -32,17 +32,19 @@ class AbsDataProviderConnector(metaclass=abc.ABCMeta):
 class ProjectDataConnector(AbsDataProviderConnector):
 
     def get(self, id=None, serialize=False):
+        session = self.session_maker()
         if id:
-            all_projects = self._session.query(scheme.Project)\
+            all_projects = session.query(scheme.Project)\
                 .filter(scheme.Project.id == id)\
                 .all()
 
         else:
-            all_projects = self._session.query(scheme.Project).all()
+            all_projects = session.query(scheme.Project).all()
 
         if serialize:
-            return [project.serialize() for project in all_projects]
+            all_projects = [project.serialize() for project in all_projects]
 
+        session.close()
         return all_projects
 
     def create(self, *args, **kwargs):
@@ -58,10 +60,13 @@ class ProjectDataConnector(AbsDataProviderConnector):
             status=status,
             specs=specs
         )
-        self._session.add(new_project)
-        self._session.commit()
+        session = self.session_maker()
 
-        return new_project.id
+        session.add(new_project)
+        session.commit()
+        new_project_id = new_project.id
+        session.close()
+        return new_project_id
 
     def get_project(self, id=None, serialize=False):
         return self.get(id, serialize)
@@ -80,18 +85,24 @@ class ProjectDataConnector(AbsDataProviderConnector):
             project.title = changed_data['title']
             project.current_location = changed_data['current_location']
             project.status = changed_data['status']
-            self._session.add(project)
-            self._session.commit()
+
+            session = self.session_maker()
+            session.add(project)
+            session.commit()
+            session.close()
+
             updated_project = self.get_project(id)[0]
 
         return updated_project.serialize()
 
     def delete(self, id):
         if id:
-            items_deleted = \
-                self._session.query(scheme.Project)\
-                    .filter(scheme.Project.id == id)\
-                    .delete()
+            session = self.session_maker()
+            items_deleted = session.query(scheme.Project)\
+                .filter(scheme.Project.id == id)\
+                .delete()
+
+            session.close()
             return items_deleted > 0
         return False
 
@@ -99,24 +110,25 @@ class ProjectDataConnector(AbsDataProviderConnector):
 class ObjectDataConnector(AbsDataProviderConnector):
 
     def get(self, id=None, serialize=False):
+        session = self.session_maker()
         try:
             if id is not None:
                 all_collection_object = \
-                    self._session.query(scheme.CollectionObject) \
-                        .filter(scheme.CollectionObject.id == id) \
-                        .all()
+                    session.query(scheme.CollectionObject).filter(
+                        scheme.CollectionObject.id == id).all()
             else:
                 all_collection_object = \
-                    self._session.query(scheme.CollectionObject).all()
+                    session.query(scheme.CollectionObject).all()
         except sqlalchemy.exc.DatabaseError as e:
             raise DataError("Unable to find object: {}".format(e))
 
         if serialize:
-            return [
+            serialized_all_collection_object = [
                 collection_object.serialize()
                 for collection_object in all_collection_object
             ]
-
+            all_collection_object = serialized_all_collection_object
+        session.close()
         return all_collection_object
 
     def create(self, *args, **kwargs):
@@ -130,11 +142,13 @@ class ObjectDataConnector(AbsDataProviderConnector):
         barcode = kwargs.get("barcode")
         if barcode is not None:
             new_object.barcode = barcode
+        session = self.session_maker()
+        session.add(new_object)
+        session.commit()
+        object_id = new_object.id
+        session.close()
 
-        self._session.add(new_object)
-        self._session.commit()
-
-        return new_object.id
+        return object_id
 
     def update(self, id, changed_data):
         # TODO!
@@ -148,21 +162,25 @@ class ObjectDataConnector(AbsDataProviderConnector):
 class ItemDataConnector(AbsDataProviderConnector):
 
     def get(self, id=None, serialize=False):
+        session = self.session_maker()
+
         if id:
-            all_collection_item = \
-                self._session.query(scheme.CollectionItem)\
-                    .filter(scheme.CollectionItem.id == id)\
-                    .all()
+            all_collection_item = session.query(scheme.CollectionItem)\
+                .filter(scheme.CollectionItem.id == id)\
+                .all()
         else:
             all_collection_item = \
-                self._session.query(scheme.CollectionItem).all()
+                session.query(scheme.CollectionItem).all()
 
         if serialize:
-            return [
-                collection_item.serialize()
-                for collection_item in all_collection_item
-            ]
+            serialized_all_collection_item = []
 
+            for collection_item in all_collection_item:
+                serialized_all_collection_item.append(
+                    collection_item.serialize())
+
+            all_collection_item = serialized_all_collection_item
+        session.close()
         return all_collection_item
 
     def create(self, *args, **kwargs):
@@ -172,9 +190,14 @@ class ItemDataConnector(AbsDataProviderConnector):
             name=name,
             file_name=file_name
         )
-        self._session.add(new_item)
-        self._session.commit()
-        return new_item.id
+
+        session = self.session_maker()
+        session.add(new_item)
+        session.commit()
+        new_item_id = new_item.id
+        session.close()
+
+        return new_item_id
 
     def update(self, id, changed_data):
         # TODO!
@@ -188,15 +211,15 @@ class ItemDataConnector(AbsDataProviderConnector):
 class CollectionDataConnector(AbsDataProviderConnector):
 
     def get(self, id=None, serialize=False):
+        session = self.session_maker()
         if id:
-            all_collections = \
-                self._session.query(scheme.Collection)\
-                    .filter(scheme.Collection.id == id)\
-                    .all()
+            all_collections = session.query(scheme.Collection)\
+                .filter(scheme.Collection.id == id)\
+                .all()
         else:
             all_collections = \
-                self._session.query(scheme.Collection).all()
-
+                session.query(scheme.Collection).all()
+        session.close()
         if serialize:
             return [collection.serialize() for collection in all_collections]
 
@@ -213,9 +236,14 @@ class CollectionDataConnector(AbsDataProviderConnector):
             record_series=record_series
 
         )
-        self._session.add(new_collection)
-        self._session.commit()
-        return new_collection.id
+
+        session = self.session_maker()
+        session.add(new_collection)
+        session.commit()
+        new_collection_id = new_collection.id
+        session.close()
+
+        return new_collection_id
 
     def update(self, id, changed_data):
         # TODO:!!!
@@ -231,15 +259,17 @@ class DataProvider:
         self.engine = engine
         self.db_engine = engine
         # self.init_database()
-        db_session = orm.sessionmaker(bind=self.db_engine)
-        self.session = db_session()
+        self.db_session_maker = orm.sessionmaker(bind=self.db_engine)
 
     def init_database(self):
         database.init_database(self.engine)
 
     def get_formats(self, serialize=False):
         try:
-            all_formats = self.session.query(scheme.FormatTypes).all()
+            session = self.db_session_maker()
+            all_formats = session.query(scheme.FormatTypes).all()
+            session.close()
+
         except sqlalchemy.exc.DatabaseError as e:
             raise DataError("Enable to get all format. Reason: {}".format(e))
 

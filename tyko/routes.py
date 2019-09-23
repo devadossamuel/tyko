@@ -2,13 +2,12 @@
 
 from dataclasses import dataclass, field
 from typing import Any, List
-from flask import Flask, jsonify, render_template
+from flask import jsonify, render_template
 
 from . import middleware
 from .data_provider import DataProvider
 from .frontend import all_forms as front_forms
 from . import entities
-the_app = Flask(__name__)
 
 
 @dataclass

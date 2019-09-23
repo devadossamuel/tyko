@@ -9,6 +9,7 @@ from lxml import etree
 
 import tyko
 import tyko.exceptions
+import tyko.database
 from tyko import pbcore, data_provider, scheme
 
 PBCORE_XSD_URL = "https://raw.githubusercontent.com/PBCore-AV-Metadata/PBCore_2.1/master/pbcore-2.1.xsd"
@@ -41,11 +42,12 @@ def test_pbcore_valid_id(tmpdir):
                                                 "templates")
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
     db = SQLAlchemy(app)
-    tyko.create_app(app, init_db=True)
+    tyko.create_app(app)
+    tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     with app.test_client() as server:
         my_db = data_provider.DataProvider(db.engine)
-        my_mw = data_provider.ObjectDataConnector(my_db.session)
+        my_mw = data_provider.ObjectDataConnector(my_db.db_session_maker)
         new_object_id = my_mw.create(name="my object")
         assert new_object_id == 1
 

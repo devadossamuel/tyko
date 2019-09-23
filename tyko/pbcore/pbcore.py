@@ -8,7 +8,7 @@ def create_pbcore_from_object(object_id: int,
                               data_provider: DataProvider) -> str:
     template = Template(read_text("tyko.pbcore.templates", "pbcore.xml"))
 
-    connector = ObjectDataConnector(data_provider.session)
+    connector = ObjectDataConnector(data_provider.db_session_maker)
     resulting_objects = connector.get(object_id)
     if len(resulting_objects) == 0:
         raise DataError("Invalid object id")

@@ -82,7 +82,7 @@ class ProjectFrontend(FrontendEntity):
         super().__init__(provider)
 
         self._data_connector = \
-            data_provider.ProjectDataConnector(provider.session)
+            data_provider.ProjectDataConnector(provider.db_session_maker)
 
     def list(self):
         projects = self._data_connector.get(serialize=False)
@@ -106,20 +106,19 @@ class ItemFrontend(FrontendEntity):
         super().__init__(provider)
 
         self._data_connector = \
-            data_provider.ItemDataConnector(provider.session)
+            data_provider.ItemDataConnector(provider.db_session_maker)
 
     def list(self):
         items = []
-        for i in self._data_connector.get(serialize=False):
-            item = i.serialize()
 
-            # replace the format id with format string name
+        for item in self._data_connector.get(serialize=True):
+
+            # # replace the format id with format string name
             for k, v in scheme.format_types.items():
-                if v[0] == i.format_type_id:
+                if v[0] == item["format_type_id"]:
                     item['format_type'] = k
                     break
             items.append(item)
-
         return self.render_page(template="items.html", items=items)
 
     @property
@@ -140,7 +139,7 @@ class ObjectFrontend(FrontendEntity):
         super().__init__(provider)
 
         self._data_connector = \
-            data_provider.ObjectDataConnector(provider.session)
+            data_provider.ObjectDataConnector(provider.db_session_maker)
 
     def list(self):
         objects = self._data_connector.get(serialize=False)
@@ -164,7 +163,7 @@ class CollectiontFrontend(FrontendEntity):
         super().__init__(provider)
 
         self._data_connector = \
-            data_provider.CollectionDataConnector(provider.session)
+            data_provider.CollectionDataConnector(provider.db_session_maker)
 
     def list(self):
         collections = self._data_connector.get(serialize=False)

@@ -1,3 +1,5 @@
+from flask_sqlalchemy import SQLAlchemy
+
 import tyko
 from tyko import routes, data_provider
 import tyko.database
@@ -45,7 +47,9 @@ def test_static_pages(route):
 @pytest.mark.parametrize("route", dynamic_page_routes)
 def test_dynamic_pages(route):
     app = Flask(__name__, template_folder="../tyko/templates")
-    tyko.create_app(app, init_db=True)
+    db = SQLAlchemy(app)
+    tyko.create_app(app)
+    tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     with app.test_client() as server:
         resp = server.get(route)
@@ -55,7 +59,9 @@ def test_dynamic_pages(route):
 @pytest.fixture(scope="module")
 def test_app():
     app = Flask(__name__, template_folder="../tyko/templates")
-    tyko.create_app(app, init_db=True)
+    db = SQLAlchemy(app)
+    tyko.create_app(app)
+    tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     return app.test_client()
 
@@ -77,7 +83,9 @@ def test_api_formats(test_app):
 @pytest.mark.parametrize("route", api_routes)
 def test_api_routes(route):
     app = Flask(__name__, template_folder="../tyko/templates")
-    tyko.create_app(app, init_db=True)
+    db = SQLAlchemy(app)
+    tyko.create_app(app)
+    tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     with app.test_client() as server:
         resp = server.get(route)
@@ -134,7 +142,9 @@ test_data_read = [
 def test_create_and_read2(data_type, data_value):
 
     app = Flask(__name__, template_folder="../tyko/templates")
-    tyko.create_app(app, init_db=True)
+    db = SQLAlchemy(app)
+    tyko.create_app(app)
+    tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     with app.test_client() as server:
         route ="/api/{}/".format(data_type)
@@ -165,10 +175,13 @@ def test_empty_database_error():
         empty_data_provider = data_provider.DataProvider(db)
         empty_data_provider.get_formats()
 
+
 def test_get_object_pbcore():
     app = Flask(__name__, template_folder="../tyko/templates")
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-    tyko.create_app(app, init_db=True)
+    db = SQLAlchemy(app)
+    tyko.create_app(app)
+    tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     with app.test_client() as server:
         create_resp = server.post(
@@ -177,7 +190,7 @@ def test_get_object_pbcore():
             }
         )
 
-        assert create_resp.status == "200 OK", "Failed to create a new entity with {}".format(route)
+        assert create_resp.status == "200 OK", "Failed to create a new object"
 
         new_id = json.loads(create_resp.data)["id"]
         assert new_id is not None

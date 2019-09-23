@@ -48,7 +48,8 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
     def __init__(self, data_provider: dp.DataProvider) -> None:
         super().__init__(data_provider)
 
-        self._data_connector = dp.ObjectDataConnector(data_provider.session)
+        self._data_connector = \
+            dp.ObjectDataConnector(data_provider.db_session_maker)
 
     def get(self, serialize=False, **kwargs):
         if "id" in kwargs:
@@ -119,7 +120,7 @@ class CollectionMiddlwareEntity(AbsMiddlwareEntity):
         super().__init__(data_provider)
 
         self._data_connector = \
-            dp.CollectionDataConnector(data_provider.session)
+            dp.CollectionDataConnector(data_provider.db_session_maker)
 
     def get(self, serialize=False, **kwargs):
         if "id" in kwargs:
@@ -181,7 +182,9 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
 
     def __init__(self, data_provider) -> None:
         super().__init__(data_provider)
-        self._data_connector = dp.ProjectDataConnector(data_provider.session)
+
+        self._data_connector = \
+            dp.ProjectDataConnector(data_provider.db_session_maker)
 
     def get(self, serialize=False, **kwargs):
         if "id" in kwargs:
@@ -271,7 +274,9 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
 class ItemMiddlwareEntity(AbsMiddlwareEntity):
     def __init__(self, data_provider) -> None:
         super().__init__(data_provider)
-        self._data_connector = dp.ItemDataConnector(data_provider.session)
+
+        self._data_connector = \
+            dp.ItemDataConnector(data_provider.db_session_maker)
 
     def get(self, serialize=False, **kwargs):
         if "id" in kwargs:
