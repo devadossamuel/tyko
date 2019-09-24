@@ -45,9 +45,14 @@ class FrontendEntity(AbsFrontend):
             (self.entity_title, self.entity_list_page_name)
         )
 
+    def display_details(self, entity_id):  # pylint: disable=unused-argument
+        return make_response(
+            "{}.display_details not implemented".format(
+                self.__class__.__name__), 404)
+
     def list(self):
         return make_response(
-            "{}.list not implemented".format(self.__class__), 404)
+            "{}.list not implemented".format(self.__class__.__name__), 404)
 
     def render_page(self, template="newentity.html", **context):
         self.build_header_context(
@@ -74,7 +79,7 @@ class FrontendEntity(AbsFrontend):
 
     @classmethod
     def all_entities(cls):
-        return sorted(cls._entities,  key=lambda x: [0])
+        return sorted(cls._entities, key=lambda x: [0])
 
 
 class ProjectFrontend(FrontendEntity):
@@ -157,6 +162,14 @@ class ObjectFrontend(FrontendEntity):
     @property
     def entity_list_page_name(self) -> str:
         return "page_object"
+
+    def display_details(self, entity_id):
+
+        selected_object = self._data_connector.get(serialize=True,
+                                                   id=entity_id)[0]
+
+        return self.render_page(template="object_details.html",
+                                object=selected_object)
 
 
 class CollectiontFrontend(FrontendEntity):

@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h3>{{object['name']}} Details</h3>
+<div class="row onePadding">
+    <div class="col-md-12 col-sm-12">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <tr>
+                    <th>Name</th>
+                    <td>{{object['name']}}</td>
+                </tr>
+                <tr>
+                    <th>Collection</th>
+                    <td>{{object['collection']['collection_name']}}</td>
+                </tr>
+                <tr>
+                    <th>Project</th>
+                    <td>{{object['project']["title"]}}</td>
+                </tr>
+                <tr>
+                    <th>Barcode</th>
+                    <td>{{object['barcode']}}</td>
+                </tr>
+                <tr>
+                    <th>Originals Received Date</th>
+                    <td>{{object['originals_rec_date']}}</td>
+                </tr>
+                <tr>
+                    <th>Originals Returned Date</th>
+                    <td>{{object['originals_return_date']}}</td>
+                </tr>
+                <tr>
+                    <th>Contact</th>
+                    <td>{{object['contact']}}</td>
+                </tr>
+                <tr>
+                    <th>Items</th>
+                    <td>
+                        <ul>
+
+                        {% for item in object['items'] %}
+                            <li>{{ item['name'] }}</li>
+                        {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

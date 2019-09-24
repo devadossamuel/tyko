@@ -117,11 +117,14 @@ class ObjectDataConnector(AbsDataProviderConnector):
                 all_collection_object = \
                     session.query(scheme.CollectionObject).filter(
                         scheme.CollectionObject.id == id).all()
+                if len(all_collection_object) == 0:
+                    raise DataError(
+                        message="Unable to find object: {}".format(id))
             else:
                 all_collection_object = \
                     session.query(scheme.CollectionObject).all()
         except sqlalchemy.exc.DatabaseError as e:
-            raise DataError("Unable to find object: {}".format(e))
+            raise DataError(message="Unable to find object: {}".format(e))
 
         if serialize:
             serialized_all_collection_object = []

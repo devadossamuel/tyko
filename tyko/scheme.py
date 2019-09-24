@@ -99,7 +99,7 @@ class Project(AVTables):
         notes = [note.serialize() for note in self.notes]
 
         return {
-            "id": self.id,
+            "project_id": self.id,
             "project_code": self.project_code,
             "current_location": self.current_location,
             "status": self.status,
@@ -185,17 +185,32 @@ class CollectionObject(AVTables):
 
         notes = [note.serialize() for note in self.notes]
 
+        if self.collection is not None:
+            collection = self.collection.serialize()
+        else:
+            collection = None
+
+        if self.contact is not None:
+            contact = self.contact.serialize()
+        else:
+            contact = None
+
+        if self.project is not None:
+            project = self.project.serialize()
+        else:
+            project = None
+
         return {
             "object_id": self.id,
             "name": self.name,
-            "collection_id": self.collection_id,
+            "collection": collection,
             "barcode": self.barcode,
             "originals_rec_date":
                 self.serialize_date(self.originals_rec_date),
             "originals_return_date":
                 self.serialize_date(self.originals_return_date),
-            "project_id": self.project_id,
-            "contact_id": self.contact_id,
+            "project": project,
+            "contact": contact,
             "notes": notes,
             "items": items
         }
@@ -235,7 +250,7 @@ class CollectionItem(AVTables):
     def serialize(self):
         notes = [note.serialize() for note in self.notes]
         return {
-            "collection_id": self.id,
+            "item_id": self.id,
             "name": self.name,
             "file_name": self.file_name,
             "medusa_uuid": self.medusa_uuid,

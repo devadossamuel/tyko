@@ -7,6 +7,7 @@ from flask import jsonify, render_template
 from . import middleware
 from .data_provider import DataProvider
 from .frontend import all_forms as front_forms
+from . import frontend
 from . import entities
 
 
@@ -140,7 +141,6 @@ class Routes:
         simple_pages = []
         for entity in ["project",
                        "item",
-                       "object",
                        "collection"
                        ]:
 
@@ -159,8 +159,24 @@ class Routes:
                         lambda: page_formats(self.mw)
                     ),
                 ]),
+            EntityPage(
+                "Objects",
+                "page_object",
+                rules=[
+                    Route(
+                        "/object",
+                        "page_object",
+                        lambda: frontend.ObjectFrontend(
+                            self.mw.data_provider).list()
+                    ),
+                    Route(
+                        "/object/<string:object_id>",
+                        "page_object_details",
+                        lambda object_id: frontend.ObjectFrontend(
+                            self.mw.data_provider).display_details(object_id)
+                    ),
+                ]),
         ]
-
         for simple_page in simple_pages:
             entity_pages.append(
                 EntityPage(
@@ -168,9 +184,9 @@ class Routes:
                     simple_page.entity_list_page_name,
                     rules=[
                         Route(
-                            simple_page.entity_rule,
-                            simple_page.entity_list_page_name,
-                            simple_page.list
+                            rule=simple_page.entity_rule,
+                            method=simple_page.entity_list_page_name,
+                            viewFunction=simple_page.list,
                         )
                     ]
                 )
