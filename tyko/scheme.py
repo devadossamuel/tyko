@@ -1,6 +1,7 @@
 # pylint: disable=too-few-public-methods, invalid-name
 import abc
-
+from typing import List, Optional
+import datetime
 import sqlalchemy as db
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
@@ -19,6 +20,13 @@ class AVTables(declarative_base(metaclass=DeclarativeABCMeta)):
     def serialize(self) -> dict:  # pylint: disable=no-self-use
         """Serialize the data so that it can be turned into a JSON format"""
         return {}
+
+    @classmethod
+    def serialize_date(cls, date: Optional[datetime.date]):
+        if isinstance(date, datetime.date):
+            return date.isoformat()
+
+        return None
 
 
 item_has_notes_table = db.Table(
@@ -59,7 +67,7 @@ class Contact(AVTables):
 
     def serialize(self) -> dict:
         return {
-            "id": self.id,
+            "contact_id": self.id,
             "first_name": self.first_name,
             "last_name": self.last_name,
             "email_address": self.email_address
@@ -115,7 +123,7 @@ class Collection(AVTables):
 
     def serialize(self):
         return {
-            "id": self.id,
+            "collection_id": self.id,
             "record_series": self.record_series,
             "collection_name": self.collection_name,
             "contact_id": self.contact_id,
@@ -155,17 +163,41 @@ class CollectionObject(AVTables):
     contact = relationship("Contact", foreign_keys=[contact_id])
 
     def serialize(self):
+
+        def sorter(collection_items: List[CollectionItem]):
+            no_sequence = set()
+            has_sequence = set()
+            for collection_item in collection_items:
+                if collection_item.obj_sequence is None:
+                    no_sequence.add(collection_item)
+                else:
+                    has_sequence.add(collection_item)
+
+            resulting_sorted_list = \
+                sorted(list(has_sequence), key=lambda x: x.obj_sequence)
+
+            resulting_sorted_list += list(no_sequence)
+            return resulting_sorted_list
+
+        items = []
+        for item in sorter(self.items):
+            items.append(item.serialize())
+
         notes = [note.serialize() for note in self.notes]
+
         return {
-            "id": self.id,
+            "object_id": self.id,
             "name": self.name,
             "collection_id": self.collection_id,
             "barcode": self.barcode,
-            "originals_rec_date": self.originals_rec_date,
-            "originals_return_date": self.originals_return_date,
+            "originals_rec_date":
+                self.serialize_date(self.originals_rec_date),
+            "originals_return_date":
+                self.serialize_date(self.originals_return_date),
             "project_id": self.project_id,
             "contact_id": self.contact_id,
-            "notes": notes
+            "notes": notes,
+            "items": items
         }
 
 
@@ -203,7 +235,7 @@ class CollectionItem(AVTables):
     def serialize(self):
         notes = [note.serialize() for note in self.notes]
         return {
-            "id": self.id,
+            "collection_id": self.id,
             "name": self.name,
             "file_name": self.file_name,
             "medusa_uuid": self.medusa_uuid,
@@ -227,9 +259,9 @@ class Note(AVTables):
 
     def serialize(self):
         return {
-            "id": self.id,
+            "note_id": self.id,
             "text": self.text,
-            "type": self.note_type_id
+            "note_types_id": self.note_type_id
         }
 
 
@@ -242,7 +274,7 @@ class NoteTypes(AVTables):
 
     def serialize(self) -> dict:
         return {
-            "id": self.id,
+            "note_types_id": self.id,
             "name": self.name
         }
 
@@ -259,10 +291,10 @@ class Treatment(AVTables):
 
     def serialize(self) -> dict:
         return {
-            "id": self.id,
+            "treatment_id": self.id,
             "needed": self.needed,
             "given": self.given,
-            "date": self.date,
+            "date": self.serialize_date(self.date),
             "item_id": self.item_id
         }
 
@@ -277,7 +309,7 @@ class FormatTypes(AVTables):
 
     def serialize(self):
         return {
-            "id": self.id,
+            "format_types_id": self.id,
             "name": self.name
         }
 
@@ -310,7 +342,7 @@ class OpenReel(AVTables):
     def serialize(self) -> dict:
         return {
             "item_id": self.item_id,
-            "date_recorded": self.date_recorded,
+            "date_recorded": self.serialize_date(self.date_recorded),
             "track_count": self.track_count,
             "tape_size": self.tape_size,
             "reel_diam": self.reel_diam,
@@ -351,18 +383,18 @@ class Film(AVTables):
     def serialize(self) -> dict:
         return {
             "item_id": self.item_id,
-            "date_of_film": self.date_of_film,
+            "date_of_film": self.serialize_date(self.date_of_film),
             "can_label": self.can_label,
             "leader_label": self.leader_label,
             "length": self.length,
             "duration": self.duration,
             "format_gauge": self.format_gauge,
             "base": self.base,
-            "edge_code_date": self.edge_code_date,
+            "edge_code_date": self.serialize_date(self.edge_code_date),
             "sound": self.sound,
             "color": self.color,
             "image_type": self.image_type,
-            "ad_test_date": self.ad_test_date,
+            "ad_test_date": self.serialize_date(self.ad_test_date),
             "ad_test_level": self.ad_test_level,
         }
 
@@ -415,7 +447,7 @@ class AudioVideo(AVTables):
     def serialize(self) -> dict:
         return {
             "item_id": self.item_id,
-            "date_recorded": self.date_recorded,
+            "date_recorded": self.serialize_date(self.date_recorded),
             "side": self.side,
             "duration": self.duration,
             "format_subtype": self.format_subtype
@@ -457,7 +489,7 @@ class Vendor(AVTables):
     def serialize(self) -> dict:
         contacts = [contact.serialize() for contact in self.contacts]
         return {
-            "id": self.id,
+            "vendor_id": self.id,
             "name": self.name,
             "address": self.address,
             "city": self.city,
@@ -509,9 +541,12 @@ class VendorTransfer(AVTables):
 
     def serialize(self) -> dict:
         return {
+            "vendor_transfer_id": self.id,
             "vendor_id": self.vendor_id,
-            "vendor_deliverables_rec_date": self.vendor_deliverables_rec_date,
-            "returned_originals_rec_date": self.returned_originals_rec_date
+            "vendor_deliverables_rec_date":
+                self.serialize_date(self.vendor_deliverables_rec_date),
+            "returned_originals_rec_date":
+                self.serialize_date(self.returned_originals_rec_date)
         }
 
 

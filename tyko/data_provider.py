@@ -1,5 +1,6 @@
 # pylint: disable=redefined-builtin, invalid-name
 import abc
+
 import sqlalchemy
 from sqlalchemy import orm
 from .exceptions import DataError
@@ -123,10 +124,12 @@ class ObjectDataConnector(AbsDataProviderConnector):
             raise DataError("Unable to find object: {}".format(e))
 
         if serialize:
-            serialized_all_collection_object = [
-                collection_object.serialize()
-                for collection_object in all_collection_object
-            ]
+            serialized_all_collection_object = []
+            for collection_object in all_collection_object:
+                serialized_all_collection_object.append(
+                    collection_object.serialize()
+                )
+
             all_collection_object = serialized_all_collection_object
         session.close()
         return all_collection_object

@@ -74,7 +74,7 @@ def test_api_formats(test_app):
     for k, v in tyko.scheme.format_types.items():
         for entry in tmp_data:
             if entry["name"] == k:
-                assert entry["id"] == v[0]
+                assert entry["format_types_id"] == v[0]
                 break
         else:
             assert False
