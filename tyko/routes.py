@@ -45,7 +45,8 @@ class Routes:
         self.wr = WebsiteRoutes()
 
     def init_api_routes(self) -> None:
-        project = entities.load_entity("project", self.db_engine).middleware()
+        self.project = \
+            entities.load_entity("project", self.db_engine).middleware()
 
         collection = \
             entities.load_entity("collection", self.db_engine).middleware()
@@ -59,17 +60,17 @@ class Routes:
             api_entities = [
                 APIEntity("Projects", rules=[
                     Route("/api/project", "projects",
-                          lambda serialize=True: project.get(serialize)),
+                          lambda serialize=True: self.project.get(serialize)),
                     Route("/api/project/<string:id>", "project_by_id",
-                          lambda id: project.get(id=id)),
-                    Route("/api/project/", "add_project",
-                          project.create,
-                          methods=["POST"]),
+                          lambda id: self.project.get(id=id)),
                     Route("/api/project/<string:id>", "update_project",
-                          lambda id: project.update(id=id),
+                          self.project.update,
                           methods=["PUT"]),
+                    Route("/api/project/", "add_project",
+                          self.project.create,
+                          methods=["POST"]),
                     Route("/api/project/<string:id>", "delete_project",
-                          lambda id: project.delete(id=id),
+                          lambda id: self.project.delete(id=id),
                           methods=["DELETE"]),
                     ]),
                 APIEntity("Collection", rules=[
@@ -95,7 +96,14 @@ class Routes:
                           methods=["GET"]),
                     Route("/api/item/", "add_item",
                           item.create,
-                          methods=["POST"])
+                          methods=["POST"]),
+                    Route("/api/item/<string:id>", "update_item",
+                          lambda id: item.update(id=id),
+                          methods=["PUT"]),
+                    Route("/api/item/<string:id>", "delete_item",
+                          lambda id: item.delete(id=id),
+                          methods=["DELETE"]),
+
 
                     ]),
                 APIEntity("Object", rules=[
@@ -105,6 +113,10 @@ class Routes:
                           ),
                     Route("/api/object/<string:id>", "object_by_id",
                           lambda id: project_object.get(id=id)),
+                    Route("/api/object/<string:id>", "object_update",
+                          lambda id: project_object.update(id=id),
+                          methods=["PUT"]
+                          ),
                     Route("/api/object/<string:id>-pbcore.xml",
                           "object_pbcore",
                           lambda id: project_object.pbcore(id=id)

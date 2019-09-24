@@ -96,8 +96,10 @@ class Project(AVTables):
     )
 
     def serialize(self):
-        notes = [note.serialize() for note in self.notes]
-
+        notes = []
+        for note in self.notes:
+            notes.append(note.serialize())
+        #
         return {
             "project_id": self.id,
             "project_code": self.project_code,

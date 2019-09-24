@@ -230,11 +230,12 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
 
     def update(self, id):
         new_project = {
-            "project_code": request.form["project_code"],
-            "current_location": request.form["current_location"],
-            "status": request.form["status"],
+            "project_code": request.form.get("project_code"),
+            "current_location": request.form.get("current_location"),
+            "status": request.form.get("status"),
             "title": request.form["title"]
         }
+
         updated_project = \
             self._data_connector.update(
                 id, changed_data=new_project)
@@ -315,17 +316,36 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
         return abort(404)
 
     def delete(self, id):
-        pass
+
+        res = self._data_connector.delete(id)
+
+        if res is True:
+            return make_response("", 204)
+        return make_response("", 404)
 
     def update(self, id):
-        pass
+        new_item = {
+            "file_name": request.form.get("file_name"),
+            "medusa_uuid": request.form.get("medusa_uuid")
+        }
+        replacement_item = self._data_connector.update(
+            id, changed_data=new_item
+        )
+
+        return jsonify(
+            {
+                "item": replacement_item
+            }
+        )
 
     def create(self):
         name = request.form.get('name')
         file_name = request.form.get('file_name')
+        medusa_uuid = request.form.get("medusa_uuid")
         new_item_id = self._data_connector.create(
             name=name,
             file_name=file_name,
+            medusa_uuid=medusa_uuid
         )
 
         return jsonify(

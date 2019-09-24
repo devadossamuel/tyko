@@ -75,7 +75,6 @@ class ProjectDataConnector(AbsDataProviderConnector):
     def update(self, id, changed_data):
         updated_project = None
         projects = self.get_project(id)
-        project = None
 
         if len(projects) != 1:
             return updated_project
@@ -92,7 +91,9 @@ class ProjectDataConnector(AbsDataProviderConnector):
             session.commit()
             session.close()
 
-            updated_project = self.get_project(id)[0]
+            updated_project = session.query(scheme.Project)\
+                .filter(scheme.Project.id == id)\
+                .one()
 
         return updated_project.serialize()
 
@@ -192,9 +193,11 @@ class ItemDataConnector(AbsDataProviderConnector):
     def create(self, *args, **kwargs):
         name = kwargs["name"]
         file_name = kwargs.get("file_name")
+        medusa_uuid = kwargs.get("medusa_uuid")
         new_item = scheme.CollectionItem(
             name=name,
-            file_name=file_name
+            file_name=file_name,
+            medusa_uuid=medusa_uuid
         )
 
         session = self.session_maker()
@@ -206,12 +209,37 @@ class ItemDataConnector(AbsDataProviderConnector):
         return new_item_id
 
     def update(self, id, changed_data):
-        # TODO!
-        pass
+        updated_item = None
+        items = self.get_item(id)
+        if len(items) != 1:
+            return None
+
+        item = items[0]
+        if item:
+            item.file_name = changed_data["file_name"]
+            session = self.session_maker()
+
+            session.add(item)
+            session.commit()
+            updated_item = session.query(scheme.CollectionItem)\
+                .filter(scheme.CollectionItem.id == id)\
+                .one()
+        return updated_item.serialize()
 
     def delete(self, id):
-        # TODO!
-        pass
+        if id:
+            session = self.session_maker()
+
+            items_deleted = session.query(scheme.CollectionItem)\
+                .filter(scheme.CollectionItem.id == id).delete()
+
+            success = items_deleted > 0
+            session.commit()
+            return success
+        return False
+
+    def get_item(self, id=None, serialize=False):
+        return self.get(id, serialize)
 
 
 class CollectionDataConnector(AbsDataProviderConnector):
