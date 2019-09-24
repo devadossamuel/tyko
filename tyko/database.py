@@ -96,7 +96,9 @@ def validate_enumerate_table_data(engine,
 
 def validate_tables(engine):
 
-    expected_table_names = [k for k in scheme.AVTables.metadata.tables.keys()]
+    expected_table_names = []
+    for k in scheme.AVTables.metadata.tables.keys():
+        expected_table_names.append(k)
 
     valid = True
 
