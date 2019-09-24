@@ -36,7 +36,10 @@ class AbsFrontend(metaclass=abc.ABCMeta):
 
 
 class FrontendEntity(AbsFrontend):
-    _entities: Set[Tuple[str, str]] = {("Formats", "page_formats")}
+    _entities: Set[Tuple[str, str]] = {
+        ("Formats", "page_formats"),
+        ("Objects", "page_object"),
+    }
 
     def __init__(self, provider: data_provider.DataProvider) -> None:
         self._data_provider = provider
