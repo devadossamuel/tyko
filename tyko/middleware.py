@@ -95,13 +95,32 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
         # return jsonify({})
 
     def delete(self, id):
-        """TODO"""
+        if self._data_connector.delete(id):
+            return make_response("", 204)
+
+        return make_response("", 404)
 
     def update(self, id):
-        """TODO"""
+        new_object = {
+            "name": request.form.get("name"),
+            "barcode": request.form.get("barcode"),
+            # "current_location": request.form.get("current_location"),
+            # "status": request.form.get("status"),
+            # "title": request.form["title"]
+        }
+
+        updated_object = \
+            self._data_connector.update(
+                id, changed_data=new_object)
+
+        if not updated_object:
+            return make_response("", 204)
+
+        return jsonify(
+            {"object": updated_object}
+        )
 
     def create(self):
-        """TODO"""
         object_name = request.form["name"]
         barcode = request.form.get('barcode')
         new_object_id = self._data_connector.create(

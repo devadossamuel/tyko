@@ -123,8 +123,16 @@ class Routes:
                           ),
                     Route("/api/object/", "add_object",
                           project_object.create,
-                          methods=["POST"])
-                    ])
+                          methods=["POST"]),
+                    Route("/api/object/<string:id>", "update_object",
+                          project_object.update,
+                          methods=["PUT"]),
+                    Route("/api/object/<string:id>", "delete_object",
+                          lambda id: project_object.delete(id=id),
+                          methods=["DELETE"]),
+
+
+                    ]),
 
             ]
 

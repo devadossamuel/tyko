@@ -139,7 +139,6 @@ class ObjectDataConnector(AbsDataProviderConnector):
         return all_collection_object
 
     def create(self, *args, **kwargs):
-        # TODO!
         name = kwargs["name"]
 
         new_object = scheme.CollectionObject(
@@ -158,12 +157,39 @@ class ObjectDataConnector(AbsDataProviderConnector):
         return object_id
 
     def update(self, id, changed_data):
-        # TODO!
-        pass
+        updated_object = None
+        objects = self.get(id, serialize=False)
+
+        if len(objects) != 1:
+            return updated_object
+
+        collection_object = objects[0]
+
+        if collection_object:
+            collection_object.name = changed_data['name']
+
+            session = self.session_maker()
+            session.add(collection_object)
+            session.commit()
+            session.close()
+
+            updated_object = session.query(scheme.CollectionObject)\
+                .filter(scheme.CollectionObject.id == id)\
+                .one()
+
+        return updated_object.serialize()
 
     def delete(self, id):
-        # TODO!
-        pass
+        if id:
+            session = self.session_maker()
+
+            items_deleted = session.query(scheme.CollectionObject)\
+                .filter(scheme.CollectionObject.id == id).delete()
+
+            success = items_deleted > 0
+            session.commit()
+            return success
+        return False
 
 
 class ItemDataConnector(AbsDataProviderConnector):

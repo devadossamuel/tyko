@@ -38,13 +38,14 @@ def test_project_update(app):
 def test_item_update(app):
 
     with app.test_client() as server:
-        post_resp = server.post("/api/item/",
-                    data={
-                        "name": "My dummy item",
-                        "file_name": "dummy.txt",
-                        "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4"
-                        }
-                    )
+        post_resp = server.post(
+            "/api/item/",
+            data={
+                "name": "My dummy item",
+                "file_name": "dummy.txt",
+                "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4"
+                }
+            )
         assert post_resp.status_code == 200
 
         new_item_record_url = json.loads(post_resp.data)["url"]
@@ -69,13 +70,14 @@ def test_item_update(app):
 def test_item_delete(app):
 
     with app.test_client() as server:
-        post_resp = server.post("/api/item/",
-                    data={
-                        "name": "My dummy item",
-                        "file_name": "dummy.txt",
-                        "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4"
-                        }
-                    )
+        post_resp = server.post(
+            "/api/item/",
+            data={
+                "name": "My dummy item",
+                "file_name": "dummy.txt",
+                "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4"
+                }
+            )
         assert post_resp.status_code == 200
 
         new_item_record_url = json.loads(post_resp.data)["url"]
@@ -84,4 +86,60 @@ def test_item_delete(app):
         assert get_resp.status_code == 200
 
         delete_resp = server.delete(new_item_record_url)
+        assert delete_resp.status_code == 204
+
+
+def test_object_update(app):
+
+    with app.test_client() as server:
+        post_resp = server.post(
+            "/api/object/",
+            data={
+                "name": "My dummy object",
+                "barcode": "12345",
+                }
+            )
+        assert post_resp.status_code == 200
+
+        new_object_record_url = json.loads(post_resp.data)["url"]
+
+        put_resp = server.put(
+            new_object_record_url,
+            data={
+                "name": "changed_dummy object"
+            }
+        )
+
+        assert put_resp.status_code == 200
+        put_resp_data = json.loads(put_resp.data)
+        put_item = put_resp_data["object"]
+        assert put_item["name"] == "changed_dummy object"
+        assert put_item["barcode"] == "12345"
+
+        get_resp = server.get(new_object_record_url)
+        assert get_resp.status_code == 200
+
+        edited_data = json.loads(get_resp.data)
+        get_object = edited_data["object"][0]
+        assert get_object["name"] == "changed_dummy object"
+        assert get_object["barcode"] == "12345"
+
+
+def test_object_delete(app):
+    with app.test_client() as server:
+        post_resp = server.post(
+            "/api/object/",
+            data={
+                "name": "My dummy object",
+                "barcode": "12345",
+                }
+            )
+        assert post_resp.status_code == 200
+
+        new_record_url = json.loads(post_resp.data)["url"]
+
+        get_resp = server.get(new_record_url)
+        assert get_resp.status_code == 200
+
+        delete_resp = server.delete(new_record_url)
         assert delete_resp.status_code == 204
