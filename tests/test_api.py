@@ -1,17 +1,21 @@
 import json
-
+import pytest
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import tyko
 import tyko.database
 
-
-def test_project_update():
-    app = Flask(__name__, template_folder="../tyko/templates")
-    db = SQLAlchemy(app)
-    tyko.create_app(app)
+@pytest.fixture()
+def app():
+    testing_app = Flask(__name__, template_folder="../tyko/templates")
+    db = SQLAlchemy(testing_app)
+    tyko.create_app(testing_app)
     tyko.database.init_database(db.engine)
-    app.config["TESTING"] = True
+    testing_app.config["TESTING"] = True
+    return testing_app
+
+
+def test_project_update(app):
 
     with app.test_client() as server:
         post_resp = server.post(
@@ -30,12 +34,7 @@ def test_project_update():
         assert put_resp.status_code == 200
 
 
-def test_item_update():
-    app = Flask(__name__, template_folder="../tyko/templates")
-    db = SQLAlchemy(app)
-    tyko.create_app(app)
-    tyko.database.init_database(db.engine)
-    app.config["TESTING"] = True
+def test_item_update(app):
 
     with app.test_client() as server:
         post_resp = server.post("/api/item/",
