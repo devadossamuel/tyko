@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 import tyko
 import tyko.database
 
+
 @pytest.fixture()
 def app():
     testing_app = Flask(__name__, template_folder="../tyko/templates")
@@ -65,12 +66,7 @@ def test_item_update(app):
         assert item["name"] == "My dummy item"
 
 
-def test_item_delete():
-    app = Flask(__name__, template_folder="../tyko/templates")
-    db = SQLAlchemy(app)
-    tyko.create_app(app)
-    tyko.database.init_database(db.engine)
-    app.config["TESTING"] = True
+def test_item_delete(app):
 
     with app.test_client() as server:
         post_resp = server.post("/api/item/",
