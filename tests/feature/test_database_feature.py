@@ -665,7 +665,7 @@ def test_database_open_reel():
 
 
 @given("a new OpenReel item is created")
-def new_open_reel():
+def new_open_reel(dummy_database):
     new_open_reel_item = scheme.CollectionItem(name="reel 1")
     dummy_database.add(new_open_reel_item)
     dummy_database.commit()
