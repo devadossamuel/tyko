@@ -272,8 +272,11 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
         new_project = dict()
         if "project_code" in request.form:
             new_project["project_code"] = request.form.get("project_code")
+
         if "current_location" in request.form:
-            new_project["current_location"] = request.form.get("current_location")
+            new_project["current_location"] = \
+                request.form.get("current_location")
+
         if "status" in request.form:
             new_project["status"] = request.form.get("status")
         if "title" in request.form:
