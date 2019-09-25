@@ -31,6 +31,8 @@ Feature: database
     Then the database has 1 Note records
     And the collection contains the new project
     And all the Project records can be serialize
+    And all the Note records can be serialize
+
 
   Scenario: Create a new object
     Given a database with a collection
@@ -148,6 +150,7 @@ Feature: database
     And the newly created vendor is located in <city> city
     And the newly created vendor is located in <state> state
     And the newly created vendor is has a <zipcode> zipcode
+    And all the Vendor items in the database can be serialized
 
     Examples:
     | vendor_name      | address          | city    | state | zipcode |
@@ -158,6 +161,7 @@ Feature: database
     When a new vendor named <vendor_name> from <address> in <city>, <state> <zipcode> is added
     And <contact_first_name> <contact_last_name> is added as a contact to the vendor named <vendor_name>
     Then the vendor named <vendor_name> has a contact named <contact_first_name> <contact_last_name>
+    And all the Contact items in the database can be serialized
 
   Examples:
   | contact_first_name | contact_last_name | vendor_name      | address          | city    | state | zipcode |
@@ -172,6 +176,7 @@ Feature: database
     And the object is sent to the vendor <vendor_name>
     Then the database has 1 VendorTransfer records
     And there is a new transfer for the new object sent to <vendor_name>
+    And all the VendorTransfer items in the database can be serialized
 
   Examples:
   | staff_first_name   | staff_last_name   | vendor_name      | address          | city    | state | zipcode |
