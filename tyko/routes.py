@@ -80,7 +80,13 @@ class Routes:
                           lambda id: collection.get(id=id)),
                     Route("/api/collection/", "add_collection",
                           collection.create,
-                          methods=["POST"])
+                          methods=["POST"]),
+                    Route("/api/collection/<string:id>", "update_collection",
+                          lambda id: collection.update(id=id),
+                          methods=["PUT"]),
+                    Route("/api/collection/<string:id>", "delete_collection",
+                          lambda id: collection.delete(id=id),
+                          methods=["DELETE"]),
                     ]),
                 APIEntity("Formats", rules=[
                     Route("/api/format", "formats",
@@ -103,8 +109,6 @@ class Routes:
                     Route("/api/item/<string:id>", "delete_item",
                           lambda id: item.delete(id=id),
                           methods=["DELETE"]),
-
-
                     ]),
                 APIEntity("Object", rules=[
                     Route("/api/object", "object",
@@ -130,8 +134,6 @@ class Routes:
                     Route("/api/object/<string:id>", "delete_object",
                           lambda id: project_object.delete(id=id),
                           methods=["DELETE"]),
-
-
                     ]),
 
             ]

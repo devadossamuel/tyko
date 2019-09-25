@@ -176,10 +176,31 @@ class CollectionMiddlwareEntity(AbsMiddlwareEntity):
         return abort(404)
 
     def delete(self, id):
-        """TODO"""
+        if self._data_connector.delete(id):
+            return make_response("", 204)
+
+        return make_response("", 404)
 
     def update(self, id):
-        """TODO"""
+        new_collection = dict()
+
+        if "collection_name" in request.form:
+            new_collection["collection_name"] = \
+                request.form.get("collection_name")
+
+        if "department" in request.form:
+            new_collection["collection_name"] = request.form.get("department")
+
+        updated_collection = \
+            self._data_connector.update(
+                id, changed_data=new_collection)
+
+        if not updated_collection:
+            return make_response("", 204)
+
+        return jsonify(
+            {"collection": updated_collection}
+        )
 
     def create(self):
         collection_name = request.form["collection_name"]

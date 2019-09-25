@@ -143,3 +143,69 @@ def test_object_delete(app):
 
         delete_resp = server.delete(new_record_url)
         assert delete_resp.status_code == 204
+
+
+
+def test_collection_update(app):
+
+    with app.test_client() as server:
+        post_resp = server.post(
+            "/api/collection/",
+            data={
+                "collection_name": "My dummy collection",
+                "department": "preservation",
+                }
+            )
+        assert post_resp.status_code == 200
+
+        new_record_url = json.loads(post_resp.data)["url"]
+
+        get_resp = server.get(new_record_url)
+        assert get_resp.status_code == 200
+        newly_created_data = json.loads(get_resp.data)
+        created_collection = newly_created_data["collection"][0]
+        assert created_collection['collection_name'] == "My dummy collection"
+        assert created_collection["department"] == "preservation"
+
+
+        put_resp = server.put(
+            new_record_url,
+            data={
+                "collection_name": "My changed dummy collection"
+            }
+        )
+
+        assert put_resp.status_code == 200
+        put_resp_data = json.loads(put_resp.data)
+        put_item = put_resp_data["collection"]
+        assert put_item["collection_name"] == "My changed dummy collection"
+        assert put_item["department"] == "preservation"
+
+        get_resp = server.get(new_record_url)
+        assert get_resp.status_code == 200
+
+        edited_data = json.loads(get_resp.data)
+        get_object = edited_data["collection"][0]
+        assert get_object["collection_name"] == "My changed dummy collection"
+        assert get_object["department"] == "preservation"
+
+
+
+def test_collection_delete(app):
+    with app.test_client() as server:
+        post_resp = server.post(
+            "/api/collection/",
+            data={
+                "collection_name": "My dummy collection",
+                "department": "preservation",
+                }
+            )
+        assert post_resp.status_code == 200
+
+        new_record_url = json.loads(post_resp.data)["url"]
+
+        get_resp = server.get(new_record_url)
+        assert get_resp.status_code == 200
+
+        delete_resp = server.delete(new_record_url)
+        assert delete_resp.status_code == 204

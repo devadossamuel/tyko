@@ -306,12 +306,40 @@ class CollectionDataConnector(AbsDataProviderConnector):
         return new_collection_id
 
     def update(self, id, changed_data):
-        # TODO:!!!
-        pass
+        updated_collection = None
+        collections = self.get(id, serialize=False)
+
+        if len(collections) != 1:
+            return None
+
+        collection = collections[0]
+        if collection:
+            if "collection_name" in changed_data:
+                collection.collection_name = changed_data["collection_name"]
+
+            if "department" in changed_data:
+                collection.department = changed_data["department"]
+
+            session = self.session_maker()
+
+            session.add(collection)
+            session.commit()
+            updated_collection = session.query(scheme.Collection)\
+                .filter(scheme.Collection.id == id)\
+                .one()
+        return updated_collection.serialize()
 
     def delete(self, id):
-        # TODO!
-        pass
+        if id:
+            session = self.session_maker()
+
+            collections_deleted = session.query(scheme.Collection)\
+                .filter(scheme.Collection.id == id).delete()
+
+            success = collections_deleted > 0
+            session.commit()
+            return success
+        return False
 
 
 class DataProvider:
