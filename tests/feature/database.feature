@@ -176,3 +176,22 @@ Feature: database
   Examples:
   | staff_first_name   | staff_last_name   | vendor_name      | address          | city    | state | zipcode |
   | John               | Smith             | Alias AV Vendor  | 123 Fake Street  | Gothum  | NY    | 12345   |
+
+  Scenario: Create a new Groove Disc object
+    Given a database with a collection
+    And a new object for the collection with a barcode
+    And a new GroovedDisc item is created
+    Then all the GroovedDisc items in the database can be serialized
+
+  Scenario: Create a new Film object
+    Given a database with a collection
+    And a new object for the collection with a barcode
+    And a new Film item is created
+    Then all the Film items in the database can be serialized
+
+  Scenario: Create a new OpenReel object
+    Given a database with a collection
+    And a new object for the collection with a barcode
+    And a new OpenReel item is created
+    Then all the OpenReel items in the database can be serialized
+

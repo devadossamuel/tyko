@@ -615,3 +615,60 @@ def can_serialize(dummy_database, data_type):
     for entry in data_entry:
         res = entry.serialize()
         assert res is not None
+
+
+@scenario("database.feature", "Create a new Groove Disc object")
+def test_database_groove_disc():
+    pass
+
+
+@then(parsers.parse("all the {media_type} items in the database can be serialized"))
+def media_type_can_be_serialize(dummy_database, media_type):
+    my_data_type = getattr(scheme, media_type)
+    data_entry = dummy_database.query(my_data_type).all()
+
+    assert len(data_entry) > 0
+
+    for entry in data_entry:
+        res = entry.serialize()
+        assert res is not None
+
+
+@given("a new GroovedDisc item is created")
+def new_grooved_disc(dummy_database):
+    new_disc_item = scheme.CollectionItem(name="side A")
+    dummy_database.add(new_disc_item)
+    dummy_database.commit()
+    new_disc = scheme.GroovedDisc(item_id=new_disc_item.id, side="A")
+    dummy_database.add(new_disc)
+    dummy_database.commit()
+
+
+@scenario("database.feature", "Create a new Film object")
+def test_database_film():
+    pass
+
+
+@given("a new Film item is created")
+def new_film(dummy_database):
+    new_film_item = scheme.CollectionItem(name="reel 1")
+    dummy_database.add(new_film_item)
+    dummy_database.commit()
+    new_film = scheme.Film(item_id=new_film_item.id, sound="optical")
+    dummy_database.add(new_film)
+    dummy_database.commit()
+
+
+@scenario("database.feature", "Create a new OpenReel object")
+def test_database_open_reel():
+    pass
+
+
+@given("a new OpenReel item is created")
+def new_open_reel():
+    new_open_reel_item = scheme.CollectionItem(name="reel 1")
+    dummy_database.add(new_open_reel_item)
+    dummy_database.commit()
+    new_reel = scheme.OpenReel(item_id=new_open_reel_item.id, track_count="2")
+    dummy_database.add(new_reel)
+    dummy_database.commit()
