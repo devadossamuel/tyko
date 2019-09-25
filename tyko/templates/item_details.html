@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h3>Item Details</h3>
+<div class="row onePadding">
+    <div class="col-md-12 col-sm-12">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <tr>
+                    <th>Name</th>
+                    <td>{{item['name']}}</td>
+                </tr>
+                <tr>
+                    <th>Format</th>
+                    <td>{{item['format_type']}}</td>
+                </tr>
+                <tr>
+                    <th>File Name</th>
+                    <td>{{item['file_name']}}</td>
+                </tr>
+                <tr>
+                    <th>Medusa UUID</th>
+                    <td>{{item['medusa_uuid']}}</td>
+                </tr>
+                <tr>
+                    <th>Object Sequence</th>
+                    <td>{{item['obj_sequence']}}</td>
+                </tr>
+                <tr>
+                    <th>Notes</th>
+                    <td>
+                        <ul>
+                            {% for note in item['notes'] %}
+                                <li> {{ note['text'] }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

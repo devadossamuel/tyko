@@ -130,6 +130,17 @@ class ItemFrontend(FrontendEntity):
             items.append(item)
         return self.render_page(template="items.html", items=items)
 
+    def display_details(self, entity_id):
+        selected_item = self._data_connector.get(
+            serialize=True, id=entity_id)[0]
+
+        for k, v in scheme.format_types.items():
+            if v[0] == selected_item["format_type_id"]:
+                selected_item['format_type'] = k
+                break
+        return self.render_page(template="item_details.html",
+                                item=selected_item)
+
     @property
     def entity_title(self) -> str:
         return "Item"

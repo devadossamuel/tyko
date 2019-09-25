@@ -162,7 +162,7 @@ class Routes:
 
         simple_pages = []
         for entity in ["project",
-                       "item",
+                       # "item",
                        "collection"
                        ]:
 
@@ -196,6 +196,23 @@ class Routes:
                         "page_object_details",
                         lambda object_id: frontend.ObjectFrontend(
                             self.mw.data_provider).display_details(object_id)
+                    ),
+                ]),
+            EntityPage(
+                "Items",
+                "page_item",
+                rules=[
+                    Route(
+                        "/item",
+                        "page_item",
+                        lambda: frontend.ItemFrontend(
+                            self.mw.data_provider).list()
+                    ),
+                    Route(
+                        "/item/<string:item_id>",
+                        "page_item_details",
+                        lambda item_id: frontend.ItemFrontend(
+                            self.mw.data_provider).display_details(item_id)
                     ),
                 ]),
         ]
