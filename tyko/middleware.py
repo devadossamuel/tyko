@@ -101,13 +101,13 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
         return make_response("", 404)
 
     def update(self, id):
-        new_object = {
-            "name": request.form.get("name"),
-            "barcode": request.form.get("barcode"),
-            # "current_location": request.form.get("current_location"),
-            # "status": request.form.get("status"),
-            # "title": request.form["title"]
-        }
+        new_object = dict()
+
+        if "name" in request.form:
+            new_object["name"] = request.form.get("name")
+
+        if "barcode" in request.form:
+            new_object["barcode"] = request.form.get("barcode")
 
         updated_object = \
             self._data_connector.update(
@@ -269,12 +269,21 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
         return make_response("", 404)
 
     def update(self, id):
-        new_project = {
-            "project_code": request.form.get("project_code"),
-            "current_location": request.form.get("current_location"),
-            "status": request.form.get("status"),
-            "title": request.form["title"]
-        }
+        new_project = dict()
+        if "project_code" in request.form:
+            new_project["project_code"] = request.form.get("project_code")
+        if "current_location" in request.form:
+            new_project["current_location"] = request.form.get("current_location")
+        if "status" in request.form:
+            new_project["status"] = request.form.get("status")
+        if "title" in request.form:
+            new_project["title"] = request.form.get("title")
+        #
+        #     "project_code": request.form.get("project_code"),
+        #     "current_location": request.form.get("current_location"),
+        #     "status": request.form.get("status"),
+        #     "title": request.form["title"]
+        # }
 
         updated_project = \
             self._data_connector.update(

@@ -82,9 +82,14 @@ class ProjectDataConnector(AbsDataProviderConnector):
         project = projects[0]
 
         if project:
-            project.title = changed_data['title']
-            project.current_location = changed_data['current_location']
-            project.status = changed_data['status']
+            if "title" in changed_data:
+                project.title = changed_data['title']
+
+            if "current_location" in changed_data:
+                project.current_location = changed_data['current_location']
+
+            if "status" in changed_data:
+                project.status = changed_data['status']
 
             session = self.session_maker()
             session.add(project)
@@ -166,7 +171,10 @@ class ObjectDataConnector(AbsDataProviderConnector):
         collection_object = objects[0]
 
         if collection_object:
-            collection_object.name = changed_data['name']
+            if "name" in changed_data:
+                collection_object.name = changed_data['name']
+            if "barcode" in changed_data:
+                collection_object.barcode = changed_data['barcode']
 
             session = self.session_maker()
             session.add(collection_object)
