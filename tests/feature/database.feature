@@ -23,6 +23,15 @@ Feature: database
     Then the database has 1 Project records
     And the collection contains the new project
 
+  Scenario: Create a new project with a note
+    Given a database with a collection
+    And a new Project note is created
+    When a new Project with a project note
+    Then the database has 1 Project records
+    Then the database has 1 Note records
+    And the collection contains the new project
+    And all the Project records can be serialize
+
   Scenario: Create a new object
     Given a database with a collection
     And a staff contact named Henry Borchers
@@ -33,6 +42,9 @@ Feature: database
     And the database has 1 Collection records
     And the database has 1 CollectionObject records
     And the new object record contains the correct barcode
+    And all the CollectionObject records can be serialize
+    And all the Collection records can be serialize
+    And all the Contact records can be serialize
 
   Scenario: Create a new item
     Given a database with a collection
@@ -90,6 +102,7 @@ Feature: database
     Then the database has 1 CollectionObject records
     And the database has 1 Treatment records
     And the treatment record of the item states that it needs "X, Y, Z treatment" and got "Y treatment only"
+    And all the Treatment records can be serialize
 
 
   Scenario Outline: Create a new media project

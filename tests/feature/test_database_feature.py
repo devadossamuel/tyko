@@ -591,3 +591,27 @@ def new_transfer_for_vendor(dummy_database, vendor_name, create_new_object):
         break
     else:
         assert False, "No valid objects found in the VendorTransfer"
+
+
+@scenario("database.feature", "Create a new project with a note")
+def test_project_note():
+    pass
+
+
+@when("a new Project with a project note")
+def new_project_with_a_project_note(dummy_database, new_project, new_note):
+    new_project_note = new_note
+    new_project_note.text = "This is a new project note"
+    new_project.notes.append(new_project_note)
+    dummy_database.add(new_project)
+    dummy_database.commit()
+    return dummy_database
+
+
+@then(parsers.parse("all the {data_type} records can be serialize"))
+def can_serialize(dummy_database, data_type):
+    my_data_type = getattr(scheme, data_type)
+    data_entry = dummy_database.query(my_data_type).all()
+    for entry in data_entry:
+        res = entry.serialize()
+        assert res is not None
