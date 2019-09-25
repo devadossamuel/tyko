@@ -45,7 +45,7 @@ class Routes:
         self.wr = WebsiteRoutes()
 
     def init_api_routes(self) -> None:
-        self.project = \
+        project = \
             entities.load_entity("project", self.db_engine).middleware()
 
         collection = \
@@ -60,17 +60,17 @@ class Routes:
             api_entities = [
                 APIEntity("Projects", rules=[
                     Route("/api/project", "projects",
-                          lambda serialize=True: self.project.get(serialize)),
+                          lambda serialize=True: project.get(serialize)),
                     Route("/api/project/<string:id>", "project_by_id",
-                          lambda id: self.project.get(id=id)),
+                          lambda id: project.get(id=id)),
                     Route("/api/project/<string:id>", "update_project",
-                          self.project.update,
+                          project.update,
                           methods=["PUT"]),
                     Route("/api/project/", "add_project",
-                          self.project.create,
+                          project.create,
                           methods=["POST"]),
                     Route("/api/project/<string:id>", "delete_project",
-                          lambda id: self.project.delete(id=id),
+                          lambda id: project.delete(id=id),
                           methods=["DELETE"]),
                     ]),
                 APIEntity("Collection", rules=[
