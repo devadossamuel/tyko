@@ -279,14 +279,9 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
 
         if "status" in request.form:
             new_project["status"] = request.form.get("status")
+
         if "title" in request.form:
             new_project["title"] = request.form.get("title")
-        #
-        #     "project_code": request.form.get("project_code"),
-        #     "current_location": request.form.get("current_location"),
-        #     "status": request.form.get("status"),
-        #     "title": request.form["title"]
-        # }
 
         updated_project = \
             self._data_connector.update(
