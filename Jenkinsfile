@@ -369,8 +369,14 @@ foreach($file in $opengl32_libraries){
                             }
                             post {
                                 always {
+                                    stash includes: "logs/flake8.log", name: 'FLAKE8_LOGS'
                                     archiveArtifacts 'logs/flake8.log'
-                                    recordIssues(tools: [flake8(pattern: 'logs/flake8.log')])
+                                    node('Windows') {
+                                        checkout scm
+                                        unstash "FLAKE8_LOGS"
+                                        recordIssues(tools: [flake8(pattern: 'logs/flake8.log')])
+                                    }
+
                                 }
                                 cleanup{
                                     cleanWs(patterns: [[pattern: 'logs/flake8.log', type: 'INCLUDE']])
