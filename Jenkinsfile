@@ -373,6 +373,7 @@ foreach($file in $opengl32_libraries){
                                     archiveArtifacts 'logs/flake8.log'
                                     node('Windows') {
                                         checkout scm
+                                        bat "dir"
                                         unstash "FLAKE8_LOGS"
                                         recordIssues(tools: [flake8(pattern: 'logs/flake8.log')])
                                     }
