@@ -12,7 +12,7 @@
                 </tr>
                 {% for item in items %}
                     <tr>
-                        <td><a href="{{ url_for('.page_index')}}item/{{ item['item_id'] }}">{{item['name']}}</a></td>
+                        <td><a href="{{ url_for('page_item')}}/{{ item['item_id'] }}">{{item['name']}}</a></td>
                         <td>{{item['format_type'] or ""}}</td>
                     </tr>
                 {% endfor %}

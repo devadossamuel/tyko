@@ -12,7 +12,7 @@
                 </tr>
                 {% for project in projects %}
                     <tr>
-                        <td><a href="{{ url_for('.page_index')}}project/{{project['project_id'] }}">{{project['title']}}</a></td>
+                        <td><a href="{{ url_for('page_projects')}}/{{project['project_id'] }}">{{project['title']}}</a></td>
                         <td>{{project['status']}}</td>
                     </tr>
                 {% endfor %}
