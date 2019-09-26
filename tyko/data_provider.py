@@ -42,9 +42,11 @@ class ProjectDataConnector(AbsDataProviderConnector):
         else:
             all_projects = session.query(scheme.Project).all()
 
-        if serialize:
-            all_projects = [project.serialize() for project in all_projects]
-
+        if serialize is True:
+            serialized_projects = []
+            for project in all_projects:
+                serialized_projects.append(project.serialize())
+            all_projects = serialized_projects
         session.close()
         return all_projects
 

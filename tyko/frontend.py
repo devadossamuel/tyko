@@ -131,7 +131,7 @@ class ProjectFrontend(FrontendEntity):
             data_provider.ProjectDataConnector(provider.db_session_maker)
 
     def list(self):
-        projects = self._data_connector.get(serialize=False)
+        projects = self._data_connector.get(serialize=True)
         return self.render_page(template="projects.html", projects=projects)
 
     @property
