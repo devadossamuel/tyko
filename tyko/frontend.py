@@ -57,9 +57,16 @@ class AbsFrontend(metaclass=abc.ABCMeta):
         """Create a webpage based on the template"""
 
 
+class IndexPage(AbsFrontend):
+
+    def render_page(self, template="index.html", **context):
+        header = self.build_header_context("Home", context=context)
+        return render_template(template, **header)
+
+
 class AboutPage(AbsFrontend):
 
-    def render_page(self, template, **context):
+    def render_page(self, template="about.html", **context):
         header = self.build_header_context("About", context=context)
         return render_template(template, **header)
 

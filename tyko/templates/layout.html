@@ -34,7 +34,7 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
 
             <ul class="navbar-nav mr-auto">
-                {% if selected_menu_item == "index" %}
+                {% if selected_menu_item == "Home" %}
                     <li class="nav-item active">
                 {% else %}
                     <li class="nav-item">
@@ -42,7 +42,7 @@
                     <a class="nav-link" href="{{url_for('page_index')}}">Home</a>
                 </li>
 
-                {% if selected_menu_item == "about" %}
+                {% if selected_menu_item == "About" %}
                     <li class="nav-item active">
                 {% else %}
                     <li class="nav-item">

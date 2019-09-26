@@ -42,7 +42,6 @@ class Routes:
         self.db_engine = db_engine
         self.app = app
         self.mw = middleware.Middleware(self.db_engine)
-        self.wr = WebsiteRoutes()
 
     def init_api_routes(self) -> None:
         project = \
@@ -154,10 +153,12 @@ class Routes:
             )
 
     def init_website_routes(self):
+        about_page = frontend.AboutPage()
+        index_page = frontend.IndexPage()
 
         static_web_routes = [
-            Route("/", "page_index", self.wr.page_index),
-            Route("/about", "page_about", self.wr.page_about),
+            Route("/", "page_index", index_page.render_page),
+            Route("/about", "page_about", about_page.render_page),
             ]
 
         simple_pages = []
@@ -255,21 +256,6 @@ class Routes:
                 self.app.add_url_rule(form_page.form_page_rule,
                                       form_page.form_page_name,
                                       form_page.create)
-
-
-class WebsiteRoutes:
-
-    @staticmethod
-    def page_index():
-        return render_template("index.html", selected_menu_item="index",
-                               entities=_all_entities,
-                               all_forms=all_forms
-                               )
-
-    @staticmethod
-    def page_about():
-        about_page = frontend.AboutPage()
-        return about_page.render_page("about.html", context=dict())
 
 
 def page_formats(middleware_source):
