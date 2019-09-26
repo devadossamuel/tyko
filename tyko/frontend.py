@@ -146,6 +146,13 @@ class ProjectFrontend(FrontendEntity):
     def entity_list_page_name(self) -> str:
         return "page_projects"
 
+    def display_details(self, entity_id):
+        selected_project = self._data_connector.get(
+            serialize=True, id=entity_id)[0]
+
+        return self.render_page(template="project_details.html",
+                                project=selected_project)
+
 
 class ItemFrontend(FrontendEntity):
     def __init__(self, provider: data_provider.DataProvider) -> None:

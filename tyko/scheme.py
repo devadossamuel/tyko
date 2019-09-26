@@ -95,18 +95,31 @@ class Project(AVTables):
         backref="project_sources"
     )
 
+    objects = relationship(
+        "CollectionObject",
+        backref="object_source"
+    )
+
     def serialize(self):
         notes = []
+
         for note in self.notes:
             notes.append(note.serialize())
-        #
+
+        child_object_ids = []
+        for project_object in self.objects:
+            child_object_ids.append(
+                (project_object.id, project_object.name)
+            )
+
         return {
             "project_id": self.id,
             "project_code": self.project_code,
             "current_location": self.current_location,
             "status": self.status,
             "title": self.title,
-            "notes": notes
+            "notes": notes,
+            "objects": child_object_ids
         }
 
 

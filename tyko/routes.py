@@ -29,7 +29,7 @@ class APIEntity:
 class EntityPage:
     entity_type: str
     entity_list_page: str
-    rules: List[Route] = field(default_factory=list)
+    routes: List[Route] = field(default_factory=list)
 
 
 _all_entities = set()
@@ -172,7 +172,7 @@ class Routes:
             EntityPage(
                 "Formats",
                 "page_formats",
-                rules=[
+                routes=[
                     Route(
                         "/format",
                         "page_formats",
@@ -183,7 +183,7 @@ class Routes:
             EntityPage(
                 "Objects",
                 "page_object",
-                rules=[
+                routes=[
                     Route(
                         "/object",
                         "page_object",
@@ -200,7 +200,7 @@ class Routes:
             EntityPage(
                 "Items",
                 "page_item",
-                rules=[
+                routes=[
                     Route(
                         "/item",
                         "page_item",
@@ -220,7 +220,7 @@ class Routes:
                 EntityPage(
                     simple_page.entity_title,
                     simple_page.entity_list_page_name,
-                    rules=[
+                    routes=[
                         Route(
                             rule=simple_page.entity_rule,
                             method=simple_page.entity_list_page_name,
@@ -229,23 +229,35 @@ class Routes:
                     ]
                 )
             )
-        project_route = Route(
-            "/project",
-            "page_projects",
-            lambda: frontend.ProjectFrontend(self.mw.data_provider).list()
+        project_page = EntityPage(
+            "Projects",
+            "page_project",
+            routes=[
+                Route(
+                    "/project",
+                    "page_projects",
+                    frontend.ProjectFrontend(self.mw.data_provider).list
+                ),
+                Route(
+                    "/project/<string:project_id>",
+                    "page_project_details",
+                    lambda project_id: frontend.ProjectFrontend(
+                        self.mw.data_provider).display_details(project_id)
+                )
+            ]
         )
 
         if self.app:
             for rule in static_web_routes:
                 self.app.add_url_rule(rule.rule, rule.method,
                                       rule.viewFunction)
-
-            self.app.add_url_rule(project_route.rule,
-                                  project_route.method,
-                                  project_route.viewFunction)
+            for rule in project_page.routes:
+                self.app.add_url_rule(rule.rule,
+                                      rule.method,
+                                      rule.viewFunction)
 
             for entity in entity_pages:
-                for rule in entity.rules:
+                for rule in entity.routes:
                     _all_entities.add((entity.entity_type,
                                        entity.entity_list_page))
 
