@@ -40,7 +40,7 @@
                         <ul>
 
                         {% for item in object['items'] %}
-                            <li>{{ item['name'] }}</li>
+                            <li><a href="{{ url_for('.page_index')}}item/{{ item['item_id'] }}">{{ item['name'] }}</a></li>
                         {% endfor %}
                         </ul>
                     </td>
