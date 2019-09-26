@@ -57,7 +57,7 @@
                         Entities
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarEntitiesDropdown">
-                        {% for entity in entities %}
+                        {% for entity in entities|sort %}
                             <a class="dropdown-item" href="{{url_for(entity[1])}}">{{ entity[0] }}</a>
                         {% endfor %}
                     </div>
@@ -67,7 +67,7 @@
                         Forms
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarFormsDropdown">
-                        {% for form_page in all_forms %}
+                        {% for form_page in all_forms|sort %}
                         <a class="dropdown-item" href="{{url_for(form_page[1])}}">{{ form_page[0] }}</a>
                         {% endfor %}
                     </div>
