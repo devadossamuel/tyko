@@ -37,7 +37,7 @@ class AbsFrontend(metaclass=abc.ABCMeta):
 
 class FrontendEntity(AbsFrontend):
     _entities: Set[Tuple[str, str]] = {
-        ("Formats", "page_formats"),
+        # ("Formats", "page_formats"),
         ("Objects", "page_object"),
     }
 
@@ -99,7 +99,7 @@ class ProjectFrontend(FrontendEntity):
 
     @property
     def entity_title(self) -> str:
-        return "Project"
+        return "Projects"
 
     @property
     def entity_rule(self) -> str:
@@ -143,7 +143,7 @@ class ItemFrontend(FrontendEntity):
 
     @property
     def entity_title(self) -> str:
-        return "Item"
+        return "Items"
 
     @property
     def entity_rule(self) -> str:
