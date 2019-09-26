@@ -161,10 +161,7 @@ class Routes:
             ]
 
         simple_pages = []
-        for entity in ["project",
-                       # "item",
-                       "collection"
-                       ]:
+        for entity in ["collection"]:
 
             simple_pages.append(
                 entities.load_entity(entity, self.db_engine).web_frontend()
@@ -181,6 +178,7 @@ class Routes:
                         lambda: page_formats(self.mw)
                     ),
                 ]),
+
             EntityPage(
                 "Objects",
                 "page_object",
@@ -230,11 +228,20 @@ class Routes:
                     ]
                 )
             )
+        project_route = Route(
+            "/project",
+            "page_projects",
+            lambda: frontend.ProjectFrontend(self.mw.data_provider).list()
+        )
 
         if self.app:
             for rule in static_web_routes:
                 self.app.add_url_rule(rule.rule, rule.method,
                                       rule.viewFunction)
+
+            self.app.add_url_rule(project_route.rule,
+                                  project_route.method,
+                                  project_route.viewFunction)
 
             for entity in entity_pages:
                 for rule in entity.rules:
@@ -261,10 +268,8 @@ class WebsiteRoutes:
 
     @staticmethod
     def page_about():
-        return render_template("about.html", selected_menu_item="about",
-                               entities=_all_entities,
-                               all_forms=all_forms
-                               )
+        about_page = frontend.AboutPage()
+        return about_page.render_page("about.html", context=dict())
 
 
 def page_formats(middleware_source):

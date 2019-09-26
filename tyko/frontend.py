@@ -20,24 +20,54 @@ class FormField:
 class AbsFrontend(metaclass=abc.ABCMeta):
     @classmethod
     def build_header_context(cls, current_item, context):
-        context["selected_menu_item"] = current_item
-        context["entities"] = sorted(FrontendEntity.all_entities(),
-                                     key=lambda x: [0])
+        entity_menu = [
+            "Collections",
+            "Items",
+            "Objects"
+        ]
+        new_context = dict()
+        new_context.update(context)
+        new_context["selected_menu_item"] = current_item
+
+        def filter_valid_entities_only(entity) -> bool:
+            if entity[0] not in entity_menu:
+                return False
+            return True
+
+        new_context["entities"] = filter(filter_valid_entities_only,
+                                         FrontendEntity.all_entities())
+
         form_list = set()
+
+        for entity_name in entity_menu:
+            if current_item == entity_name:
+                new_context["is_entity"] = True
+                break
+        else:
+            new_context["is_entity"] = False
 
         for form in all_forms:
             form_list.add((form.form_title, form.form_page_name))
 
-        context["all_forms"] = sorted(form_list, key=lambda x: [0])
+        new_context["all_forms"] = sorted(form_list, key=lambda x: [0])
+        return new_context
 
     @abc.abstractmethod
     def render_page(self, template, **context):
         """Create a webpage based on the template"""
 
 
+class AboutPage(AbsFrontend):
+
+    def render_page(self, template, **context):
+        header = self.build_header_context("About", context=context)
+        return render_template(template, **header)
+
+
 class FrontendEntity(AbsFrontend):
     _entities: Set[Tuple[str, str]] = {
         # ("Formats", "page_formats"),
+        ("Items", "page_item"),
         ("Objects", "page_object"),
     }
 
@@ -58,12 +88,12 @@ class FrontendEntity(AbsFrontend):
             "{}.list not implemented".format(self.__class__.__name__), 404)
 
     def render_page(self, template="newentity.html", **context):
-        self.build_header_context(
+        new_context = self.build_header_context(
             current_item=self.entity_title,
             context=context
         )
 
-        return render_template(template, **context)
+        return render_template(template, **new_context)
 
     @property
     @abc.abstractmethod
@@ -240,11 +270,11 @@ class NewEntityForm(AbsFrontend):
 
     @authenticate
     def render_page(self, template="newentity.html", **context):
-        self.build_header_context(
+        new_context = self.build_header_context(
             current_item=self.form_title,
             context=context
         )
-        return render_template(template, **context)
+        return render_template(template, **new_context)
 
     @abc.abstractmethod
     def create(self):

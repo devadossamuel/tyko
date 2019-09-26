@@ -41,20 +41,30 @@
                 {% endif %}
                     <a class="nav-link" href="{{url_for('page_index')}}">Home</a>
                 </li>
-                    {% if selected_menu_item == "about" %}
-                        <li class="nav-item active">
-                    {% else %}
-                        <li class="nav-item">
-                    {% endif %}
-                        <a class="nav-link" href="{{url_for('page_about')}}">About</a>
+
+                {% if selected_menu_item == "about" %}
+                    <li class="nav-item active">
+                {% else %}
+                    <li class="nav-item">
+                {% endif %}
+                    <a class="nav-link" href="{{url_for('page_about')}}">About</a>
                 </li>
-                {% if selected_menu_item == "Item" %}
+
+                {% if selected_menu_item == "Projects" %}
+                    <li class="nav-item active">
+                {% else %}
+                    <li class="nav-item">
+                {% endif %}
+                    <a class="nav-link" href="{{url_for('page_projects')}}">Projects</a>
+                </li>
+
+                {% if is_entity %}
                     <li class="nav-item dropdown active">
                 {% else %}
                 <li class="nav-item dropdown">
                 {% endif %}
                     <a class="nav-link dropdown-toggle" href="#" id="navbarEntitiesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Entities
+                        More Entities
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarEntitiesDropdown">
                         {% for entity in entities|sort %}
