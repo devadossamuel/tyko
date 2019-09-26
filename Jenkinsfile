@@ -596,32 +596,63 @@ foreach($file in $opengl32_libraries){
                       message 'Deploy to server'
                       parameters {
                         string(defaultValue: 'avdatabase.library.illinois.edu', description: 'Location where to install the server application', name: 'SERVER_URL', trim: false)
+                        string(defaultValue: 'avdatabase_db_1', description: 'Name of the container with the database', name: 'CONTAINER_NAME_DATABASE', trim: false)
                         credentials credentialType: 'com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl', defaultValue: 'henryUserName', description: '', name: 'SERVER_CREDS', required: false
+                        credentials credentialType: 'com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl', defaultValue: 'TYKO_DB_CREDS', description: '', name: 'DATABASE_CREDS', required: false
                       }
                     }
-                    steps{
-                        unstash "PYTHON_PACKAGES"
-                        unstash "SERVER_DEPLOY_FILES"
-                        script{
-                            def remote = [:]
+                    stages{
+                        stage("Backing up database"){
+                            steps{
+                                script{
+                                    def remote = [:]
 
-                            withCredentials([usernamePassword(credentialsId: SERVER_CREDS, passwordVariable: 'password', usernameVariable: 'username')]) {
-                                remote.name = 'test'
-                                remote.host = SERVER_URL
-                                remote.user = username
-                                remote.password = password
-                                remote.allowAnyHosts = true
+                                    withCredentials([usernamePassword(credentialsId: SERVER_CREDS, passwordVariable: 'password', usernameVariable: 'username')]) {
+                                        remote.name = 'test'
+                                        remote.host = SERVER_URL
+                                        remote.user = username
+                                        remote.password = password
+                                        remote.allowAnyHosts = true
+                                    }
+
+                                    def backup_file_name = "tyko-${BRANCH_NAME}-${BUILD_NUMBER}-backup.sql"
+                                    withCredentials([usernamePassword(credentialsId: DATABASE_CREDS, passwordVariable: 'password', usernameVariable: 'username')]) {
+                                        sshCommand(
+                                            remote: remote,
+                                            command: "docker exec ${CONTAINER_NAME_DATABASE} /bin/bash -c \"mysqldump av_preservation --user='${username}' --password='${password}' > /tmp/${backup_file_name}\" && docker cp avdatabase_db_1:/tmp/${backup_file_name} ~/backups/"
+                                            )
+                                    }
+                                }
+
                             }
-                            sshRemove remote: remote, path: "package", failOnError: false
-                            sshCommand remote: remote, command: "mkdir package"
-                            sshPut remote: remote, from: 'dist', into: './package/'
-                            sshPut remote: remote, from: 'deploy', into: './package/'
-                            sshPut remote: remote, from: 'database', into: './package/'
-                            sshCommand remote: remote, command: """cd package &&
-docker-compose -f deploy/docker-compose.yml -p avdatabase build &&
-docker-compose -f deploy/docker-compose.yml -p avdatabase up -d"""
                         }
-                        addBadge(icon: 'success.gif', id: '', link: 'http://avdatabase.library.illinois.edu:8000/', text: 'Server Application Deployed')
+                        stage("Deploying New Server"){
+
+                            steps{
+                                unstash "PYTHON_PACKAGES"
+                                unstash "SERVER_DEPLOY_FILES"
+                                script{
+                                    def remote = [:]
+
+                                    withCredentials([usernamePassword(credentialsId: SERVER_CREDS, passwordVariable: 'password', usernameVariable: 'username')]) {
+                                        remote.name = 'test'
+                                        remote.host = SERVER_URL
+                                        remote.user = username
+                                        remote.password = password
+                                        remote.allowAnyHosts = true
+                                    }
+                                    sshRemove remote: remote, path: "package", failOnError: false
+                                    sshCommand remote: remote, command: "mkdir package"
+                                    sshPut remote: remote, from: 'dist', into: './package/'
+                                    sshPut remote: remote, from: 'deploy', into: './package/'
+                                    sshPut remote: remote, from: 'database', into: './package/'
+                                    sshCommand remote: remote, command: """cd package &&
+        docker-compose -f deploy/docker-compose.yml -p avdatabase build &&
+        docker-compose -f deploy/docker-compose.yml -p avdatabase up -d"""
+                                }
+                                addBadge(icon: 'success.gif', id: '', link: "http://${SERVER_URL}:8000/", text: 'Server Application Deployed')
+                            }
+                        }
                     }
                 }
             }
