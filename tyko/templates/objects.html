@@ -1,23 +1,27 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1 class="mt-5">Objects</h1>
-<div class="row onePadding">
-    <div class="col-md-12 col-sm-12">
-        <div class="table-responsive">
-            <table class="table table-striped">
+<div class="container">
+    <h1 class="mt-5">Objects</h1>
+    <table id="table"
+        data-toggle="table"
+        data-search="true"
+        data-show-columns="true"
+        class="table-striped">
+        <thead class="thead-light">
+            <th data-sortable="true">Name</th>
+            <th>Metadata</th>
+            <th>Details</th>
+        </thead>
+        <tbody>
+            {% for object in objects %}
                 <tr>
-                    <th>Name</th>
-                    <th>Metadata</th>
+                    <td>{{object['name']}}</td>
+                    <td><a href="{{ url_for('.page_index')}}api/object/{{object['id']}}-pbcore.xml">PBCore</a></td>
+                    <td><a href="{{ url_for('page_object')}}/{{object['id'] }}">Details</a></td>
                 </tr>
-                {% for object in objects %}
-                    <tr>
-                        <td><a href="{{ url_for('.page_index')}}object/{{object['id']}}">{{object['name']}}</a></td>
-                        <td><a href="{{ url_for('.page_index')}}api/object/{{object['id']}}-pbcore.xml">PBCore record</a> </td>
-                    </tr>
-                {% endfor %}
-            </table>
-        </div>
-    </div>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

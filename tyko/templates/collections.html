@@ -1,23 +1,27 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1 class="mt-5">Collections</h1>
-<div class="row onePadding">
-    <div class="col-md-12 col-sm-12">
-        <div class="table-responsive">
-            <table class="table table-striped">
+<div class="container">
+    <h1 class="mt-5">Collections</h1>
+    <table id="table"
+        data-toggle="table"
+        data-search="true"
+        data-show-columns="true"
+        class="table-striped">
+        <thead class="thead-light">
+            <th data-sortable="true">Name</th>
+            <th data-sortable="true">Department</th>
+            <th>Details</th>
+        </thead>
+        <tbody>
+            {% for collection in collections %}
                 <tr>
-                    <th>Name</th>
-                    <th>Department</th>
+                    <td>{{collection['collection_name']}}</td>
+                    <td>{{collection['department']}}</td>
+                    <td><a href="{{url_for('page_collections')}}/{{ collection['collection_id'] }}">Details</a></td>
                 </tr>
-                {% for collection in collections %}
-                    <tr>
-                        <td><a href="{{url_for('page_collections')}}/{{ collection['collection_id'] }}"> {{collection['collection_name']}}</a></td>
-                        <td>{{collection['department']}}</td>
-                    </tr>
-                {% endfor %}
-            </table>
-        </div>
-    </div>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

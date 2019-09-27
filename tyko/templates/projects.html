@@ -1,23 +1,29 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1 class="mt-5">Projects</h1>
-<div class="row onePadding">
-    <div class="col-md-12 col-sm-12">
-        <div class="table-responsive">
-            <table class="table table-striped">
+<div class="container">
+    <h1 class="mt-5">Projects</h1>
+     <table id="table"
+            data-toggle="table"
+            data-search="true"
+            data-show-columns="true"
+            class="table-striped" >
+         <thead class="thead-light">
+            <th data-sortable="true">Title</th>
+            <th data-sortable="true">Status</th>
+            <th>Details</th>
+
+         </thead>
+         <tbody>
+            {% for project in projects %}
                 <tr>
-                    <th>Title</th>
-                    <th>Status</th>
+                    <td>{{project['title']}}</td>
+                    <td>{{project['status']}}</td>
+                    <td><a href="{{ url_for('page_projects')}}/{{project['project_id'] }}">Details</a></td>
                 </tr>
-                {% for project in projects %}
-                    <tr>
-                        <td><a href="{{ url_for('page_projects')}}/{{project['project_id'] }}">{{project['title']}}</a></td>
-                        <td>{{project['status']}}</td>
-                    </tr>
-                {% endfor %}
-            </table>
-        </div>
+            {% endfor %}
+            </tr>
+         </tbody>
+     </table>
     </div>
-</div>
 {% endblock %}
