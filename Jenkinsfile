@@ -157,7 +157,7 @@ pipeline {
                 }
                 stage("Build Client with Docker Container"){
                     agent{
-                        label "Docker && !aws"
+                        label "Docker"
                     }
                     when {
                         equals expected: true, actual: params.BUILD_CLIENT
@@ -320,7 +320,7 @@ foreach($file in $opengl32_libraries){
                                 always {
                                     stash includes: "logs/mypy.log", name: 'MYPY_LOGS'
                                     publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: "reports/mypy/html/", reportFiles: 'index.html', reportName: 'MyPy HTML Report', reportTitles: ''])
-                                    node('Windows && !aws') {
+                                    node('Windows') {
                                         checkout scm
                                         unstash "MYPY_LOGS"
                                         recordIssues(tools: [myPy(name: 'MyPy', pattern: 'logs/mypy.log')])
@@ -371,7 +371,7 @@ foreach($file in $opengl32_libraries){
                                 always {
                                     stash includes: "logs/flake8.log", name: 'FLAKE8_LOGS'
                                     archiveArtifacts 'logs/flake8.log'
-                                    node('Windows && !aws') {
+                                    node('Windows') {
                                         checkout scm
                                         unstash "FLAKE8_LOGS"
                                         recordIssues(tools: [flake8(pattern: 'logs/flake8.log')])
@@ -398,7 +398,7 @@ foreach($file in $opengl32_libraries){
                                 always{
                                     stash includes: "reports/pylint_issues.txt", name: 'PYLINT_REPORT'
                                     archiveArtifacts allowEmptyArchive: true, artifacts: "reports/pylint.txt"
-                                    node('Windows && !aws') {
+                                    node('Windows') {
                                         checkout scm
                                         unstash "PYLINT_REPORT"
                                         recordIssues(tools: [pyLint(pattern: 'reports/pylint_issues.txt')])
@@ -484,7 +484,7 @@ foreach($file in $opengl32_libraries){
                         always{
                             stash includes: "reports/sonar-report.json", name: 'SONAR_REPORT'
                             archiveArtifacts allowEmptyArchive: true, artifacts: 'reports/sonar-report.json'
-                            node('Windows && !aws') {
+                            node('Windows) {
                                 checkout scm
                                 unstash "SONAR_REPORT"
                                 recordIssues(tools: [sonarQube(pattern: 'reports/sonar-report.json')])
@@ -528,7 +528,7 @@ foreach($file in $opengl32_libraries){
                 }
                 stage("Packaging Client in Docker Container"){
                     agent{
-                        label "Docker && !aws"
+                        label "Docker"
 
                     }
                     when {
