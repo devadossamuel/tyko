@@ -137,12 +137,17 @@ class Collection(AVTables):
     contact_id = db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
 
     def serialize(self):
+        if self.contact is not None:
+            contact = self.contact.serialize()
+        else:
+            contact = None
         return {
             "collection_id": self.id,
             "record_series": self.record_series,
             "collection_name": self.collection_name,
             "contact_id": self.contact_id,
-            "department": self.department
+            "department": self.department,
+            "contact": contact
         }
 
 

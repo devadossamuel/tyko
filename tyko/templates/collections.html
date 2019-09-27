@@ -7,14 +7,12 @@
         <div class="table-responsive">
             <table class="table table-striped">
                 <tr>
-                    <th>ID</th>
                     <th>Name</th>
                     <th>Department</th>
                 </tr>
                 {% for collection in collections %}
                     <tr>
-                        <td>{{collection['id']}}</td>
-                        <td>{{collection['collection_name']}}</td>
+                        <td><a href="{{url_for('page_collections')}}/{{ collection['collection_id'] }}"> {{collection['collection_name']}}</a></td>
                         <td>{{collection['department']}}</td>
                     </tr>
                 {% endfor %}

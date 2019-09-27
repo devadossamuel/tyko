@@ -238,10 +238,17 @@ class CollectiontFrontend(FrontendEntity):
             data_provider.CollectionDataConnector(provider.db_session_maker)
 
     def list(self):
-        collections = self._data_connector.get(serialize=False)
+        collections = self._data_connector.get(serialize=True)
 
         return self.render_page(template="collections.html",
                                 collections=collections)
+
+    def display_details(self, entity_id):
+        selected_object = self._data_connector.get(serialize=True,
+                                                   id=entity_id)[0]
+
+        return self.render_page(template="collection_details.html",
+                                collection=selected_object)
 
     @property
     def entity_title(self) -> str:

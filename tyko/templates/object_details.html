@@ -14,7 +14,7 @@
                     </tr>
                     <tr>
                         <th>Collection</th>
-                        <td>{{object['collection']['collection_name']}}</td>
+                        <td><a href="{{url_for('page_collections')}}/{{ object['collection']['collection_id']}}">{{object['collection']['collection_name']}}</a></td>
                     </tr>
                     <tr>
                         <th>Project</th>

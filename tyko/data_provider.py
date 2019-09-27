@@ -289,10 +289,14 @@ class CollectionDataConnector(AbsDataProviderConnector):
         else:
             all_collections = \
                 session.query(scheme.Collection).all()
-        session.close()
-        if serialize:
-            return [collection.serialize() for collection in all_collections]
 
+        if serialize:
+            serialized_collections = []
+            for collection in all_collections:
+                serialized_collections.append(collection.serialize())
+            all_collections = serialized_collections
+
+        session.close()
         return all_collections
 
     def create(self, *args, **kwargs):

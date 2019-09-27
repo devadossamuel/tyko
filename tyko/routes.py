@@ -162,11 +162,11 @@ class Routes:
             ]
 
         simple_pages = []
-        for entity in ["collection"]:
-
-            simple_pages.append(
-                entities.load_entity(entity, self.db_engine).web_frontend()
-            )
+        # for entity in ["collection"]:
+        #
+        #     simple_pages.append(
+        #         entities.load_entity(entity, self.db_engine).web_frontend()
+        #     )
 
         entity_pages = [
             EntityPage(
@@ -212,6 +212,24 @@ class Routes:
                         "page_item_details",
                         lambda item_id: frontend.ItemFrontend(
                             self.mw.data_provider).display_details(item_id)
+                    ),
+                ]),
+            EntityPage(
+                "Collections",
+                "page_collections",
+                routes=[
+                    Route(
+                        "/collection",
+                        "page_collections",
+                        lambda: frontend.CollectiontFrontend(
+                            self.mw.data_provider).list()
+                    ),
+                    Route(
+                        "/collection/<string:collection_id>",
+                        "page_collection_details",
+                        lambda collection_id: frontend.CollectiontFrontend(
+                            self.mw.data_provider).display_details(
+                                collection_id)
                     ),
                 ]),
         ]

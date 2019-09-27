@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="bd-title mt-5">Collection Details</h1>
+    <div class="row onePadding">
+        <div class="col-md-12 col-sm-12">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead class="thead-light"/>
+                    <tr>
+                        <th style="width: 16.66%">Name</th>
+                        <td>{{collection['collection_name']}}</td>
+                    </tr>
+                    <tr>
+                        <th>Department</th>
+                        <td>{{collection['department']}}</td>
+                    </tr>                    <tr>
+                        <th>Contact</th>
+                        <td><a href="mailto:{{collection['contact']['email_address']}}"> {{collection['contact']['first_name']}} {{collection['contact']['last_name']}}</a></td>
+                    </tr>
+                    <tr>
+                        <th>Record Series</th>
+                        <td>{{collection['record_series']}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
