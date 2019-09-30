@@ -8,7 +8,7 @@ COPY setup.py /build/
 COPY tyko/ /build/tyko/
 WORKDIR /build
 RUN pip wheel --wheel-dir /build/wheels gunicorn mysqlclient lxml flask sqlalchemy
-RUN pip wheel --wheel-dir /build/wheels -r requirements.txt
+RUN pip wheel --wheel-dir /build/wheels -r /build/requirements.txt
 RUN python setup.py bdist_wheel
 
 FROM python:3.7-alpine as app

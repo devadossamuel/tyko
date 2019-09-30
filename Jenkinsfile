@@ -618,7 +618,7 @@ foreach($file in $opengl32_libraries){
                                     }
 
                                     def backup_file_name = "tyko-${BRANCH_NAME}-${BUILD_NUMBER}-backup.sql"
-                                    catchError(buildResult: 'SUCCESS', message: 'Unable to make a backup', stageResult: 'UNSTABLE') {
+                                    catchError(buildResult: 'SUCCESS', message: 'Unable to make a backup of database', stageResult: 'UNSTABLE') {
                                         withCredentials([usernamePassword(credentialsId: DATABASE_CREDS, passwordVariable: 'password', usernameVariable: 'username')]) {
                                             sshCommand(
                                                 remote: remote,
