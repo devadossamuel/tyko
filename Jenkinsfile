@@ -618,11 +618,13 @@ foreach($file in $opengl32_libraries){
                                     }
 
                                     def backup_file_name = "tyko-${BRANCH_NAME}-${BUILD_NUMBER}-backup.sql"
-                                    withCredentials([usernamePassword(credentialsId: DATABASE_CREDS, passwordVariable: 'password', usernameVariable: 'username')]) {
-                                        sshCommand(
-                                            remote: remote,
-                                            command: "docker exec ${CONTAINER_NAME_DATABASE} /bin/bash -c \"mysqldump av_preservation --user='${username}' --password='${password}' > /tmp/${backup_file_name}\" && docker cp avdatabase_db_1:/tmp/${backup_file_name} ~/backups/"
-                                            )
+                                    catchError(buildResult: 'SUCCESS', message: 'Unable to make a backup', stageResult: 'UNSTABLE') {
+                                        withCredentials([usernamePassword(credentialsId: DATABASE_CREDS, passwordVariable: 'password', usernameVariable: 'username')]) {
+                                            sshCommand(
+                                                remote: remote,
+                                                command: "docker exec ${CONTAINER_NAME_DATABASE} /bin/bash -c \"mysqldump av_preservation --user='${username}' --password='${password}' > /tmp/${backup_file_name}\" && docker cp avdatabase_db_1:/tmp/${backup_file_name} ~/backups/"
+                                                )
+                                        }
                                     }
                                 }
 
