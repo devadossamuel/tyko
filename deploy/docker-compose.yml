@@ -14,7 +14,7 @@ services:
         TYKO_PASSWORD: "doe123"
     ports:
       - "8000:8000"
-    command: gunicorn --workers=5  --bind 0.0.0.0:8000  "tyko.run:create_app()"
+    command: sh ./start.sh
   db:
     image: 'mariadb'
 #    build:

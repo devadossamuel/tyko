@@ -1,5 +1,9 @@
+import sys
+
 from flask import Flask, make_response
 from flask_sqlalchemy import SQLAlchemy
+
+from .database import init_database
 from .exceptions import DataError
 from .data_provider import DataProvider
 from .routes import Routes
@@ -26,9 +30,20 @@ def create_app(app=None):
 
 
 def main() -> None:
-    """Run as a local program and not for production"""
 
+    if "init-db" in sys.argv:
+        my_app = Flask(__name__)
+        my_app.config.from_object("tyko.config.Config")
+        my_app.config.from_envvar("TYKO_SETTINGS", True)
+        database = SQLAlchemy(my_app)
+        data_provider = DataProvider(database.engine)
+        print("Initializing Database")
+        init_database(data_provider.db_engine)
+        print("Database initialized")
+        exit(0)
     my_app = create_app()
+
+    """Run as a local program and not for production"""
     my_app.run()
 
 

@@ -8,6 +8,9 @@ from tyko import scheme
 
 
 def init_database(engine) -> None:
+    # if engine.dialect.has_table(engine, "audio_video"):
+    #     return
+    print("Creating all tables")
     scheme.AVTables.metadata.create_all(bind=engine)
 
     initial_session = sessionmaker(bind=engine)
@@ -33,7 +36,7 @@ def init_database(engine) -> None:
 
 
 def _populate_note_type_table(session):
-
+    print("Populating NoteTypes Table")
     for note_type, note_metadata in scheme.note_types.items():
         note_id = note_metadata[0]
 
@@ -42,6 +45,7 @@ def _populate_note_type_table(session):
 
 
 def _populate_format_types_table(session):
+    print("Populating FormatTypes Table")
     for format_type, format_metadata in scheme.format_types.items():
         format_id = format_metadata[0]
 
