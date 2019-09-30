@@ -647,6 +647,7 @@ foreach($file in $opengl32_libraries){
                                     }
                                     sshRemove remote: remote, path: "package", failOnError: false
                                     sshCommand remote: remote, command: "mkdir package"
+                                    sshPut remote: remote, from: 'requirements.txt', into: './package/'
                                     sshPut remote: remote, from: 'dist', into: './package/'
                                     sshPut remote: remote, from: 'deploy', into: './package/'
                                     sshPut remote: remote, from: 'database', into: './package/'
