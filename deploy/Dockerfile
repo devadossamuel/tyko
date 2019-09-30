@@ -32,6 +32,6 @@ RUN echo "SQLALCHEMY_DATABASE_URI = '${DB_URI}'" > /app/config.cfg \
   && echo "USERNAME = '${TYKO_USERNAME}'" >> /app/config.cfg \
   && echo "PASSWORD = '${TYKO_PASSWORD}'" >> /app/config.cfg
 
-COPY deploy/start.sh ./start.sh
+COPY deploy/start.sh /app/start.sh
 
 ENV TYKO_SETTINGS=/app/config.cfg

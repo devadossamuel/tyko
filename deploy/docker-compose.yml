@@ -14,7 +14,7 @@ services:
         TYKO_PASSWORD: "doe123"
     ports:
       - "8000:8000"
-    command: sh ./start.sh
+    command: sh /app/start.sh
   db:
     image: 'mariadb'
 #    build:
