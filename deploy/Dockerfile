@@ -24,8 +24,8 @@ RUN apk update && apk add --no-cache mariadb-client mariadb-dev \
     && pip install --no-index --find-links=./wheel dist/tyko-*.whl gunicorn mysqlclient -r requirements.txt
 
 
-
 WORKDIR /app
+VOLUME /database
 
 # Create a config file
 RUN echo "SQLALCHEMY_DATABASE_URI = '${DB_URI}'" > /app/config.cfg \
