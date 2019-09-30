@@ -584,7 +584,9 @@ foreach($file in $opengl32_libraries){
         stage("Deploy"){
             parallel{
                 stage("Deploy Server"){
-                    agent any
+                    agent {
+                        label "!aws"
+                    }
                     options {
                       skipDefaultCheckout true
                     }
