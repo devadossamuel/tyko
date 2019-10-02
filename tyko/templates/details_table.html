@@ -1,0 +1,75 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="container-fluid">
+    {% block table_title %}
+    <h1 class="mt-5">
+    {%- if edit == True -%}
+        Edit
+    {% endif -%}
+    {{ itemType }} Details
+    </h1>
+    {% endblock %}
+    <div class="row onePadding">
+        <div class="col-md-12 col-sm-12">
+            <div class="container">
+                {%-if edit == True%}
+                    <script type="text/javascript" src = "{{ url_for('static', filename = 'js/editData.js') }}"></script>
+                {%- endif -%}
+                    <nav class="navbar navbar-expand-lg navbar-light justify-content-between bg-light">
+                    <button class="btn btn-outline-primary"
+                            type="button"
+                            onclick="location.href='{{ edit_link }}'"
+                {%-if edit == True%}
+                    disabled
+                {%- endif -%}
+                    >Edit</button>
+                    </nav>
+                </div>
+                    <div class="container">
+                        <div class="table-responsive">
+                        <form  id="new-content-form" onsubmit="return editData('{{ api_path }}')">
+                        {% block detail_table %}
+
+                        {% endblock %}
+
+                        {%- if edit == True -%}
+                            <div id="success"
+                                 class="modal fade bd-example-modal-sm"
+                                 tabindex="-1"
+                                 role="dialog"
+                                 aria-labelledby="mySmallModalLabel"
+                                 aria-hidden="true">
+                                <div class="modal-dialog modal-sm" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 id="status_report_title">Success</h1>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p id="changelog">Record Updated</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button"
+                                                    class="btn btn-primary"
+                                                    data-dismiss="modal"
+                                                    onclick="location.href='{{ view_details_path }}'">
+                                                Okay</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" type="submit">Submit</button>
+                            <button class="btn btn-secondary"
+                                    type="button"
+                                    onclick="location.href='{{ view_details_path }}'">Cancel</button>
+                        {%- endif -%}
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

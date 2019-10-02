@@ -4,7 +4,7 @@ import abc
 from typing import Tuple, Set
 from dataclasses import dataclass
 
-from flask import make_response, render_template
+from flask import make_response, render_template, url_for
 from . import data_provider, scheme
 from .decorators import authenticate
 
@@ -149,9 +149,27 @@ class ProjectFrontend(FrontendEntity):
     def display_details(self, entity_id):
         selected_project = self._data_connector.get(
             serialize=True, id=entity_id)[0]
-
+        edit_link = f"{url_for('page_projects')}/{entity_id}/edit"
         return self.render_page(template="project_details.html",
-                                project=selected_project)
+                                project=selected_project,
+                                edit=False,
+                                edit_link=edit_link
+                                )
+
+    def edit_details(self, entity_id):
+        selected_project = self._data_connector.get(
+            serialize=True, id=entity_id)[0]
+        api_path = f"{url_for('.page_index')}api/project/{entity_id}"
+        view_details_path = f"{url_for('page_projects')}/{entity_id}"
+        return self.render_page(template="project_details.html",
+                                project=selected_project,
+                                api_path=api_path,
+                                view_details_path=view_details_path,
+                                edit=True)
+
+    def render_page(self, template="project_details.html", **context):
+        context['itemType'] = "Project"
+        return super().render_page(template, **context)
 
 
 class ItemFrontend(FrontendEntity):
