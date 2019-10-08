@@ -3,11 +3,10 @@ RUN apk add --no-cache gcc musl-dev linux-headers mariadb-client mariadb-dev lib
 
 RUN python -m pip install pip --upgrade
 RUN pip install gunicorn mysqlclient lxml flask sqlalchemy
-COPY requirements.txt /build/
-COPY setup.py /build/
+COPY ["requirements.txt", "setup.py", "setup.cfg", "/build/"]
 COPY tyko/ /build/tyko/
 WORKDIR /build
-RUN pip wheel --wheel-dir /build/wheels gunicorn mysqlclient lxml flask sqlalchemy
+RUN pip wheel --wheel-dir /build/wheels gunicorn mysqlclient
 RUN pip wheel --wheel-dir /build/wheels -r /build/requirements.txt
 RUN python setup.py bdist_wheel
 

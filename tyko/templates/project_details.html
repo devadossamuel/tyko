@@ -1,50 +1,65 @@
-{% extends "layout.html" %}
+{% extends "details_table.html" %}
+{% block detail_table %}
 
-{% block content %}
+<table class="table ">
+ <thead class="thead-light"/>
+    <tr>
+        <th style="width: 16.66%">Title </th>
+        <td>
+            {%- if edit == True -%}
+                <input type="text" class="form-control" id="title" name="title" value="{{project['title']}}">
+            {%- else -%}
+            {{project['title']}}
+            {%- endif -%}
+        </td>
+    </tr>
+    <tr>
+        <th>Project Code</th>
+        <td>
+            {%- if edit == True -%}
+                <input type="text" class="form-control" id="project_code" name="project_code" value="{{project['project_code']}}" disabled>
+            {%- else -%}
+                {{project['project_code']}}
+            {%- endif -%}
+        </td>
+    </tr>
+    <tr>
+        <th>Status</th>
+        <td>
+             {%- if edit == True -%}
+                <input type="text" class="form-control" id="status" name="status" value="{{project['status']}}">
+            {%- else -%}
+                {{project['status']}}
+            {%- endif -%}
 
-<div class="container-fluid">
-    <h1 class="mt-5">Project Details</h1>
-    <div class="row onePadding">
-    <div class="col-md-12 col-sm-12">
-        <div class="table-responsive">
-            <table class="table table-striped table">
-             <thead class="thead-light"/>
-                <tr>
-                    <th style="width: 16.66%">Title </th>
-                    <td>{{project['title']}}</td>
-                </tr>
-                <tr>
-                    <th>Project Code</th>
-                    <td>{{project['project_code']}}</td>
-                </tr>
-                <tr>
-                    <th>Status</th>
-                    <td>{{project['status']}}</td>
-                </tr>
-                <tr>
-                    <th>Current Location</th>
-                    <td>{{project['current_location']}}</td>
-                </tr>
-                <tr>
-                    <th rowspan="{{project['notes']|length + 1}}">Notes</th>
+        </td>
+    </tr>
+    <tr>
+        <th>Current Location</th>
+        <td>
+            {%- if edit == True -%}
+                <input type="text" class="form-control" id="current_location" name="current_location" value="{{project['current_location']}}">
+            {%- else -%}
+                {{project['current_location']}}
+            {%- endif -%}
+        </td>
+    </tr>
+    <tr>
+        <th rowspan="{{project['notes']|length + 1}}">Notes</th>
 
-                    {% for note in project['notes'] %}
-                        <tr>
-                    <td>{{ note['text'] }}</td>
-                        </tr>
-                    {% endfor %}
-                </tr>
-                <tr>
-                    <th rowspan="{{ project['objects']|length + 1 }}">Objects</th>
-                    {% for child_object in project['objects'] %}
-                    <tr><td><a href="{{ url_for('page_object')}}/{{child_object[0]}}"> {{child_object[1]}}</a></td></tr>
-                    {% endfor %}
-                </tr>
+        {%- for note in project['notes'] -%}
+            <tr>
+        <td>{{ note['text'] }}</td>
+            </tr>
+        {%- endfor -%}
+    </tr>
+    <tr>
+        <th rowspan="{{ project['objects']|length + 1 }}">Objects</th>
+        {%- for child_object in project['objects'] -%}
+        <tr><td><a href="{{ url_for('page_object')}}/{{child_object[0]}}"> {{child_object[1]}}</a></td></tr>
+        {%- endfor -%}
+    </tr>
 
-            </table>
+</table>
 
-        </div>
-    </div>
-</div>
-</div>
 {% endblock %}
