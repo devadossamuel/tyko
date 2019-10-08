@@ -80,71 +80,52 @@ pipeline {
         booleanParam(name: "DEPLOY_SERVER", defaultValue: false, description: "Deploy server software to server")
     }
     stages {
-        stage('Configure Environment') {
-            environment{
-                PATH = "${tool 'CPython-3.7'};$PATH"
-            }
-            options{
-                timeout(5)
-            }
-            stages{
-                stage("Purge All Existing Data in Workspace"){
-                    when{
-                        anyOf{
-                            equals expected: true, actual: params.FRESH_WORKSPACE
-                            triggeredBy "TimerTriggerCause"
-                        }
-                    }
-                    steps{
-                        deleteDir()
-                        dir("scm"){
-                            checkout scm
-                        }
-                    }
-                }
-                stage("Creating Python Virtualenv for Building"){
-                    steps{
-                        bat "if not exist venv\\37 mkdir venv\\37 && python -m venv venv\\37"
-                        script {
-                            try {
-                                bat "venv\\37\\Scripts\\python.exe -m pip install -U pip"
-                            }
-                            catch (exc) {
-                                bat "python -m venv venv\\37"
-                                bat "venv\\37\\Scripts\\python.exe -m pip install -U pip --no-cache-dir"
-                            }
-                        }
-                        bat "venv\\37\\Scripts\\pip.exe install -U setuptools wheel sqlalchemy  -r scm/requirements.txt --upgrade-strategy only-if-needed"
-//                        bat "venv36\\Scripts\\pip.exe install pytest-cov lxml flake8 mypy -r source\\requirements.txt --upgrade-strategy only-if-needed"
-                    }
-                    post{
-                        success{
-                            bat "if not exist logs mkdir logs"
-                            bat "venv\\37\\Scripts\\pip.exe list > ${WORKSPACE}\\logs\\pippackages_venv_${NODE_NAME}.log"
-                            archiveArtifacts artifacts: "logs/pippackages_venv_${NODE_NAME}.log"
-                        }
-                    }
-                }
-            }
-            post{
-                failure {
-                    deleteDir()
-                }
-                success{
-                    echo "Configured ${env.PKG_NAME}, version ${env.PKG_VERSION}, for testing."
-                }
-            }
-        }
+//        stage('Configure Environment') {
+//            environment{
+//                PATH = "${tool 'CPython-3.7'};$PATH"
+//            }
+//            options{
+//                timeout(5)
+//            }
+//            stages{
+//                stage("Purge All Existing Data in Workspace"){
+//                    when{
+//                        anyOf{
+//                            equals expected: true, actual: params.FRESH_WORKSPACE
+//                            triggeredBy "TimerTriggerCause"
+//                        }
+//                    }
+//                    steps{
+//                        deleteDir()
+//                        dir("scm"){
+//                            checkout scm
+//                        }
+//                    }
+//                }
+//            }
+//            post{
+//                failure {
+//                    deleteDir()
+//                }
+//                success{
+//                    echo "Configured ${env.PKG_NAME}, version ${env.PKG_VERSION}, for testing."
+//                }
+//            }
+//        }
         stage("Building"){
             failFast true
             parallel{
                 stage("Building Server"){
-                    environment{
-                        PATH = "${WORKSPACE}\\venv\\37\\Scripts;$PATH"
+                    agent {
+                      dockerfile {
+                        filename 'CI/server_testing/Dockerfile'
+                        label "linux && docker"
+                        dir 'scm'
+                      }
                     }
                     steps{
                         dir("scm"){
-                            bat "python setup.py build -b ${WORKSPACE}/build/server"
+                            sh "python setup.py build -b ../build/server"
                         }
                     }
                     post{
@@ -152,6 +133,9 @@ pipeline {
                             dir("scm"){
                                 stash includes: "deploy/**,database/**", name: 'SERVER_DEPLOY_FILES'
                             }
+                        }
+                        cleanup{
+                            cleanWs()
                         }
                     }
                 }
@@ -229,35 +213,50 @@ foreach($file in $opengl32_libraries){
             }
         }
         stage('Testing') {
-            environment{
-                PATH = "${WORKSPACE}\\venv\\37\\Scripts;$PATH"
-            }
+
             options{
                 timeout(10)
             }
             stages{
-                stage("Installing Python Testing Packages"){
-                    steps{
-                        // Bandit version 1.6 exclude the directories doesn't work
-                        bat 'pip install "tox<3.10" pytest pytest-bdd mypy flake8 coverage lxml pylint sqlalchemy-stubs "bandit<1.6'
-                    }
-                }
                 stage("Running Tests"){
                     parallel {
                         stage("PyTest"){
+                            agent {
+                              dockerfile {
+                                filename 'CI/server_testing/Dockerfile'
+                                label "linux && docker"
+                                dir 'scm'
+                              }
+                            }
                             steps{
+                                sh "mkdir -p reports/pytest"
                                 dir("scm"){
                                     catchError(buildResult: 'UNSTABLE', message: 'Did not pass all pytest tests', stageResult: 'UNSTABLE') {
-                                        bat(
+                                        sh(
                                             label: "Run PyTest",
-                                            script: "coverage run --parallel-mode --branch --source=tyko,tests -m pytest --junitxml=${WORKSPACE}/reports/pytest/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest"
+                                            script: "coverage run --parallel-mode --branch --source=tyko,tests -m pytest --junitxml=../reports/pytest/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest"
                                         )
                                     }
                                 }
                             }
                             post {
                                 always{
+                                    stash includes: "scm/.coverage.*,reports/pytest/junit-*.xml", name: 'PYTEST_COVERAGE_DATA'
                                     junit "reports/pytest/junit-*.xml"
+                                    dir("scm"){
+                                        sh "coverage combine"
+                                        sh "coverage xml -o ../reports/coverage.xml"
+                                    }
+
+                                    publishCoverage(
+                                        adapters: [
+                                                coberturaAdapter('reports/coverage.xml')
+                                                ],
+                                        sourceFileResolver: sourceFiles('STORE_ALL_BUILD')
+                                        )
+                                }
+                                cleanup{
+                                    cleanWs()
                                 }
                             }
                         }
@@ -265,22 +264,27 @@ foreach($file in $opengl32_libraries){
                             when {
                                 equals expected: true, actual: params.TEST_RUN_TOX
                             }
-                            environment {
-                                PATH = "${tool 'CPython-3.6'};${tool 'CPython-3.7'};$PATH"
+                            agent {
+                              dockerfile {
+                                filename 'CI/server_testing/Dockerfile'
+                                label "linux && docker"
+                                dir 'scm'
+                              }
                             }
                             steps {
+                                sh "mkdir -p logs"
                                 dir("scm"){
                                     script{
                                         try{
-                                            bat (
+                                            sh (
                                                 label: "Run Tox",
-                                                script: "tox --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox -vv --result-json=${WORKSPACE}\\logs\\tox_report.json"
+                                                script: "tox --parallel=auto --parallel-live --workdir ../.tox -vv --result-json=../logs/tox_report.json"
                                             )
 
                                         } catch (exc) {
-                                            bat(
+                                            sh(
                                                 label: "Run Tox with new environments",
-                                                script: "tox --recreate --parallel=auto --parallel-live --workdir ${WORKSPACE}\\.tox -vv --result-json=${WORKSPACE}\\logs\\tox_report.json"
+                                                script: "tox --recreate --parallel=auto --parallel-live --workdir ../.tox -vv --result-json=../logs/tox_report.json"
                                             )
                                         }
                                     }
@@ -292,51 +296,63 @@ foreach($file in $opengl32_libraries){
                                     recordIssues(tools: [pep8(id: 'tox', name: 'Tox', pattern: '.tox/py*/log/*.log,.tox/log/*.log')])
                                 }
                                 cleanup{
-                                    cleanWs(
-                                        patterns: [
-                                            [pattern: '.tox/py*/log/*.log', type: 'INCLUDE'],
-                                            [pattern: '.tox/log/*.log', type: 'INCLUDE'],
-                                            [pattern: 'logs/rox_report.json', type: 'INCLUDE']
-                                        ]
-                                    )
+                                    cleanWs()
                                 }
                             }
                         }
                         stage("Run MyPy Static Analysis") {
+                            agent {
+                              dockerfile {
+                                filename 'CI/server_testing/Dockerfile'
+                                label "linux && docker"
+                                dir 'scm'
+                              }
+                            }
                             steps{
-                                bat "if not exist reports\\mypy\\html mkdir reports\\mypy\\html"
-                                dir("scm"){
-                                    catchError(buildResult: 'SUCCESS', message: 'MyPy found issues', stageResult: 'UNSTABLE') {
+                                sh "mkdir -p reports/mypy/html"
+                                sh "mkdir -p logs"
+                                tee('logs/mypy.log') {
+                                    dir("scm"){
+                                        catchError(buildResult: 'SUCCESS', message: 'MyPy found issues', stageResult: 'UNSTABLE') {
+                                            sh(
+                                                script: "mypy tyko --html-report ../reports/mypy/html",
+                                                label: "Running MyPy"
+                                                )
+                                        }
 
-                                        bat(
-                                            script: "mypy -p tyko --cache-dir=${WORKSPACE}/mypy_cache --html-report ${WORKSPACE}\\reports\\mypy\\html > ${WORKSPACE}\\logs\\mypy.log && type ${WORKSPACE}\\logs\\mypy.log",
-                                            label: "Running MyPy"
-                                            )
                                     }
-
                                 }
                             }
                             post {
                                 always {
                                     stash includes: "logs/mypy.log", name: 'MYPY_LOGS'
                                     publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: "reports/mypy/html/", reportFiles: 'index.html', reportName: 'MyPy HTML Report', reportTitles: ''])
-                                    node('Windows') {
-                                        checkout scm
-                                        unstash "MYPY_LOGS"
-                                        recordIssues(tools: [myPy(name: 'MyPy', pattern: 'logs/mypy.log')])
-                                    }
-
+                                        dir("scm"){
+                                            unstash "MYPY_LOGS"
+                                            recordIssues(tools: [myPy(name: 'MyPy', pattern: 'logs/mypy.log')])
+                                        }
+                                }
+                                cleanup{
+                                    cleanWs()
                                 }
                             }
                         }
                         stage("Run Bandit Static Analysis") {
+                            agent {
+                              dockerfile {
+                                filename 'CI/server_testing/Dockerfile'
+                                label "linux && docker"
+                                dir 'scm'
+                              }
+                            }
                             steps{
+                                sh "mkdir -p reports"
                                 dir("scm"){
                                     catchError(buildResult: 'SUCCESS', message: 'Bandit found issues', stageResult: 'UNSTABLE') {
-                                        bat(
+                                        sh(
                                             label: "Running bandit",
-                                            script: "bandit --format json --output ${WORKSPACE}/reports/bandit-report.json --recursive ${WORKSPACE}\\scm\\tyko || bandit -f html --recursive ${WORKSPACE}\\scm\\tyko --output ${WORKSPACE}/reports/bandit-report.html"
-                                            )
+                                            script: "bandit --format json --output ../reports/bandit-report.json --recursive ../scm/tyko ||  bandit -f html --recursive ../scm/tyko --output ../reports/bandit-report.html"
+                                        )
                                     }
 
                                 }
@@ -353,15 +369,26 @@ foreach($file in $opengl32_libraries){
                                         }
                                     }
                                 }
+                                cleanup{
+                                    cleanWs()
+                                }
                             }
                         }
                         stage("Run Flake8 Static Analysis") {
+                            agent {
+                              dockerfile {
+                                filename 'CI/server_testing/Dockerfile'
+                                label "linux && docker"
+                                dir 'scm'
+                              }
+                            }
                             steps{
+                                sh "mkdir -p logs"
                                 dir("scm"){
                                     catchError(buildResult: 'SUCCESS', message: 'Flake8 found issues', stageResult: 'UNSTABLE') {
 
-                                        bat(
-                                            script: "flake8 tyko --tee --output-file=${WORKSPACE}\\logs\\flake8.log",
+                                        sh(
+                                            script: "flake8 tyko --tee --output-file=../logs/flake8.log",
                                             label: "Running Flake8"
                                         )
                                     }
@@ -371,8 +398,7 @@ foreach($file in $opengl32_libraries){
                                 always {
                                     stash includes: "logs/flake8.log", name: 'FLAKE8_LOGS'
                                     archiveArtifacts 'logs/flake8.log'
-                                    node('Windows') {
-                                        checkout scm
+                                    dir('scm') {
                                         unstash "FLAKE8_LOGS"
                                         recordIssues(tools: [flake8(pattern: 'logs/flake8.log')])
                                     }
@@ -384,51 +410,47 @@ foreach($file in $opengl32_libraries){
                             }
                         }
                          stage("Run Pylint Static Analysis") {
+                            agent {
+                              dockerfile {
+                                filename 'CI/server_testing/Dockerfile'
+                                label "linux && docker"
+                                dir 'scm'
+                              }
+                            }
+                            environment{
+                                PYLINTHOME="."
+                            }
                             steps{
+                                sh "mkdir -p reports"
                                 dir("scm"){
+
                                     catchError(buildResult: 'SUCCESS', message: 'Pylint found issues', stageResult: 'UNSTABLE') {
-                                        bat(
-                                            script: 'pylint tyko  -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > %WORKSPACE%\\reports\\pylint.txt & pylint tyko  -r n --msg-template="{path}:{module}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > %WORKSPACE%\\reports\\pylint_issues.txt',
+                                        sh(
+                                            script: 'pylint tyko  -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > ../reports/pylint.txt',
                                             label: "Running pylint"
                                         )
                                     }
+                                    sh(
+                                        script: 'pylint tyko  -r n --msg-template="{path}:{module}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > ../reports/pylint_issues.txt',
+                                        label: "Running pylint for sonarqube",
+                                        returnStatus: true
+                                    )
                                 }
                             }
                             post{
                                 always{
                                     stash includes: "reports/pylint_issues.txt", name: 'PYLINT_REPORT'
                                     archiveArtifacts allowEmptyArchive: true, artifacts: "reports/pylint.txt"
-                                    node('Windows') {
-                                        checkout scm
+                                    dir("scm"){
                                         unstash "PYLINT_REPORT"
                                         recordIssues(tools: [pyLint(pattern: 'reports/pylint_issues.txt')])
                                     }
                                 }
-                            }
-                        }
-                    }
-                    post{
-                        always{
-                            script{
-                                try{
-                                    dir("scm"){
-                                        bat "${WORKSPACE}\\venv\\37\\Scripts\\coverage.exe combine"
-                                        bat "${WORKSPACE}\\venv\\37\\Scripts\\coverage.exe xml -o ${WORKSPACE}\\reports\\coverage.xml"
-                                        bat "${WORKSPACE}\\venv\\37\\Scripts\\coverage.exe html -d ${WORKSPACE}\\reports\\coverage"
-                                    }
-                                    publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: "reports/coverage", reportFiles: 'index.html', reportName: 'Coverage', reportTitles: ''])
-                                    publishCoverage adapters: [
-                                                    coberturaAdapter('reports/coverage.xml')
-                                                    ],
-                                                sourceFileResolver: sourceFiles('STORE_ALL_BUILD')
-
-                                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'reports/coverage', reportFiles: 'index.html', reportName: 'Coverage', reportTitles: ''])
-                                } catch(exec){
-                                    echo "No Coverage data collected"
+                                cleanup{
+                                    cleanWs()
                                 }
                             }
                         }
-
                     }
                 }
                 stage("Run SonarQube Analysis"){
@@ -510,19 +532,37 @@ foreach($file in $opengl32_libraries){
             }
         }
         stage("Packaging") {
-            environment{
-                PATH = "${WORKSPACE}\\venv\\37\\Scripts;$PATH"
-            }
+
             options{
                 timeout(10)
             }
             failFast true
             parallel{
                 stage("Creating Python Packages"){
-
+                    agent {
+                      dockerfile {
+                        filename 'CI/server_testing/Dockerfile'
+                        label "linux && docker"
+                        dir 'scm'
+                      }
+                    }
                     steps{
                         dir("scm"){
-                            bat script: "python setup.py build -b ${WORKSPACE}/build/server sdist -d ${WORKSPACE}/dist --format zip bdist_wheel -d ${WORKSPACE}/dist"
+                            sh script: "python setup.py sdist -d ../dist --format zip bdist_wheel -d ../dist"
+                        }
+                    }
+                    post {
+                        success {
+                            archiveArtifacts artifacts: "dist/*.whl,dist/*.zip", fingerprint: true
+                            stash includes: "dist/*.whl,dist/*.zip", name: 'PYTHON_PACKAGES'
+                        }
+                        unstable {
+                            archiveArtifacts artifacts: "dist/*.whl,dist/*.zip", fingerprint: true
+                            stash includes: "dist/*.whl,dist/*.zip", name: 'PYTHON_PACKAGES'
+                        }
+
+                        cleanup{
+                            cleanWs()
                         }
                     }
                 }
@@ -566,20 +606,7 @@ foreach($file in $opengl32_libraries){
                     }
                 }
             }
-            post {
-                success {
-                    archiveArtifacts artifacts: "dist/*.whl,dist/*.zip", fingerprint: true
-                    stash includes: "dist/*.whl,dist/*.zip", name: 'PYTHON_PACKAGES'
-                }
-                unstable {
-                    archiveArtifacts artifacts: "dist/*.whl,dist/*.zip", fingerprint: true
-                    stash includes: "dist/*.whl,dist/*.zip", name: 'PYTHON_PACKAGES'
-                }
 
-                cleanup{
-                    cleanWs deleteDirs: true, patterns: [[pattern: 'dist/*.whl,dist/*.tar.gz,dist/*.zip', type: 'INCLUDE']]
-                }
-            }
         }
         stage("Deploy"){
             parallel{
