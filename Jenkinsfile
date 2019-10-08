@@ -648,6 +648,7 @@ foreach($file in $opengl32_libraries){
                                     sshRemove remote: remote, path: "package", failOnError: false
                                     sshCommand remote: remote, command: "mkdir package"
                                     sshPut remote: remote, from: 'setup.py', into: './package/'
+                                    sshPut remote: remote, from: 'setup.cfg', into: './package/'
                                     sshPut remote: remote, from: 'tyko', into: './package/'
                                     sshPut remote: remote, from: 'requirements.txt', into: './package/'
                                     sshPut remote: remote, from: 'dist', into: './package/'
