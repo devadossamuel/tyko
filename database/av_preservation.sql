@@ -1,482 +1,616 @@
--- phpMyAdmin SQL Dump
--- version 4.8.3
--- https://www.phpmyadmin.net/
+-- MariaDB dump 10.17  Distrib 10.4.7-MariaDB, for debian-linux-gnu (x86_64)
 --
--- Host: localhost:3306
--- Generation Time: May 15, 2019 at 12:25 PM
--- Server version: 10.1.38-MariaDB
--- PHP Version: 7.2.7
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
-START TRANSACTION;
-SET time_zone = "+00:00";
-
+-- Host: localhost    Database: av_preservation
+-- ------------------------------------------------------
+-- Server version	10.4.7-MariaDB-1:10.4.7+maria~bionic
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
-
---
--- Database: `jsharrs_av_preservation`
---
-
--- --------------------------------------------------------
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
 -- Table structure for table `audio_video`
 --
 
+DROP TABLE IF EXISTS `audio_video`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `audio_video` (
   `item_id` int(11) NOT NULL,
-  `format_id` int(11) NOT NULL,
   `date_recorded` date DEFAULT NULL,
-  `side` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `duration` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `format_subtype` varchar(45) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `playback_notes` longtext COLLATE utf8_unicode_ci,
-  `inspection_notes` longtext COLLATE utf8_unicode_ci,
-  `treatment_needed` longtext COLLATE utf8_unicode_ci,
-  `treatment_given` longtext COLLATE utf8_unicode_ci,
-  `staff_id` varchar(50) COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+  `side` text DEFAULT NULL,
+  `duration` text DEFAULT NULL,
+  `format_subtype` text DEFAULT NULL,
+  PRIMARY KEY (`item_id`),
+  CONSTRAINT `audio_video_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `item` (`item_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- --------------------------------------------------------
+--
+-- Dumping data for table `audio_video`
+--
+
+LOCK TABLES `audio_video` WRITE;
+/*!40000 ALTER TABLE `audio_video` DISABLE KEYS */;
+/*!40000 ALTER TABLE `audio_video` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `collection`
 --
 
+DROP TABLE IF EXISTS `collection`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `collection` (
-  `collection_id` int(11) NOT NULL,
-  `record_series` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `collection_name` varchar(200) COLLATE utf8_unicode_ci NOT NULL,
-  `department` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-  `col_contact_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
--- --------------------------------------------------------
+  `collection_id` int(11) NOT NULL AUTO_INCREMENT,
+  `record_series` text DEFAULT NULL,
+  `collection_name` text DEFAULT NULL,
+  `department` text DEFAULT NULL,
+  `contact_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`collection_id`),
+  KEY `contact_id` (`contact_id`),
+  CONSTRAINT `collection_ibfk_1` FOREIGN KEY (`contact_id`) REFERENCES `contact` (`contact_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `collection_contact`
+-- Dumping data for table `collection`
 --
 
-CREATE TABLE `collection_contact` (
-  `col_contact_id` int(11) NOT NULL,
-  `first_name` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `last_name` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `email_address` varchar(100) COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+LOCK TABLES `collection` WRITE;
+/*!40000 ALTER TABLE `collection` DISABLE KEYS */;
+/*!40000 ALTER TABLE `collection` ENABLE KEYS */;
+UNLOCK TABLES;
 
--- --------------------------------------------------------
+--
+-- Table structure for table `contact`
+--
+
+DROP TABLE IF EXISTS `contact`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `contact` (
+  `contact_id` int(11) NOT NULL AUTO_INCREMENT,
+  `first_name` text DEFAULT NULL,
+  `last_name` text DEFAULT NULL,
+  `email_address` text DEFAULT NULL,
+  PRIMARY KEY (`contact_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `contact`
+--
+
+LOCK TABLES `contact` WRITE;
+/*!40000 ALTER TABLE `contact` DISABLE KEYS */;
+/*!40000 ALTER TABLE `contact` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `film`
 --
 
+DROP TABLE IF EXISTS `film`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `film` (
   `item_id` int(11) NOT NULL,
-  `format_id` int(11) NOT NULL,
   `date_of_film` date DEFAULT NULL,
-  `can_label` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `leader_label` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `can_label` text DEFAULT NULL,
+  `leader_label` text DEFAULT NULL,
   `length` int(11) DEFAULT NULL,
-  `duration` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `format_guage` int(11) DEFAULT NULL,
-  `base` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `duration` text DEFAULT NULL,
+  `format_gauge` int(11) DEFAULT NULL,
+  `base` text DEFAULT NULL,
   `edge_code_date` date DEFAULT NULL,
-  `sound` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `color` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `image_type` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `AD_test_date` date DEFAULT NULL,
-  `AD_test_level` int(11) DEFAULT NULL,
-  `inspection_notes` longtext COLLATE utf8_unicode_ci,
-  `other_notes` longtext COLLATE utf8_unicode_ci,
-  `treatment_needed` longtext COLLATE utf8_unicode_ci,
-  `treatment_given` longtext COLLATE utf8_unicode_ci,
-  `treatment_date` date DEFAULT NULL,
-  `staff_id` varchar(50) COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
--- --------------------------------------------------------
+  `sound` text DEFAULT NULL,
+  `color` text DEFAULT NULL,
+  `image_type` text DEFAULT NULL,
+  `ad_test_date` date DEFAULT NULL,
+  `ad_test_level` int(11) DEFAULT NULL,
+  PRIMARY KEY (`item_id`),
+  CONSTRAINT `film_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `item` (`item_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `format`
+-- Dumping data for table `film`
 --
 
-CREATE TABLE `format` (
-  `format_id` int(11) NOT NULL,
-  `format_name` varchar(50) COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+LOCK TABLES `film` WRITE;
+/*!40000 ALTER TABLE `film` DISABLE KEYS */;
+/*!40000 ALTER TABLE `film` ENABLE KEYS */;
+UNLOCK TABLES;
 
--- --------------------------------------------------------
+--
+-- Table structure for table `format_types`
+--
+
+DROP TABLE IF EXISTS `format_types`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `format_types` (
+  `format_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` text DEFAULT NULL,
+  PRIMARY KEY (`format_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `format_types`
+--
+
+LOCK TABLES `format_types` WRITE;
+/*!40000 ALTER TABLE `format_types` DISABLE KEYS */;
+INSERT INTO `format_types` VALUES (1,'audio video'),(2,'audio'),(3,'video'),(4,'open reel'),(5,'grooved disc'),(6,'film');
+/*!40000 ALTER TABLE `format_types` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `grooved_disc`
 --
 
+DROP TABLE IF EXISTS `grooved_disc`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `grooved_disc` (
   `item_id` int(11) NOT NULL,
-  `format_id` int(11) NOT NULL,
-  `date_recorded` year(4) DEFAULT NULL,
-  `side` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `duration` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `date_recorded` int(11) DEFAULT NULL,
+  `side` text DEFAULT NULL,
+  `duration` text DEFAULT NULL,
   `diameter` int(11) DEFAULT NULL,
-  `disc_material` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `base` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `playback_direction` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `playback_speed` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `notes` longtext COLLATE utf8_unicode_ci,
-  `inspection_notes` longtext COLLATE utf8_unicode_ci,
-  `treatment_needed` longtext COLLATE utf8_unicode_ci,
-  `treatment_given` longtext COLLATE utf8_unicode_ci,
-  `staff_id` varchar(50) COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+  `disc_material` text DEFAULT NULL,
+  `base` text DEFAULT NULL,
+  `playback_direction` text DEFAULT NULL,
+  `playback_speed` text DEFAULT NULL,
+  PRIMARY KEY (`item_id`),
+  CONSTRAINT `grooved_disc_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `item` (`item_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- --------------------------------------------------------
+--
+-- Dumping data for table `grooved_disc`
+--
+
+LOCK TABLES `grooved_disc` WRITE;
+/*!40000 ALTER TABLE `grooved_disc` DISABLE KEYS */;
+/*!40000 ALTER TABLE `grooved_disc` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `item`
 --
 
+DROP TABLE IF EXISTS `item`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `item` (
-  `item_id` int(11) NOT NULL,
-  `item_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-  `barcode` int(11) DEFAULT NULL,
-  `file_name` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `medusa_uuid` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `originals_rec_date` date NOT NULL,
-  `originals_return_date` date DEFAULT NULL,
+  `item_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` text DEFAULT NULL,
+  `file_name` text DEFAULT NULL,
+  `medusa_uuid` text DEFAULT NULL,
   `object_id` int(11) DEFAULT NULL,
-  `item_obj_sequence` int(11) DEFAULT NULL,
-  `collection_id` int(11) NOT NULL,
-  `project_id` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+  `obj_sequence` int(11) DEFAULT NULL,
+  `format_type_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`item_id`),
+  KEY `object_id` (`object_id`),
+  KEY `format_type_id` (`format_type_id`),
+  CONSTRAINT `item_ibfk_1` FOREIGN KEY (`object_id`) REFERENCES `object` (`object_id`),
+  CONSTRAINT `item_ibfk_2` FOREIGN KEY (`format_type_id`) REFERENCES `format_types` (`format_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- --------------------------------------------------------
+--
+-- Dumping data for table `item`
+--
+
+LOCK TABLES `item` WRITE;
+/*!40000 ALTER TABLE `item` DISABLE KEYS */;
+/*!40000 ALTER TABLE `item` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `item_has_contacts`
+--
+
+DROP TABLE IF EXISTS `item_has_contacts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `item_has_contacts` (
+  `contact_id` int(11) DEFAULT NULL,
+  `item_id` int(11) DEFAULT NULL,
+  KEY `contact_id` (`contact_id`),
+  KEY `item_id` (`item_id`),
+  CONSTRAINT `item_has_contacts_ibfk_1` FOREIGN KEY (`contact_id`) REFERENCES `item` (`item_id`),
+  CONSTRAINT `item_has_contacts_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `contact` (`contact_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `item_has_contacts`
+--
+
+LOCK TABLES `item_has_contacts` WRITE;
+/*!40000 ALTER TABLE `item_has_contacts` DISABLE KEYS */;
+/*!40000 ALTER TABLE `item_has_contacts` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `item_has_notes`
+--
+
+DROP TABLE IF EXISTS `item_has_notes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `item_has_notes` (
+  `notes_id` int(11) DEFAULT NULL,
+  `item_id` int(11) DEFAULT NULL,
+  KEY `notes_id` (`notes_id`),
+  KEY `item_id` (`item_id`),
+  CONSTRAINT `item_has_notes_ibfk_1` FOREIGN KEY (`notes_id`) REFERENCES `notes` (`note_id`),
+  CONSTRAINT `item_has_notes_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `item` (`item_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `item_has_notes`
+--
+
+LOCK TABLES `item_has_notes` WRITE;
+/*!40000 ALTER TABLE `item_has_notes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `item_has_notes` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `note_types`
+--
+
+DROP TABLE IF EXISTS `note_types`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `note_types` (
+  `note_types_id` int(11) NOT NULL AUTO_INCREMENT,
+  `type_name` text DEFAULT NULL,
+  PRIMARY KEY (`note_types_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `note_types`
+--
+
+LOCK TABLES `note_types` WRITE;
+/*!40000 ALTER TABLE `note_types` DISABLE KEYS */;
+INSERT INTO `note_types` VALUES (1,'Inspection'),(2,'Playback'),(3,'Project'),(4,'Other');
+/*!40000 ALTER TABLE `note_types` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `notes`
+--
+
+DROP TABLE IF EXISTS `notes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `notes` (
+  `note_id` int(11) NOT NULL AUTO_INCREMENT,
+  `text` text NOT NULL,
+  `note_type_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`note_id`),
+  KEY `note_type_id` (`note_type_id`),
+  CONSTRAINT `notes_ibfk_1` FOREIGN KEY (`note_type_id`) REFERENCES `note_types` (`note_types_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `notes`
+--
+
+LOCK TABLES `notes` WRITE;
+/*!40000 ALTER TABLE `notes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `notes` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `object`
 --
 
+DROP TABLE IF EXISTS `object`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `object` (
-  `object_id` int(11) NOT NULL,
-  `object_name` varchar(250) COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+  `object_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` text DEFAULT NULL,
+  `barcode` text DEFAULT NULL,
+  `collection_id` int(11) DEFAULT NULL,
+  `project_id` int(11) DEFAULT NULL,
+  `originals_rec_date` date DEFAULT NULL,
+  `originals_return_date` date DEFAULT NULL,
+  `contact_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`object_id`),
+  KEY `collection_id` (`collection_id`),
+  KEY `project_id` (`project_id`),
+  KEY `contact_id` (`contact_id`),
+  CONSTRAINT `object_ibfk_1` FOREIGN KEY (`collection_id`) REFERENCES `collection` (`collection_id`),
+  CONSTRAINT `object_ibfk_2` FOREIGN KEY (`project_id`) REFERENCES `project` (`project_id`),
+  CONSTRAINT `object_ibfk_3` FOREIGN KEY (`contact_id`) REFERENCES `contact` (`contact_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- --------------------------------------------------------
+--
+-- Dumping data for table `object`
+--
+
+LOCK TABLES `object` WRITE;
+/*!40000 ALTER TABLE `object` DISABLE KEYS */;
+/*!40000 ALTER TABLE `object` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `object_has_notes`
+--
+
+DROP TABLE IF EXISTS `object_has_notes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `object_has_notes` (
+  `notes_id` int(11) DEFAULT NULL,
+  `object_id` int(11) DEFAULT NULL,
+  KEY `notes_id` (`notes_id`),
+  KEY `object_id` (`object_id`),
+  CONSTRAINT `object_has_notes_ibfk_1` FOREIGN KEY (`notes_id`) REFERENCES `notes` (`note_id`),
+  CONSTRAINT `object_has_notes_ibfk_2` FOREIGN KEY (`object_id`) REFERENCES `object` (`object_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `object_has_notes`
+--
+
+LOCK TABLES `object_has_notes` WRITE;
+/*!40000 ALTER TABLE `object_has_notes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `object_has_notes` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `open_reel`
 --
 
+DROP TABLE IF EXISTS `open_reel`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `open_reel` (
   `item_id` int(11) NOT NULL,
-  `format_id` int(11) NOT NULL,
   `date_recorded` date DEFAULT NULL,
-  `track_count` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `tape_size` varchar(45) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `track_count` text DEFAULT NULL,
+  `tape_size` text DEFAULT NULL,
   `reel_diam` int(11) DEFAULT NULL,
-  `reel_type` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `reel_type` text DEFAULT NULL,
   `tape_thickness` int(11) DEFAULT NULL,
-  `tape_brand` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `base` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `wind` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `tape_speed` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `track_config` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `duration` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `generation` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `playback_notes` longtext COLLATE utf8_unicode_ci,
-  `inspection_notes` longtext COLLATE utf8_unicode_ci,
-  `treatment_needed` longtext COLLATE utf8_unicode_ci,
-  `treatment_given` longtext COLLATE utf8_unicode_ci,
-  `staff_id` varchar(50) COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
--- --------------------------------------------------------
+  `tape_brand` text DEFAULT NULL,
+  `base` text DEFAULT NULL,
+  `wind` text DEFAULT NULL,
+  `track_speed` text DEFAULT NULL,
+  `track_configuration` text DEFAULT NULL,
+  `track_duration` text DEFAULT NULL,
+  `generation` text DEFAULT NULL,
+  PRIMARY KEY (`item_id`),
+  CONSTRAINT `open_reel_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `item` (`item_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `preservation_staff`
+-- Dumping data for table `open_reel`
 --
 
-CREATE TABLE `preservation_staff` (
-  `staff_id` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `first_name` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `last_name` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `email_address` varchar(100) COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
--- --------------------------------------------------------
+LOCK TABLES `open_reel` WRITE;
+/*!40000 ALTER TABLE `open_reel` DISABLE KEYS */;
+/*!40000 ALTER TABLE `open_reel` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `project`
 --
 
+DROP TABLE IF EXISTS `project`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `project` (
-  `project_id` int(11) NOT NULL,
-  `project_code` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `project_title` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
-  `current_location` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
-  `project_status` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `project_specs` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `project_notes` longtext COLLATE utf8_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+  `project_id` int(11) NOT NULL AUTO_INCREMENT,
+  `project_code` text DEFAULT NULL,
+  `title` text DEFAULT NULL,
+  `current_location` text DEFAULT NULL,
+  `status` text DEFAULT NULL,
+  `specs` text DEFAULT NULL,
+  PRIMARY KEY (`project_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- --------------------------------------------------------
+--
+-- Dumping data for table `project`
+--
+
+LOCK TABLES `project` WRITE;
+/*!40000 ALTER TABLE `project` DISABLE KEYS */;
+/*!40000 ALTER TABLE `project` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `project_has_notes`
+--
+
+DROP TABLE IF EXISTS `project_has_notes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `project_has_notes` (
+  `notes_id` int(11) DEFAULT NULL,
+  `project_id` int(11) DEFAULT NULL,
+  KEY `notes_id` (`notes_id`),
+  KEY `project_id` (`project_id`),
+  CONSTRAINT `project_has_notes_ibfk_1` FOREIGN KEY (`notes_id`) REFERENCES `notes` (`note_id`),
+  CONSTRAINT `project_has_notes_ibfk_2` FOREIGN KEY (`project_id`) REFERENCES `project` (`project_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `project_has_notes`
+--
+
+LOCK TABLES `project_has_notes` WRITE;
+/*!40000 ALTER TABLE `project_has_notes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `project_has_notes` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `treatment`
+--
+
+DROP TABLE IF EXISTS `treatment`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `treatment` (
+  `treatment_id` int(11) NOT NULL AUTO_INCREMENT,
+  `needed` text DEFAULT NULL,
+  `given` text DEFAULT NULL,
+  `date` date DEFAULT NULL,
+  `item_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`treatment_id`),
+  KEY `item_id` (`item_id`),
+  CONSTRAINT `treatment_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `item` (`item_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `treatment`
+--
+
+LOCK TABLES `treatment` WRITE;
+/*!40000 ALTER TABLE `treatment` DISABLE KEYS */;
+/*!40000 ALTER TABLE `treatment` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `vendor`
 --
 
+DROP TABLE IF EXISTS `vendor`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `vendor` (
-  `vendor_id` int(11) NOT NULL,
-  `vendor_name` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `vendor_address` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
-  `vendor_city` varchar(200) COLLATE utf8_unicode_ci NOT NULL,
-  `vendor_state` varchar(2) COLLATE utf8_unicode_ci NOT NULL,
-  `vendor_zipcode` varchar(10) COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `vendor_contact`
---
-
-CREATE TABLE `vendor_contact` (
-  `vendor_contact_id` int(11) NOT NULL,
-  `first_name` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `last_name` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `email_address` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-  `vendor_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
--- --------------------------------------------------------
+  `vendor_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` text DEFAULT NULL,
+  `address` text DEFAULT NULL,
+  `city` text DEFAULT NULL,
+  `state` text DEFAULT NULL,
+  `zipcode` text DEFAULT NULL,
+  PRIMARY KEY (`vendor_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `vendor_item_transfers`
+-- Dumping data for table `vendor`
 --
 
-CREATE TABLE `vendor_item_transfers` (
-  `item_id` int(11) NOT NULL,
-  `vendor_id` int(11) NOT NULL,
-  `deliverables_rec_date` date DEFAULT NULL,
-  `originals_rec_date` date DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+LOCK TABLES `vendor` WRITE;
+/*!40000 ALTER TABLE `vendor` DISABLE KEYS */;
+/*!40000 ALTER TABLE `vendor` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
--- Indexes for dumped tables
+-- Table structure for table `vendor_has_contacts`
 --
 
---
--- Indexes for table `audio_video`
---
-ALTER TABLE `audio_video`
-  ADD PRIMARY KEY (`item_id`,`format_id`),
-  ADD KEY `format_id` (`format_id`),
-  ADD KEY `staff_id` (`staff_id`);
+DROP TABLE IF EXISTS `vendor_has_contacts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `vendor_has_contacts` (
+  `contact_id` int(11) DEFAULT NULL,
+  `vendor_id` int(11) DEFAULT NULL,
+  KEY `contact_id` (`contact_id`),
+  KEY `vendor_id` (`vendor_id`),
+  CONSTRAINT `vendor_has_contacts_ibfk_1` FOREIGN KEY (`contact_id`) REFERENCES `contact` (`contact_id`),
+  CONSTRAINT `vendor_has_contacts_ibfk_2` FOREIGN KEY (`vendor_id`) REFERENCES `vendor` (`vendor_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Indexes for table `collection`
---
-ALTER TABLE `collection`
-  ADD PRIMARY KEY (`collection_id`),
-  ADD KEY `col_contact_id` (`col_contact_id`);
-
---
--- Indexes for table `collection_contact`
---
-ALTER TABLE `collection_contact`
-  ADD PRIMARY KEY (`col_contact_id`);
-
---
--- Indexes for table `film`
---
-ALTER TABLE `film`
-  ADD PRIMARY KEY (`item_id`,`format_id`),
-  ADD KEY `format_id` (`format_id`),
-  ADD KEY `staff_id` (`staff_id`);
-
---
--- Indexes for table `format`
---
-ALTER TABLE `format`
-  ADD PRIMARY KEY (`format_id`);
-
---
--- Indexes for table `grooved_disc`
---
-ALTER TABLE `grooved_disc`
-  ADD PRIMARY KEY (`item_id`,`format_id`),
-  ADD KEY `format_id` (`format_id`),
-  ADD KEY `staff_id` (`staff_id`);
-
---
--- Indexes for table `item`
---
-ALTER TABLE `item`
-  ADD PRIMARY KEY (`item_id`),
-  ADD KEY `collection_id` (`collection_id`),
-  ADD KEY `project_id` (`project_id`),
-  ADD KEY `object_id` (`object_id`);
-
---
--- Indexes for table `object`
---
-ALTER TABLE `object`
-  ADD PRIMARY KEY (`object_id`);
-
---
--- Indexes for table `open_reel`
---
-ALTER TABLE `open_reel`
-  ADD PRIMARY KEY (`item_id`,`format_id`),
-  ADD KEY `format_id` (`format_id`),
-  ADD KEY `staff_id` (`staff_id`);
-
---
--- Indexes for table `preservation_staff`
---
-ALTER TABLE `preservation_staff`
-  ADD PRIMARY KEY (`staff_id`);
-
---
--- Indexes for table `project`
---
-ALTER TABLE `project`
-  ADD PRIMARY KEY (`project_id`);
-
---
--- Indexes for table `vendor`
---
-ALTER TABLE `vendor`
-  ADD PRIMARY KEY (`vendor_id`);
-
---
--- Indexes for table `vendor_contact`
---
-ALTER TABLE `vendor_contact`
-  ADD PRIMARY KEY (`vendor_contact_id`),
-  ADD KEY `vendor_id` (`vendor_id`);
-
---
--- Indexes for table `vendor_item_transfers`
---
-ALTER TABLE `vendor_item_transfers`
-  ADD PRIMARY KEY (`item_id`,`vendor_id`),
-  ADD KEY `vendor_id` (`vendor_id`);
-
---
--- AUTO_INCREMENT for dumped tables
+-- Dumping data for table `vendor_has_contacts`
 --
 
---
--- AUTO_INCREMENT for table `collection`
---
-ALTER TABLE `collection`
-  MODIFY `collection_id` int(11) NOT NULL AUTO_INCREMENT;
+LOCK TABLES `vendor_has_contacts` WRITE;
+/*!40000 ALTER TABLE `vendor_has_contacts` DISABLE KEYS */;
+/*!40000 ALTER TABLE `vendor_has_contacts` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
--- AUTO_INCREMENT for table `collection_contact`
---
-ALTER TABLE `collection_contact`
-  MODIFY `col_contact_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `format`
---
-ALTER TABLE `format`
-  MODIFY `format_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `item`
---
-ALTER TABLE `item`
-  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `object`
---
-ALTER TABLE `object`
-  MODIFY `object_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `project`
---
-ALTER TABLE `project`
-  MODIFY `project_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `vendor`
---
-ALTER TABLE `vendor`
-  MODIFY `vendor_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- Constraints for dumped tables
+-- Table structure for table `vendor_transfer`
 --
 
---
--- Constraints for table `audio_video`
---
-ALTER TABLE `audio_video`
-  ADD CONSTRAINT `audio_video_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `item` (`item_id`),
-  ADD CONSTRAINT `audio_video_ibfk_2` FOREIGN KEY (`format_id`) REFERENCES `format` (`format_id`),
-  ADD CONSTRAINT `audio_video_ibfk_3` FOREIGN KEY (`staff_id`) REFERENCES `preservation_staff` (`staff_id`);
+DROP TABLE IF EXISTS `vendor_transfer`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `vendor_transfer` (
+  `vendor_transfer_id` int(11) NOT NULL AUTO_INCREMENT,
+  `vendor_id` int(11) DEFAULT NULL,
+  `vendor_deliverables_rec_date` date DEFAULT NULL,
+  `returned_originals_rec_date` date DEFAULT NULL,
+  PRIMARY KEY (`vendor_transfer_id`),
+  KEY `vendor_id` (`vendor_id`),
+  CONSTRAINT `vendor_transfer_ibfk_1` FOREIGN KEY (`vendor_id`) REFERENCES `vendor` (`vendor_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Constraints for table `collection`
+-- Dumping data for table `vendor_transfer`
 --
-ALTER TABLE `collection`
-  ADD CONSTRAINT `collection_ibfk_1` FOREIGN KEY (`col_contact_id`) REFERENCES `collection_contact` (`col_contact_id`);
+
+LOCK TABLES `vendor_transfer` WRITE;
+/*!40000 ALTER TABLE `vendor_transfer` DISABLE KEYS */;
+/*!40000 ALTER TABLE `vendor_transfer` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
--- Constraints for table `film`
+-- Table structure for table `vendor_transfer_has_an_object`
 --
-ALTER TABLE `film`
-  ADD CONSTRAINT `film_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `item` (`item_id`),
-  ADD CONSTRAINT `film_ibfk_2` FOREIGN KEY (`format_id`) REFERENCES `format` (`format_id`),
-  ADD CONSTRAINT `film_ibfk_3` FOREIGN KEY (`staff_id`) REFERENCES `preservation_staff` (`staff_id`);
+
+DROP TABLE IF EXISTS `vendor_transfer_has_an_object`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `vendor_transfer_has_an_object` (
+  `object_id` int(11) DEFAULT NULL,
+  `vendor_transfer_id` int(11) DEFAULT NULL,
+  KEY `object_id` (`object_id`),
+  KEY `vendor_transfer_id` (`vendor_transfer_id`),
+  CONSTRAINT `vendor_transfer_has_an_object_ibfk_1` FOREIGN KEY (`object_id`) REFERENCES `object` (`object_id`),
+  CONSTRAINT `vendor_transfer_has_an_object_ibfk_2` FOREIGN KEY (`vendor_transfer_id`) REFERENCES `vendor_transfer` (`vendor_transfer_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Constraints for table `grooved_disc`
+-- Dumping data for table `vendor_transfer_has_an_object`
 --
-ALTER TABLE `grooved_disc`
-  ADD CONSTRAINT `grooved_disc_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `item` (`item_id`),
-  ADD CONSTRAINT `grooved_disc_ibfk_2` FOREIGN KEY (`format_id`) REFERENCES `format` (`format_id`),
-  ADD CONSTRAINT `grooved_disc_ibfk_3` FOREIGN KEY (`staff_id`) REFERENCES `preservation_staff` (`staff_id`);
 
---
--- Constraints for table `item`
---
-ALTER TABLE `item`
-  ADD CONSTRAINT `item_ibfk_1` FOREIGN KEY (`collection_id`) REFERENCES `collection` (`collection_id`),
-  ADD CONSTRAINT `item_ibfk_2` FOREIGN KEY (`project_id`) REFERENCES `project` (`project_id`),
-  ADD CONSTRAINT `item_ibfk_3` FOREIGN KEY (`object_id`) REFERENCES `object` (`object_id`);
+LOCK TABLES `vendor_transfer_has_an_object` WRITE;
+/*!40000 ALTER TABLE `vendor_transfer_has_an_object` DISABLE KEYS */;
+/*!40000 ALTER TABLE `vendor_transfer_has_an_object` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
---
--- Constraints for table `open_reel`
---
-ALTER TABLE `open_reel`
-  ADD CONSTRAINT `open_reel_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `item` (`item_id`),
-  ADD CONSTRAINT `open_reel_ibfk_2` FOREIGN KEY (`format_id`) REFERENCES `format` (`format_id`),
-  ADD CONSTRAINT `open_reel_ibfk_3` FOREIGN KEY (`staff_id`) REFERENCES `preservation_staff` (`staff_id`);
-
---
--- Constraints for table `vendor_contact`
---
-ALTER TABLE `vendor_contact`
-  ADD CONSTRAINT `vendor_contact_ibfk_1` FOREIGN KEY (`vendor_id`) REFERENCES `vendor` (`vendor_id`);
-
---
--- Constraints for table `vendor_item_transfers`
---
-ALTER TABLE `vendor_item_transfers`
-  ADD CONSTRAINT `vendor_item_transfers_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `item` (`item_id`),
-  ADD CONSTRAINT `vendor_item_transfers_ibfk_2` FOREIGN KEY (`vendor_id`) REFERENCES `vendor` (`vendor_id`);
-COMMIT;
-
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2019-09-30 21:14:17
