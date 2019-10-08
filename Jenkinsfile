@@ -455,7 +455,7 @@ foreach($file in $opengl32_libraries){
                 }
                 stage("Run SonarQube Analysis"){
                     agent{
-                        label "Windows && python3"
+                        label "Windows && Python3"
                     }
                     when{
                         equals expected: "master", actual: env.BRANCH_NAME
