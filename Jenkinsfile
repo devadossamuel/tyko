@@ -75,7 +75,7 @@ pipeline {
     }
     parameters {
         booleanParam(name: "FRESH_WORKSPACE", defaultValue: false, description: "Purge workspace before staring and checking out source")
-        booleanParam(name: "BUILD_CLIENT", defaultValue: false, description: "Build Client program")
+        booleanParam(name: "BUILD_CLIENT", defaultValue: true, description: "Build Client program")
         booleanParam(name: "TEST_RUN_TOX", defaultValue: true, description: "Run Tox Tests")
         booleanParam(name: "DEPLOY_SERVER", defaultValue: false, description: "Deploy server software to server")
     }
@@ -141,7 +141,7 @@ pipeline {
                 }
                 stage("Build Client with Docker Container"){
                     agent{
-                        label "Docker"
+                        label "Docker && Windows && 1903"
                     }
                     when {
                         equals expected: true, actual: params.BUILD_CLIENT
@@ -157,18 +157,26 @@ pipeline {
                     stages{
                         stage("Build Docker Container"){
                             steps{
-
                                 dir("scm"){
-                                     powershell(
-                                        label: "Searching for opengl32.dll",
-                                        script: '''
-$opengl32_libraries = Get-ChildItem -Path c:\\Windows -Recurse -Include opengl32.dll
+                                    script{
+                                        if(!fileExists('opengl32.dll')){
+                                            node('Windows&&opengl32') {
+                                                powershell(
+                                                    label: "Searching for opengl32.dll",
+                                                    script: '''
+$opengl32_libraries = Get-ChildItem -Path c:\\Windows\\System32 -Recurse -Include opengl32.dll
 foreach($file in $opengl32_libraries){
     Copy-Item $file.FullName
     break
 }'''
-                                )
-                                    bat("docker build . -f CI/build_VS2019/Dockerfile -m 10GB -t %DOCKER_IMAGE_TAG%")
+                                                )
+                                                stash includes: 'opengl32.dll', name: 'OPENGL'
+                                            }
+                                            unstash 'OPENGL'
+                                        }
+                                    }
+
+                                    bat("docker build . -f CI/build_VS2019/Dockerfile -m 2GB -t %DOCKER_IMAGE_TAG%")
                                 }
                             }
                         }
@@ -185,7 +193,7 @@ foreach($file in $opengl32_libraries){
                             steps{
                                 bat(
                                     label: "Configuring CMake",
-                                    script: "docker run --rm -v \"${WORKSPACE}\\build:c:\\build\" -v \"${WORKSPACE}\\scm:c:\\source:ro\" --workdir=\"c:\\build\" %DOCKER_IMAGE_TAG% cmake -S c:\\source -B c:\\build -DCMAKE_TOOLCHAIN_FILE=conan_paths.cmake -DCMAKE_GENERATOR_PLATFORM=x64"
+                                    script: "docker run --rm -v \"${WORKSPACE}\\build:c:\\build\" -v \"${WORKSPACE}\\scm:c:\\source:ro\" --workdir=\"c:\\build\" %DOCKER_IMAGE_TAG% cmake -G Ninja -S c:\\source -B c:\\build -DCMAKE_TOOLCHAIN_FILE=conan_paths.cmake -DCMAKE_BUILD_TYPE=Release"
                                 )
                                 bat(
                                     label: "Running build command from CMake",
@@ -571,7 +579,7 @@ foreach($file in $opengl32_libraries){
                 }
                 stage("Packaging Client in Docker Container"){
                     agent{
-                        label "Docker"
+                        label "Docker && Windows && 1903"
 
                     }
                     when {
@@ -586,8 +594,9 @@ foreach($file in $opengl32_libraries){
                             bat "if not exist dist mkdir dist"
                             bat(
                                 label: "Running build command from CMake on node ${NODE_NAME}",
-                                script: "docker run --rm -v \"${WORKSPACE}\\build:c:\\build:rw\" -v \"${WORKSPACE}\\dist:c:\\dist\" -v \"${WORKSPACE}\\scm:c:\\source:ro\" -v \"${WORKSPACE}\\scm\\CI\\shared_docker_scripts:c:\\ci_scripts:ro\" --workdir=\"c:\\TEMP\" %DOCKER_IMAGE_TAG% C:\\ci_scripts\\package.bat"
+                                script: "docker run --rm -v \"${WORKSPACE}\\build:c:\\build:rw\" -v \"${WORKSPACE}\\dist:c:\\dist\" -v \"${WORKSPACE}\\scm:c:\\source:rw\" -v \"${WORKSPACE}\\scm\\CI\\shared_docker_scripts:c:\\ci_scripts:ro\" --workdir=\"c:\\build\" %DOCKER_IMAGE_TAG% cpack -G NSIS;WIX;ZIP -C Release --verbose"
                             )
+
                     }
                     post{
                         cleanup{
@@ -603,8 +612,8 @@ foreach($file in $opengl32_libraries){
                             archiveArtifacts allowEmptyArchive: true, artifacts: 'build/**/*.log'
                         }
                         success{
-                            archiveArtifacts allowEmptyArchive: true, artifacts: 'dist/*.exe,dist/*.msi,dist/*.zip'
-                            stash includes: 'dist/*.exe,dist/*.msi,dist/*.zip,', name: "CLIENT_INSTALLERS"
+                            archiveArtifacts allowEmptyArchive: true, artifacts: 'build/*.exe,build/*.msi,build/*.zip'
+                            stash includes: 'build/*.exe,build/*.msi,build/*.zip,', name: "CLIENT_INSTALLERS"
                         }
                     }
                 }

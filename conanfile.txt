@@ -11,6 +11,7 @@ qt:qtquickcontrols=True
 qt:qtquickcontrols2=True
 qt:with_mysql=False
 qt:with_sqlite3=False
+qt:qttools=True
 libcurl:shared=True
 
 [imports]

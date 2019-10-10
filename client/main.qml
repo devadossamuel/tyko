@@ -2,7 +2,7 @@ import QtQuick 2.9
 import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.3
 import Api 1.0
-import Qt.labs.settings 1.0
+// import Qt.labs.settings 1.0
 
 ApplicationWindow {
     id: mainWindow
@@ -11,9 +11,9 @@ ApplicationWindow {
     height: 480
     property int dataRefreshRate: 4000
     property url sourceURL
-    Settings{
-        property alias sourceURL: mainWindow.sourceURL
-    }
+//    Settings{
+//        property alias sourceURL: mainWindow.sourceURL
+//    }
     SystemPalette { id: appPalette; colorGroup: SystemPalette.Active }
     title: "Current :" + mainWindow.sourceURL
 
