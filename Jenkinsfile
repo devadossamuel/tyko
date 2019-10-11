@@ -503,6 +503,7 @@ foreach($file in $opengl32_libraries){
 -Dsonar.analysis.scmRevision=${env.GIT_COMMIT} \
 -Dsonar.working.directory=${WORKSPACE}/.scannerwork \
 -Dsonar.python.pylint.reportPath=${WORKSPACE}/reports/pylint.txt \
+-Dsonar.exclusions=**/bootstrap*.* \
 -Dsonar.projectDescription=\"${props.Summary}\" \
 -X \
 "
