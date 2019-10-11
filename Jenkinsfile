@@ -483,12 +483,9 @@ foreach($file in $opengl32_libraries){
 //                     }
                     steps{
                         unstash "DIST-INFO"
-                        sh "ls -la tyko.dist-info"
                         script{
                                 def props = readProperties interpolate: true, file: 'tyko.dist-info/METADATA'
-                                echo "props = ${props}"
-                        }
-                        withSonarQubeEnv('sonarqube.library.illinois.edu') {
+                            withSonarQubeEnv('sonarqube.library.illinois.edu') {
 //                                 withEnv([
                                 sh(
                                     label: "Running Sonar Scanner",
@@ -496,18 +493,19 @@ foreach($file in $opengl32_libraries){
 -Dsonar.projectBaseDir=${WORKSPACE}/scm \
 -Dsonar.python.coverage.reportPaths=reports/coverage.xml \
 -Dsonar.python.xunit.reportPath=reports/pytest/junit-${env.NODE_NAME}-pytest.xml \
--Dsonar.projectVersion=${PKG_VERSION} \
+-Dsonar.projectVersion=${props.Version} \
 -Dsonar.python.bandit.reportPaths=${WORKSPACE}/reports/bandit-report.json \
 -Dsonar.links.ci=${env.JOB_URL} \
 -Dsonar.buildString=${env.BUILD_TAG} \
--Dsonar.analysis.packageName=${env.PKG_NAME} \
+-Dsonar.analysis.packageName=${props.Name} \
 -Dsonar.analysis.buildNumber=${env.BUILD_NUMBER} \
 -Dsonar.analysis.scmRevision=${env.GIT_COMMIT} \
 -Dsonar.working.directory=${WORKSPACE}/.scannerwork \
 -Dsonar.python.pylint.reportPath=${WORKSPACE}/reports/pylint.txt \
--Dsonar.projectDescription=\"${PROJECT_DESCRIPTION}\" \
+-Dsonar.projectDescription=\"${props.Summary}\" \
 "
                                     )
+                                }
                         }
                         script{
 
@@ -527,11 +525,8 @@ foreach($file in $opengl32_libraries){
                         always{
                             stash includes: "reports/sonar-report.json", name: 'SONAR_REPORT'
                             archiveArtifacts allowEmptyArchive: true, artifacts: 'reports/sonar-report.json'
-                            node('Windows'){
-                                checkout scm
-                                unstash "SONAR_REPORT"
-                                recordIssues(tools: [sonarQube(pattern: 'reports/sonar-report.json')])
-                            }
+                            unstash "SONAR_REPORT"
+                            recordIssues(tools: [sonarQube(pattern: 'reports/sonar-report.json')])
 
                         }
                     }
