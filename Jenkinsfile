@@ -67,8 +67,8 @@ pipeline {
         buildDiscarder logRotator(artifactDaysToKeepStr: '30', artifactNumToKeepStr: '30', daysToKeepStr: '100', numToKeepStr: '100')
     }
     environment{
-        PKG_NAME = pythonPackageName(toolName: "CPython-3.7")
-        PKG_VERSION = pythonPackageVersion(toolName: "CPython-3.7")
+//         PKG_NAME = pythonPackageName(toolName: "CPython-3.7")
+//         PKG_VERSION = pythonPackageVersion(toolName: "CPython-3.7")
         DOC_ZIP_FILENAME = "${env.PKG_NAME}-${env.PKG_VERSION}.doc.zip"
         DEVPI = credentials("DS_devpi")
         DOCKER_IMAGE_TAG="tyko/${env.BRANCH_NAME.toLowerCase()}"
