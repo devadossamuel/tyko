@@ -524,7 +524,6 @@ foreach($file in $opengl32_libraries){
                         always{
                             stash includes: "reports/sonar-report.json", name: 'SONAR_REPORT'
                             archiveArtifacts allowEmptyArchive: true, artifacts: 'reports/sonar-report.json'
-                            unstash "SONAR_REPORT"
                             recordIssues(tools: [sonarQube(pattern: 'reports/sonar-report.json')])
 
                         }
