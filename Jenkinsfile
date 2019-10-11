@@ -131,13 +131,12 @@ pipeline {
                         dir("build/server"){
                             sh "ls -la"
                         }
-                        sh "find . -name 'tyko.dist-info'"
                     }
                     post{
                         success{
                             dir("scm"){
                                 stash includes: "deploy/**,database/**", name: 'SERVER_DEPLOY_FILES'
-                                stash includes: "tyko.dist-info", name: 'DIST-INFO'
+                                stash includes: "tyko.dist-info/**", name: 'DIST-INFO'
 
                             }
 
