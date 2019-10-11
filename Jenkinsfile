@@ -371,6 +371,7 @@ foreach($file in $opengl32_libraries){
                             post {
                                 always {
                                     archiveArtifacts "reports/bandit-report.json,reports/bandit-report.html"
+                                    stash includes: "reports/bandit-report.json", name: 'BANDIT_REPORT'
                                 }
                                 unstable{
                                     script{
@@ -477,17 +478,13 @@ foreach($file in $opengl32_libraries){
                         equals expected: "master", actual: env.BRANCH_NAME
                     }
 
-//                     environment{
-// //                         scannerHome = tool name: 'sonar-scanner-3.3.0', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
-//                         PATH = "${tool 'CPython-3.7'};$PATH"
-//
-//                     }
                     steps{
                         unstash "DIST-INFO"
+                        unstash "PYLINT_REPORT"
+                        unstash "BANDIT_REPORT"
                         script{
                                 def props = readProperties interpolate: true, file: 'tyko.dist-info/METADATA'
                             withSonarQubeEnv('sonarqube.library.illinois.edu') {
-//                                 withEnv([
                                 sh(
                                     label: "Running Sonar Scanner",
                                     script: "sonar-scanner \
