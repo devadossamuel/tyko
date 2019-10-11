@@ -470,6 +470,7 @@ foreach($file in $opengl32_libraries){
                             filename 'CI/sonarqube/scanner/Dockerfile'
                             label "linux && docker"
                             dir 'scm'
+                            additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                             }
                     }
                     when{
