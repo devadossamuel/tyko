@@ -505,7 +505,6 @@ foreach($file in $opengl32_libraries){
 -Dsonar.python.pylint.reportPath=${WORKSPACE}/reports/pylint.txt \
 -Dsonar.exclusions=**/bootstrap*.* \
 -Dsonar.projectDescription=\"${props.Summary}\" \
--X \
 "
                                     )
                                 }
