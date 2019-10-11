@@ -586,7 +586,7 @@ foreach($file in $opengl32_libraries){
                         }
                     }
                 }
-                stage("Packaging Client in Docker Container"){
+                stage("Creating Package Installers for Client"){
                     agent{
                         label "Docker && Windows && 1903"
 
