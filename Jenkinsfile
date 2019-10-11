@@ -483,6 +483,11 @@ foreach($file in $opengl32_libraries){
 //                     }
                     steps{
                         unstash "DIST-INFO"
+                        sh "ls -la tyko.dist-info"
+                        script{
+                                def props = readProperties interpolate: true, file: 'tyko.dist-info/METADATA'
+                                echo "props = ${props}"
+                        }
                         withSonarQubeEnv('sonarqube.library.illinois.edu') {
 //                                 withEnv([
                                 sh(
