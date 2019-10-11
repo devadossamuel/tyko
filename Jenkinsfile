@@ -258,7 +258,7 @@ foreach($file in $opengl32_libraries){
                                         sh "coverage combine"
                                         sh "coverage xml -o ../reports/coverage.xml"
                                     }
-                                    stash includes: "scm/.coverage.*,reports/pytest/junit-*.xml", name: 'PYTEST_COVERAGE_DATA'
+                                    stash includes: "scm/.coverage.*,reports/pytest/junit-*.xml,reports/coverage.xml", name: 'PYTEST_COVERAGE_DATA'
 
                                     publishCoverage(
                                         adapters: [
