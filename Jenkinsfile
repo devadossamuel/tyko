@@ -490,6 +490,7 @@ foreach($file in $opengl32_libraries){
                                 sh(
                                     label: "Running Sonar Scanner",
                                     script: "sonar-scanner \
+-Dproject.settings=${WORKSPACE}/scm/sonar-project.properties \
 -Dsonar.projectBaseDir=${WORKSPACE}/scm \
 -Dsonar.python.coverage.reportPaths=reports/coverage.xml \
 -Dsonar.python.xunit.reportPath=reports/pytest/junit-${env.NODE_NAME}-pytest.xml \
