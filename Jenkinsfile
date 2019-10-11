@@ -125,7 +125,7 @@ pipeline {
                     }
                     steps{
                         dir("scm"){
-                            sh "python setup.py build -b ../build/server"
+                            sh "python setup.py build -b ../build/server dist_info"
                             sh "ls -la"
                         }
                         sh "ls -la"
@@ -134,7 +134,7 @@ pipeline {
                         success{
                             dir("scm"){
                                 stash includes: "deploy/**,database/**", name: 'SERVER_DEPLOY_FILES'
-                                stash includes: "tyko.egg-info", name: 'EGG-INFO'
+                                stash includes: "tyko.dist-info", name: 'DIST-INFO'
 
                             }
 
@@ -484,7 +484,7 @@ foreach($file in $opengl32_libraries){
 //
 //                     }
                     steps{
-                        unstash "EGG-INFO"
+                        unstash "DIST-INFO"
                         withSonarQubeEnv('sonarqube.library.illinois.edu') {
 //                                 withEnv([
                                 sh(
