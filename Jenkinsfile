@@ -504,7 +504,7 @@ foreach($file in $opengl32_libraries){
 -Dsonar.working.directory=${WORKSPACE}/.scannerwork \
 -Dsonar.python.pylint.reportPath=${WORKSPACE}/reports/pylint.txt \
 -Dsonar.projectDescription=\"${props.Summary}\" \
--X
+-X \
 "
                                     )
                                 }
