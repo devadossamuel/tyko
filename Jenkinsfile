@@ -473,15 +473,15 @@ foreach($file in $opengl32_libraries){
                         equals expected: "master", actual: env.BRANCH_NAME
                     }
 
-                    environment{
-                        scannerHome = tool name: 'sonar-scanner-3.3.0', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
-                        PATH = "${tool 'CPython-3.7'};$PATH"
-
-                    }
+//                     environment{
+// //                         scannerHome = tool name: 'sonar-scanner-3.3.0', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+//                         PATH = "${tool 'CPython-3.7'};$PATH"
+//
+//                     }
                     steps{
                         withSonarQubeEnv('sonarqube.library.illinois.edu') {
                             withEnv([
-                                "PROJECT_DESCRIPTION=${bat(label: 'Getting description metadata', returnStdout: true, script: '@python scm/setup.py --description').trim()}"
+                                "PROJECT_DESCRIPTION=${sh(label: 'Getting description metadata', returnStdout: true, script: 'python scm/setup.py --description').trim()}"
                                 ]) {
 
                                 sh(
