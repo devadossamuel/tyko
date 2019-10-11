@@ -131,6 +131,7 @@ pipeline {
                         dir("build/server"){
                             sh "ls -la"
                         }
+                        sh "find . -name 'tyko.dist-info'"
                     }
                     post{
                         success{
