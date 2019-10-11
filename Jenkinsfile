@@ -126,7 +126,9 @@ pipeline {
                     steps{
                         dir("scm"){
                             sh "python setup.py build -b ../build/server"
+                            sh "ls -la"
                         }
+                        sh "ls -la"
                     }
                     post{
                         success{
