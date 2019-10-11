@@ -479,10 +479,13 @@ foreach($file in $opengl32_libraries){
 //
 //                     }
                     steps{
-                        withSonarQubeEnv('sonarqube.library.illinois.edu') {
-                            withEnv([
-                                "PROJECT_DESCRIPTION=${sh(label: 'Getting description metadata', returnStdout: true, script: 'python scm/setup.py --description').trim()}"
-                                ]) {
+                        script{
+                            def PROJECT_DESCRIPTION = sh(label: 'Getting description metadata', returnStdout: true, script: 'python scm/setup.py --description').trim()
+
+                            withSonarQubeEnv('sonarqube.library.illinois.edu') {
+//                                 withEnv([
+//                                     "PROJECT_DESCRIPTION=${sh(label: 'Getting description metadata', returnStdout: true, script: 'python scm/setup.py --description').trim()}"
+//                                     ]) {
 
                                 sh(
                                     label: "Running Sonar Scanner",
@@ -499,9 +502,10 @@ foreach($file in $opengl32_libraries){
 -Dsonar.analysis.scmRevision=${env.GIT_COMMIT} \
 -Dsonar.working.directory=${WORKSPACE}/.scannerwork \
 -Dsonar.python.pylint.reportPath=${WORKSPACE}/reports/pylint.txt \
--Dsonar.projectDescription=\"%PROJECT_DESCRIPTION%\" \
+-Dsonar.projectDescription=\"${PROJECT_DESCRIPTION}\" \
 "
                                     )
+//                                     }
                                 }
                         }
                         script{
