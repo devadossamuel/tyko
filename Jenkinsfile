@@ -252,12 +252,13 @@ foreach($file in $opengl32_libraries){
                             }
                             post {
                                 always{
-                                    stash includes: "scm/.coverage.*,reports/pytest/junit-*.xml", name: 'PYTEST_COVERAGE_DATA'
+
                                     junit "reports/pytest/junit-*.xml"
                                     dir("scm"){
                                         sh "coverage combine"
                                         sh "coverage xml -o ../reports/coverage.xml"
                                     }
+                                    stash includes: "scm/.coverage.*,reports/pytest/junit-*.xml", name: 'PYTEST_COVERAGE_DATA'
 
                                     publishCoverage(
                                         adapters: [
