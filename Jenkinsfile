@@ -463,7 +463,11 @@ foreach($file in $opengl32_libraries){
                 }
                 stage("Run SonarQube Analysis"){
                     agent{
-                        label "Windows && Python3"
+                        dockerfile {
+                            filename 'CI/sonarqube/scanner/Dockerfile'
+                            label "linux && docker"
+                            dir 'scm'
+                            }
                     }
                     when{
                         equals expected: "master", actual: env.BRANCH_NAME
@@ -480,9 +484,9 @@ foreach($file in $opengl32_libraries){
                                 "PROJECT_DESCRIPTION=${bat(label: 'Getting description metadata', returnStdout: true, script: '@python scm/setup.py --description').trim()}"
                                 ]) {
 
-                                bat(
+                                sh(
                                     label: "Running Sonar Scanner",
-                                    script: "${env.scannerHome}/bin/sonar-scanner \
+                                    script: "sonar-scanner \
 -Dsonar.projectBaseDir=${WORKSPACE}/scm \
 -Dsonar.python.coverage.reportPaths=reports/coverage.xml \
 -Dsonar.python.xunit.reportPath=reports/pytest/junit-${env.NODE_NAME}-pytest.xml \
@@ -493,8 +497,8 @@ foreach($file in $opengl32_libraries){
 -Dsonar.analysis.packageName=${env.PKG_NAME} \
 -Dsonar.analysis.buildNumber=${env.BUILD_NUMBER} \
 -Dsonar.analysis.scmRevision=${env.GIT_COMMIT} \
--Dsonar.working.directory=${WORKSPACE}\\.scannerwork \
--Dsonar.python.pylint.reportPath=${WORKSPACE}\\reports\\pylint.txt \
+-Dsonar.working.directory=${WORKSPACE}/.scannerwork \
+-Dsonar.python.pylint.reportPath=${WORKSPACE}/reports/pylint.txt \
 -Dsonar.projectDescription=\"%PROJECT_DESCRIPTION%\" \
 "
                                     )
