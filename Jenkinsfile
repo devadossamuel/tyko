@@ -132,7 +132,10 @@ pipeline {
                         success{
                             dir("scm"){
                                 stash includes: "deploy/**,database/**", name: 'SERVER_DEPLOY_FILES'
+                                stash includes: "tyko.egg-info", name: 'EGG-INFO'
+
                             }
+
                         }
                         cleanup{
                             cleanWs()
@@ -479,14 +482,9 @@ foreach($file in $opengl32_libraries){
 //
 //                     }
                     steps{
-                        script{
-                            def PROJECT_DESCRIPTION = sh(label: 'Getting description metadata', returnStdout: true, script: 'python scm/setup.py --description').trim()
-
-                            withSonarQubeEnv('sonarqube.library.illinois.edu') {
+                        unstash "EGG-INFO"
+                        withSonarQubeEnv('sonarqube.library.illinois.edu') {
 //                                 withEnv([
-//                                     "PROJECT_DESCRIPTION=${sh(label: 'Getting description metadata', returnStdout: true, script: 'python scm/setup.py --description').trim()}"
-//                                     ]) {
-
                                 sh(
                                     label: "Running Sonar Scanner",
                                     script: "sonar-scanner \
@@ -505,8 +503,6 @@ foreach($file in $opengl32_libraries){
 -Dsonar.projectDescription=\"${PROJECT_DESCRIPTION}\" \
 "
                                     )
-//                                     }
-                                }
                         }
                         script{
 
