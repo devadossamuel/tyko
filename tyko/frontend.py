@@ -76,6 +76,7 @@ class FrontendEntity(AbsFrontend):
         # ("Formats", "page_formats"),
         ("Items", "page_item"),
         ("Objects", "page_object"),
+        ("Collections", "page_collections"),
     }
 
     def __init__(self, provider: data_provider.DataProvider) -> None:
