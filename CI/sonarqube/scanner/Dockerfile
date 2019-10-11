@@ -9,5 +9,3 @@ RUN apt-get update -yqq && \
 RUN npm config set unsafe-perm true && \
     npm install -g sonarqube-scanner && \
     sonar-scanner --version
-
-ENTRYPOINT ["sonar-scanner"]
