@@ -4,8 +4,18 @@ RUN apt-get update -yqq && \
     apt-get install -yqq --no-install-recommends openjdk-8-jre-headless git && \
     rm -rf /var/lib/apt/lists/*
 
-RUN mkdir /.sonar
+
+
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+
+RUN groupadd -g $GROUP_ID user && \
+    useradd -u $USER_ID -s /bin/sh -m -d /home/user  -g user user
+
+USER $USER_ID
 
 RUN npm config set unsafe-perm true && \
     npm install -g sonarqube-scanner && \
     sonar-scanner --version
+
+RUN mkdir /.sonar
