@@ -128,7 +128,9 @@ pipeline {
                             sh "python setup.py build -b ../build/server dist_info"
                             sh "ls -la"
                         }
-                        sh "ls -la"
+                        dir("build"){
+                            sh "ls -la"
+                        }
                     }
                     post{
                         success{
