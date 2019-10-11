@@ -471,6 +471,7 @@ foreach($file in $opengl32_libraries){
 
                     environment{
                         scannerHome = tool name: 'sonar-scanner-3.3.0', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                        PATH = "${tool 'CPython-3.7'};$PATH"
 
                     }
                     steps{
