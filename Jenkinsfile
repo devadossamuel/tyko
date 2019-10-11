@@ -452,7 +452,7 @@ foreach($file in $opengl32_libraries){
                             }
                             post{
                                 always{
-                                    stash includes: "reports/pylint_issues.txt", name: 'PYLINT_REPORT'
+                                    stash includes: "reports/pylint_issues.txt,reports/pylint.txt", name: 'PYLINT_REPORT'
                                     archiveArtifacts allowEmptyArchive: true, artifacts: "reports/pylint.txt"
                                     dir("scm"){
                                         unstash "PYLINT_REPORT"
