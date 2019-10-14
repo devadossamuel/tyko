@@ -248,6 +248,15 @@ class ObjectFrontend(FrontendEntity):
         return self.render_page(template="object_details.html",
                                 object=selected_object)
 
+    def render_page(self, template="object_details.html", **context):
+        new_context = self.build_header_context(
+            current_item=self.entity_title,
+            context=context
+        )
+        new_context["edit"] = False
+
+        return render_template(template, **new_context)
+
 
 class CollectiontFrontend(FrontendEntity):
     def __init__(self, provider: data_provider.DataProvider) -> None:

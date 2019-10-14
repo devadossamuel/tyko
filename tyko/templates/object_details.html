@@ -4,6 +4,11 @@
 <div class="container-fluid">
     <h1 class="bd-title mt-5">Object Details</h1>
     <div class="row onePadding">
+        <div class="container">
+            <button class="btn btn-outline-primary"
+                        type="button"
+                        onclick="location.href='{{ url_for('.page_index')}}api/object/{{object['object_id']}}-pbcore.xml'">PBCore Record</button>
+        </div>
         <div class="col-md-12 col-sm-12">
             <div class="table-responsive">
                 <table class="table table-striped">
@@ -45,6 +50,7 @@
 
                 </table>
             </div>
+
         </div>
     </div>
 </div>

@@ -10,14 +10,12 @@
         class="table-striped">
         <thead class="thead-light">
             <th data-sortable="true">Name</th>
-            <th>Metadata</th>
             <th>Details</th>
         </thead>
         <tbody>
             {% for object in objects %}
                 <tr>
                     <td>{{object['name']}}</td>
-                    <td><a href="{{ url_for('.page_index')}}api/object/{{object['id']}}-pbcore.xml">PBCore</a></td>
                     <td><a href="{{ url_for('page_object')}}/{{object['id'] }}">Details</a></td>
                 </tr>
             {% endfor %}
