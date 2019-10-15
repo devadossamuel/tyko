@@ -1,29 +1,53 @@
 {% extends "layout.html" %}
 
 {% block content %}
+
 <div class="container">
     <h1 class="mt-5">Projects</h1>
-     <table id="table"
-            data-toggle="table"
-            data-search="true"
-            data-show-columns="true"
-            class="table-striped" >
-         <thead class="thead-light">
-            <th data-sortable="true">Title</th>
-            <th data-sortable="true">Status</th>
-            <th>Details</th>
 
-         </thead>
-         <tbody>
-            {% for project in projects %}
-                <tr>
-                    <td>{{project['title']}}</td>
-                    <td>{{project['status']}}</td>
-                    <td><a href="{{ url_for('page_projects')}}/{{project['project_id'] }}">Details</a></td>
-                </tr>
-            {% endfor %}
-            </tr>
-         </tbody>
-     </table>
+    <table id="table"
+           data-toolbar=".toolbar"
+
+           data-virtual-scroll="true"
+           data-show-columns="false"
+           data-search="true"
+           data-pagination="true"
+           class="table-striped"
+
+    >
+  <thead class="thead-light">
+    <tr>
+      <th data-field="title"
+          data-formatter="itemFormatter"
+          data-sortable="true">Title</th>
+      <th data-field="status"
+          data-sortable="true">Status</th>
+    </tr>
+  </thead>
+</table>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
+<script type="text/JavaScript">
+    var $table = $('#table');
+    window.onload = function () {
+        var xhr = new XMLHttpRequest();
+        $table.bootstrapTable('showLoading');
+        xhr.open("GET", "api/project");
+        xhr.onload = function(){
+            var projects = JSON.parse(this.responseText)[0].projects;
+            $table.bootstrapTable({data: projects});
+            $table.bootstrapTable('hideLoading');
+        };
+        xhr.send();
+
+    }
+</script>
+<script>
+    function itemFormatter(value, row) {
+        return '<a href="{{ url_for("page_projects") }}/'+row.project_id +'">' + value + "</a>";
+    }
+</script>
     </div>
 {% endblock %}
+
