@@ -695,7 +695,8 @@ foreach($file in $opengl32_libraries){
                                         remote.password = password
                                         remote.allowAnyHosts = true
                                     }
-                                    sshCommand remote: remote, command: "mkdir package"
+                                    sshRemove remote: remote, path: "package", failOnError: false
+                                    sshCommand remote: remote, command: "mkdir -p package"
                                     sshPut remote: remote, from: 'dist', into: './package/'
                                     sshCommand remote: remote, command: "unzip ./package/dist/tyko-${props.Version}.zip -d ./package/ "
                                     sshCommand remote: remote, command: "mv  ./package/tyko-${props.Version}/* ./package/"
@@ -708,7 +709,7 @@ foreach($file in $opengl32_libraries){
                                     sshCommand remote: remote, command: """cd package &&
         docker-compose -f deploy/docker-compose.yml -p avdatabase build &&
         docker-compose -f deploy/docker-compose.yml -p avdatabase up -d"""
-                                    sshRemove remote: remote, path: "package", failOnError: false
+//                                    sshRemove remote: remote, path: "package", failOnError: false
                                 }
                                 addBadge(icon: 'success.gif', id: '', link: "http://${SERVER_URL}:8000/", text: 'Server Application Deployed')
                             }
