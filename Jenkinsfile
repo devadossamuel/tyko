@@ -568,17 +568,17 @@ foreach($file in $opengl32_libraries){
                     }
                     steps{
                         dir("scm"){
-                            sh script: "python setup.py sdist -d ../dist --format zip bdist_wheel -d ../dist"
+                            sh script: "python setup.py sdist -d ../dist --format=zip,gztar bdist_wheel -d ../dist"
                         }
                     }
                     post {
                         success {
-                            archiveArtifacts artifacts: "dist/*.whl,dist/*.zip", fingerprint: true
-                            stash includes: "dist/*.whl,dist/*.zip", name: 'PYTHON_PACKAGES'
+                            archiveArtifacts artifacts: "dist/*.whl,dist/*.zip,dist/*.tar.gz", fingerprint: true
+                            stash includes: "dist/*.whl,dist/*.zip,dist/*.tar.gz", name: 'PYTHON_PACKAGES'
                         }
                         unstable {
-                            archiveArtifacts artifacts: "dist/*.whl,dist/*.zip", fingerprint: true
-                            stash includes: "dist/*.whl,dist/*.zip", name: 'PYTHON_PACKAGES'
+                            archiveArtifacts artifacts: "dist/*.whl,dist/*.zip,dist/*.tar.gz", fingerprint: true
+                            stash includes: "dist/*.whl,dist/*.zip,dist/*.tar.gz,", name: 'PYTHON_PACKAGES'
                         }
 
                         cleanup{
@@ -698,8 +698,8 @@ foreach($file in $opengl32_libraries){
                                     sshRemove remote: remote, path: "package", failOnError: false
                                     sshCommand remote: remote, command: "mkdir -p package"
                                     sshPut remote: remote, from: 'dist', into: './package/'
-                                    sshCommand remote: remote, command: "unzip ./package/dist/tyko-${props.Version}.zip -d ./package/ "
-                                    sshCommand remote: remote, command: "mv  ./package/tyko-${props.Version}/* ./package/"
+                                    sshCommand remote: remote, command: "tar xvzf ./package/dist/tyko-${props.Version}.tar.gz -C ./package"
+                                    sshCommand remote: remote, command: "mv ./package/tyko-${props.Version}/* ./package/"
 //                                    sshPut remote: remote, from: 'setup.py', into: './package/'
 //                                    sshPut remote: remote, from: 'setup.cfg', into: './package/'
 //                                    sshPut remote: remote, from: 'tyko', into: './package/'
