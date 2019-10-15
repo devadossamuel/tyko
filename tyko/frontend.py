@@ -132,8 +132,9 @@ class ProjectFrontend(FrontendEntity):
             data_provider.ProjectDataConnector(provider.db_session_maker)
 
     def list(self):
-        projects = self._data_connector.get(serialize=True)
-        return self.render_page(template="projects.html", projects=projects)
+        return self.render_page(template="projects.html",
+                                api_path="api/project"
+                                )
 
     @property
     def entity_title(self) -> str:
@@ -181,17 +182,15 @@ class ItemFrontend(FrontendEntity):
             data_provider.ItemDataConnector(provider.db_session_maker)
 
     def list(self):
-        items = []
+        formats = dict()
 
-        for item in self._data_connector.get(serialize=True):
+        for format_name, format_type in scheme.format_types.items():
+            formats[format_type[0]] = format_name
 
-            # # replace the format id with format string name
-            for k, v in scheme.format_types.items():
-                if v[0] == item["format_type_id"]:
-                    item['format_type'] = k
-                    break
-            items.append(item)
-        return self.render_page(template="items.html", items=items)
+        return self.render_page(template="items.html",
+                                api_path="api/item",
+                                format_types=formats,
+                                )
 
     def display_details(self, entity_id):
         selected_item = self._data_connector.get(
@@ -225,8 +224,9 @@ class ObjectFrontend(FrontendEntity):
             data_provider.ObjectDataConnector(provider.db_session_maker)
 
     def list(self):
-        objects = self._data_connector.get(serialize=False)
-        return self.render_page(template="objects.html", objects=objects)
+        return self.render_page(template="objects.html",
+                                api_path="api/object"
+                                )
 
     @property
     def entity_title(self) -> str:
@@ -266,10 +266,8 @@ class CollectiontFrontend(FrontendEntity):
             data_provider.CollectionDataConnector(provider.db_session_maker)
 
     def list(self):
-        collections = self._data_connector.get(serialize=True)
-
         return self.render_page(template="collections.html",
-                                collections=collections)
+                                api_path="api/collection")
 
     def display_details(self, entity_id):
         selected_object = self._data_connector.get(serialize=True,

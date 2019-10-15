@@ -42,9 +42,12 @@ class Middleware:
             result = formats
         return result
 
+    def get_formats_by_id(self, id):
+        formats = self.data_provider.get_formats(id=id, serialize=True)
+        return jsonify(formats)
+
 
 class ObjectMiddlwareEntity(AbsMiddlwareEntity):
-
     def __init__(self, data_provider: dp.DataProvider) -> None:
         super().__init__(data_provider)
 

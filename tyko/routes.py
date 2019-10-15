@@ -90,7 +90,10 @@ class Routes:
                 APIEntity("Formats", rules=[
                     Route("/api/format", "formats",
                           self.mw.get_formats
-                          )
+                          ),
+                    Route("/api/format/<string:id>", "format_by_id",
+                          self.mw.get_formats_by_id
+                          ),
                     ]),
                 APIEntity("Item", rules=[
                     Route("/api/item", "item",

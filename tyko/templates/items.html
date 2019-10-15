@@ -1,27 +1,41 @@
-{% extends "layout.html" %}
+{% extends "dynamiclist.html" %}
+{% block entityTitle %}
+    Items
+{% endblock %}
 
-{% block content %}
-<div class="container">
-    <h1 class="mt-5">Items</h1>
-    <table id="table"
-        data-toggle="table"
-        data-search="true"
-        data-show-columns="true"
-        class="table-striped">
-        <thead class="thead-light">
-            <th data-sortable="true">Name</th>
-            <th data-sortable="true">Format Type</th>
-            <th>Details</th>
-        </thead>
-        <tbody>
-            {% for item in items %}
-                <tr>
-                    <td>{{item['name']}}</td>
-                    <td>{{item['format_type'] or ""}}</td>
-                    <td><a href="{{url_for('page_item')}}/{{ item['item_id'] }}">Details</a></td>
-                </tr>
+{% block tableDetails %}
+  <thead class="thead-light">
+    <tr>
+      <th data-field="name"
+          data-formatter="itemFormatter"
+          data-sortable="true">Name</th>
+      <th data-field="format_type_id"
+          data-formatter="formatTypeFormatter"
+          data-sortable="true">Format</th>
+    </tr>
+  </thead>
+{% endblock %}
+
+{% block dataParsing %}
+var data = JSON.parse(this.responseText)[0].items;
+{% endblock %}
+{% block formatters %}
+<script>
+    function get_format_from_id(id) {
+        const formats = {
+            {% for format_id, format_name in format_types.items() %}
+                {{- format_id }}: "{{ format_name }}",
             {% endfor %}
-        </tbody>
-    </table>
-</div>
+        };
+        return formats[id]
+
+    }
+    function itemFormatter(value, row) {
+        return '<a href="{{ url_for("page_item") }}/'+row.item_id +'">' + value + "</a>";
+    }
+    function formatTypeFormatter(value) {
+        return get_format_from_id(value);
+    }
+
+</script>
 {% endblock %}

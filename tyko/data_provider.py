@@ -366,10 +366,16 @@ class DataProvider:
     def init_database(self):
         database.init_database(self.engine)
 
-    def get_formats(self, serialize=False):
+    def get_formats(self, id=None, serialize=False):
         try:
             session = self.db_session_maker()
-            all_formats = session.query(scheme.FormatTypes).all()
+
+            if id:
+                all_formats = session.query(scheme.FormatTypes)\
+                    .filter(scheme.FormatTypes.id == id)\
+                    .all()
+            else:
+                all_formats = session.query(scheme.FormatTypes).all()
             session.close()
 
         except sqlalchemy.exc.DatabaseError as e:
