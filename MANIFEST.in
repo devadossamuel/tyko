@@ -1,2 +1,2 @@
-include tox.ini LICENSE
+include tox.ini LICENSE requirements.txt
 recursive-include tests *.py *.feature
