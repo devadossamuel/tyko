@@ -700,16 +700,12 @@ foreach($file in $opengl32_libraries){
                                     sshPut remote: remote, from: 'dist', into: './package/'
                                     sshCommand remote: remote, command: "tar xvzf ./package/dist/tyko-${props.Version}.tar.gz -C ./package"
                                     sshCommand remote: remote, command: "mv ./package/tyko-${props.Version}/* ./package/"
-//                                    sshPut remote: remote, from: 'setup.py', into: './package/'
-//                                    sshPut remote: remote, from: 'setup.cfg', into: './package/'
-//                                    sshPut remote: remote, from: 'tyko', into: './package/'
-//                                    sshPut remote: remote, from: 'requirements.txt', into: './package/'
                                     sshPut remote: remote, from: 'deploy', into: './package/'
                                     sshPut remote: remote, from: 'database', into: './package/'
                                     sshCommand remote: remote, command: """cd package &&
         docker-compose -f deploy/docker-compose.yml -p avdatabase build &&
         docker-compose -f deploy/docker-compose.yml -p avdatabase up -d"""
-//                                    sshRemove remote: remote, path: "package", failOnError: false
+                                    sshRemove remote: remote, path: "package", failOnError: false
                                 }
                                 addBadge(icon: 'success.gif', id: '', link: "http://${SERVER_URL}:8000/", text: 'Server Application Deployed')
                             }
