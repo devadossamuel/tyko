@@ -2,6 +2,7 @@
 libcurl/7.64.1@bincrafters/stable
 qt/5.13.1@bincrafters/stable
 bzip2/1.0.8@conan/stable
+zlib/1.2.11@conan/stable
 
 [generators]
 cmake_paths
