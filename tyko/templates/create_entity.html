@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block content %}
+
+    <div class="container-fluid">
+        {%- block entityTitle %}
+            <h1 class="mt-5">
+                {% if title %}
+                    {{title}}
+                {% else %}
+                New Entity
+                {% endif %}
+            </h1>
+        {%-endblock %}
+    {% block form %}
+    {% endblock %}
+    </div>
+    {% block submitScript %}
+    {% endblock %}
+    {% block dialogboxes %}
+    {% endblock %}
+    <div id="response_modal"
+         class="modal fade bd-example-modal-sm"
+         tabindex="-1"
+         role="dialog"
+         aria-labelledby="mySmallModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 id="status_report_title">Success</h1>
+                </div>
+                <div class="modal-body">
+                    <p id="more_info">Successfully Created</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            id="okay_button"
+                            class="btn btn-primary"
+                            data-dismiss="modal"
+                    >Okay</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

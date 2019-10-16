@@ -1,0 +1,73 @@
+{% extends "create_entity.html" %}
+
+
+{% block form %}
+        <form id="new-project-form" onsubmit="return submitNew('{{ api_path }}')">
+            <div class="form-group row">
+                <label for="title" class="col-sm-2 col-form-label">Title</label>
+                <div class="col-sm-10">
+                  <input type="string" class="form-control" id="title" name="title" placeholder="Title" required>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="inputProjectCode" class="col-sm-2 col-form-label">Project Code</label>
+                <div class="col-sm-10">
+                  <input type="string" class="form-control" id="inputProjectCode" name="project_code" placeholder="Project Code">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="inputProjectStatus" class="col-sm-2 col-form-label">Project Status</label>
+                <div class="col-sm-10">
+                  <input type="string" class="form-control" id="inputProjectStatus" name="status" placeholder="Project Status">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="inputCurrentLocation" class="col-sm-2 col-form-label">Current Location</label>
+                <div class="col-sm-10">
+                  <input type="string" class="form-control" id="inputCurrentLocation" name="current_location" placeholder="Project Status">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+{% endblock %}
+{% block submitScript %}
+    <script>
+        function submitNew(api_path) {
+            console.log("click");
+            var formData = new FormData(document.forms["new-project-form"]);
+            var xhr = new XMLHttpRequest();
+            xhr.withCredentials = true;
+            xhr.open("POST", api_path);
+            xhr.onload = function() {
+                if (this.readyState === XMLHttpRequest.DONE) {
+                    if (this.status === 200) {
+                        report_success(this);
+                    } else {
+                        report_failed(this);
+
+                    }
+                }
+                };
+            xhr.send(formData);
+            return false;
+        }
+        {% block submitSuccess %}
+        function report_success(response) {
+            $('#response_modal').modal('show');
+            document.getElementById("status_report_title").innerText = "Success";
+            const data = JSON.parse(response.responseText);
+            document.getElementById("okay_button").onclick = function () {
+                location.href="{{on_success_redirect_base}}" + data.id;
+            };
+        }
+        {% endblock %}
+        {% block submitFailed %}
+        function report_failed(response) {
+            $('#response_modal').modal('show');
+            document.getElementById("status_report_title").innerText = "Failed";
+            document.getElementById("more_info").innerText = response.responseText;
+            return true;
+        }
+        {% endblock %}
+    </script>
+{% endblock-%}

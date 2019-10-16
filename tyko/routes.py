@@ -270,6 +270,11 @@ class Routes:
                     "page_project_edit",
                     lambda project_id: frontend.ProjectFrontend(
                         self.mw.data_provider).edit_details(project_id)
+                ),
+                Route(
+                    "/project/create/",
+                    "page_project_new",
+                    frontend.ProjectFrontend(self.mw.data_provider).create
                 )
             ]
         )

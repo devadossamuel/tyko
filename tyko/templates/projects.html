@@ -3,9 +3,26 @@
     Projects
 {% endblock %}
 
+{% block table_toolbar %}
+    <button id="add"
+            type="button"
+            onclick="window.location.href='{{url_for("page_project_new")}}'"
+            class="btn btn-primary">Create</button>
+{% endblock %}
+
+{% block toolbarscripts %}
+    <script>
+    var $add = $('#add');
+    $(function () {
+        $add.click(function () {
+            console.log("Click")
+        })
+
+    })
+    </script>
+{% endblock %}
+
 {% block tableDetails %}
-
-
   <thead class="thead-light">
     <tr>
       <th data-field="title"
@@ -18,12 +35,13 @@
 {% endblock %}
 
 {% block dataParsing %}
-var data = JSON.parse(this.responseText)[0].projects;
+    var data = JSON.parse(this.responseText)[0].projects;
 {% endblock %}
+
 {% block formatters %}
-<script>
-    function projectFormatter(value, row) {
-        return '<a href="{{ url_for("page_projects") }}/'+row.project_id +'">' + value + "</a>";
-    }
-</script>
+    <script>
+        function projectFormatter(value, row) {
+            return '<a href="{{ url_for("page_projects") }}/'+row.project_id +'">' + value + "</a>";
+        }
+    </script>
 {% endblock %}

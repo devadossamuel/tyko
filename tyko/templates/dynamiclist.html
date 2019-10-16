@@ -7,14 +7,22 @@
 
     {% endblock %}
     </h1>
+    <div id="toolbar">
+        <div class="form-group">
+            {% block table_toolbar %}
+            {% endblock %}
+        </div>
+    </div>
+    {% block table %}
         <table id="table"
-           data-toolbar=".toolbar"
+           data-toolbar="#toolbar"
            data-virtual-scroll="true"
            data-show-columns="false"
            data-search="true"
            data-pagination="true"
            class="table-striped"
     >
+        {% endblock %}
 
     {% block tableDetails %}
     {% endblock %}
@@ -28,6 +36,7 @@
             var xhr = new XMLHttpRequest();
             $table.bootstrapTable('showLoading');
             xhr.open("GET","{{ api_path }}");
+            xhr.setRequestHeader("Cache-Control", "no-cache");
             xhr.onload = function(){
                 {% block dataParsing %}
                 var data = JSON.parse(this.responseText);
@@ -37,8 +46,10 @@
             };
             xhr.send();
 
-}
+    };
+    {% endblock %}
 </script>
+    {% block toolbarscripts %}
     {% endblock %}
 
     {% block formatters %}

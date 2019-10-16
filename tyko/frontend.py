@@ -123,7 +123,17 @@ class FrontendEntity(AbsFrontend):
         return sorted(cls._entities, key=lambda x: [0])
 
 
-class ProjectFrontend(FrontendEntity):
+class FrontendEditable(FrontendEntity):
+    @abc.abstractmethod
+    def create(self):
+        """Generate the page for the create new entity"""
+
+    @abc.abstractmethod
+    def edit_details(self, entity_id):
+        """Generate the page for the edit an existing entity"""
+
+
+class ProjectFrontend(FrontendEditable):
 
     def __init__(self, provider: data_provider.DataProvider) -> None:
         super().__init__(provider)
@@ -168,6 +178,13 @@ class ProjectFrontend(FrontendEntity):
                                 api_path=api_path,
                                 view_details_path=view_details_path,
                                 edit=True)
+
+    def create(self):
+        return self.render_page(template="new_project.html",
+                                api_path="/api/project/",
+                                title="New Project",
+                                on_success_redirect_base="/project/",
+                                )
 
     def render_page(self, template="project_details.html", **context):
         context['itemType'] = "Project"
@@ -433,7 +450,6 @@ class NewObjectForm(NewEntityForm):
 
 
 all_forms = {
-    NewProjectForm(),
     NewCollectionForm(),
     NewItemForm(),
     NewObjectForm()
