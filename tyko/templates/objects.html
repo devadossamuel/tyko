@@ -18,7 +18,7 @@ var data = JSON.parse(this.responseText)[0].objects;
 {% block formatters %}
 <script>
     function objectFormatter(value, row) {
-        return '<a href="{{ url_for("page_item") }}/'+row.object_id +'">' + value + "</a>";
+        return '<a href="{{ url_for("page_object") }}/'+row.object_id +'">' + value + "</a>";
     }
 
 </script>
