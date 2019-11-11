@@ -54,9 +54,7 @@ def get_sonarqube_project_analysis(report_task_file, buildString){
 }
 
 pipeline {
-    agent {
-        label 'Windows && Python3'
-    }
+    agent none
     triggers {
         cron('@daily')
     }
@@ -148,6 +146,7 @@ pipeline {
                     }
                     when {
                         equals expected: true, actual: params.BUILD_CLIENT
+                        beforeAgent true
                     }
                     environment{
                         DOCKER_PATH = tool name: 'Docker', type: 'org.jenkinsci.plugins.docker.commons.tools.DockerTool'
@@ -477,6 +476,7 @@ foreach($file in $opengl32_libraries){
                     }
                     when{
                         equals expected: "master", actual: env.BRANCH_NAME
+                        beforeAgent true
                     }
 
                     steps{
@@ -536,20 +536,20 @@ foreach($file in $opengl32_libraries){
                     }
                 }
             }
-            post{
-                cleanup{
-                    cleanWs(patterns:
-                        [
-                            [pattern: 'reports/coverage.xml', type: 'INCLUDE'],
-                            [pattern: 'reports/coverage', type: 'INCLUDE'],
-                            [pattern: 'scm/.coverage', type: 'INCLUDE'],
-                            [pattern: 'scm/**/__pycache__', type: 'INCLUDE'],
-                            [pattern: 'reports/pytest/junit-*.xml', type: 'INCLUDE']
-                        ]
-                    )
-
-                }
-            }
+//            post{
+//                cleanup{
+//                    cleanWs(patterns:
+//                        [
+//                            [pattern: 'reports/coverage.xml', type: 'INCLUDE'],
+//                            [pattern: 'reports/coverage', type: 'INCLUDE'],
+//                            [pattern: 'scm/.coverage', type: 'INCLUDE'],
+//                            [pattern: 'scm/**/__pycache__', type: 'INCLUDE'],
+//                            [pattern: 'reports/pytest/junit-*.xml', type: 'INCLUDE']
+//                        ]
+//                    )
+//
+//                }
+//            }
         }
         stage("Packaging") {
 
@@ -593,6 +593,7 @@ foreach($file in $opengl32_libraries){
                     }
                     when {
                         equals expected: true, actual: params.BUILD_CLIENT
+                        beforeAgent true
                     }
                     environment{
                         DOCKER_PATH = tool name: 'Docker', type: 'org.jenkinsci.plugins.docker.commons.tools.DockerTool'
@@ -715,21 +716,21 @@ foreach($file in $opengl32_libraries){
             }
         }
      }
-     post {
-        cleanup {
-          cleanWs(
-                deleteDirs: true,
-                patterns: [
-                    [pattern: 'dist', type: 'INCLUDE'],
-                    [pattern: 'reports', type: 'INCLUDE'],
-                    [pattern: 'logs', type: 'INCLUDE'],
-                    [pattern: 'certs', type: 'INCLUDE'],
-                    [pattern: 'mypy_stubs', type: 'INCLUDE'],
-                    [pattern: '*tmp', type: 'INCLUDE'],
-                    [pattern: "scm", type: 'INCLUDE'],
-                    ]
-                )
-        }
-      }
+//     post {
+//        cleanup {
+//          cleanWs(
+//                deleteDirs: true,
+//                patterns: [
+//                    [pattern: 'dist', type: 'INCLUDE'],
+//                    [pattern: 'reports', type: 'INCLUDE'],
+//                    [pattern: 'logs', type: 'INCLUDE'],
+//                    [pattern: 'certs', type: 'INCLUDE'],
+//                    [pattern: 'mypy_stubs', type: 'INCLUDE'],
+//                    [pattern: '*tmp', type: 'INCLUDE'],
+//                    [pattern: "scm", type: 'INCLUDE'],
+//                    ]
+//                )
+//        }
+//      }
 
 }
