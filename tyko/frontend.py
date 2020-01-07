@@ -143,7 +143,8 @@ class ProjectFrontend(FrontendEditable):
 
     def list(self):
         return self.render_page(template="projects.html",
-                                api_path="api/project"
+                                api_path="api/project",
+                                row_table="projects"
                                 )
 
     @property
@@ -207,6 +208,7 @@ class ItemFrontend(FrontendEntity):
         return self.render_page(template="items.html",
                                 api_path="api/item",
                                 format_types=formats,
+                                row_table="items"
                                 )
 
     def display_details(self, entity_id):
@@ -242,7 +244,8 @@ class ObjectFrontend(FrontendEntity):
 
     def list(self):
         return self.render_page(template="objects.html",
-                                api_path="api/object"
+                                api_path="api/object",
+                                row_table="objects"
                                 )
 
     @property
@@ -284,7 +287,9 @@ class CollectiontFrontend(FrontendEntity):
 
     def list(self):
         return self.render_page(template="collections.html",
-                                api_path="api/collection")
+                                api_path="api/collection",
+                                row_table="collections"
+                                )
 
     def display_details(self, entity_id):
         selected_object = self._data_connector.get(serialize=True,

@@ -16,39 +16,19 @@
     {% block table %}
         <table id="table"
            data-toolbar="#toolbar"
+           data-toggle="table"
            data-virtual-scroll="true"
            data-show-columns="false"
            data-search="true"
            data-pagination="true"
+           data-url="{{ api_path }}"
            class="table-striped"
+           data-data-field="{{ row_table }}"
     >
         {% endblock %}
 
     {% block tableDetails %}
     {% endblock %}
-
-    {% block dataFetcherScripts %}
-        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-        <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
-        <script type="text/JavaScript">
-        var $table = $('#table');
-        window.onload = function () {
-            var xhr = new XMLHttpRequest();
-            $table.bootstrapTable('showLoading');
-            xhr.open("GET","{{ api_path }}");
-            xhr.setRequestHeader("Cache-Control", "no-cache");
-            xhr.onload = function(){
-                {% block dataParsing %}
-                var data = JSON.parse(this.responseText);
-                {% endblock %}
-                $table.bootstrapTable({data: data});
-                $table.bootstrapTable('hideLoading');
-            };
-            xhr.send();
-
-    };
-    {% endblock %}
-</script>
     {% block toolbarscripts %}
     {% endblock %}
 

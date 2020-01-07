@@ -65,14 +65,8 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
                 "objects": objects,
                 "total": len(objects)
             }
-            response = make_response(jsonify(data, 200))
+            response = make_response(jsonify(data), 200)
 
-            json_data = json.dumps(data)
-            hash_value = \
-                hashlib.sha256(bytes(json_data, encoding="utf-8")).hexdigest()
-
-            response.headers["ETag"] = str(hash_value)
-            response.headers["Cache-Control"] = "private, max-age=300"
             return response
 
         result = objects
@@ -157,7 +151,7 @@ class CollectionMiddlwareEntity(AbsMiddlwareEntity):
             }
 
             json_data = json.dumps(data)
-            response = make_response(jsonify(data, 200))
+            response = make_response(jsonify(data), 200)
 
             hash_value = \
                 hashlib.sha256(bytes(json_data, encoding="utf-8")).hexdigest()
@@ -233,15 +227,22 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
         if "id" in kwargs:
             return self.get_project_by_id(kwargs["id"])
 
+        limit = request.args.get("limit")
+        offset = request.args.get("offset")
         projects = self._data_connector.get(serialize=serialize)
+        total_projects = len(projects)
+        if limit:
+            offset_value = int(offset)
+            limit_value = int(limit)
+            projects = projects[offset_value:limit_value+offset_value]
 
         if serialize:
             data = {
                 "projects": projects,
-                "total": len(projects)
+                "total": total_projects
             }
             json_data = json.dumps(data)
-            response = make_response(jsonify(data, 200))
+            response = make_response(jsonify(data), 200)
 
             hash_value = \
                 hashlib.sha256(bytes(json_data, encoding="utf-8")).hexdigest()
@@ -341,7 +342,7 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
             }
 
             json_data = json.dumps(data)
-            response = make_response(jsonify(data, 200))
+            response = make_response(jsonify(data), 200)
 
             hash_value = \
                 hashlib.sha256(bytes(json_data, encoding="utf-8")).hexdigest()

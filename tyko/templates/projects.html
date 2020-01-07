@@ -34,10 +34,6 @@
   </thead>
 {% endblock %}
 
-{% block dataParsing %}
-    var data = JSON.parse(this.responseText)[0].projects;
-{% endblock %}
-
 {% block formatters %}
     <script>
         function projectFormatter(value, row) {
