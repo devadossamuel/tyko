@@ -1,108 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    {% block head %}
-    <!-- Latest compiled and minified CSS -->
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        {% block head %}
+        <!-- Latest compiled and minified CSS -->
+{#            <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">#}
 
 
-    <!-- United theme from https://bootswatch.com/united/ -->
-    <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
+        <!-- United theme from https://bootswatch.com/united/ -->
+        <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
 
-    <link rel="stylesheet" href="{{url_for('static', filename='css/styles.css')}}"/>
-    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.4/dist/bootstrap-table.min.css">
-
-    <title>AV Database</title>
-    {% endblock %}
-</head>
-<body>
-<header>
-
-
-    {% block navigation %}
-
-
-    <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
-<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-
-            <ul class="navbar-nav mr-auto">
-                {% if selected_menu_item == "Home" %}
-                    <li class="nav-item active">
-                {% else %}
-                    <li class="nav-item">
-                {% endif %}
-                    <a class="nav-link" href="{{url_for('page_index')}}">Home</a>
-                </li>
-
-                {% if selected_menu_item == "About" %}
-                    <li class="nav-item active">
-                {% else %}
-                    <li class="nav-item">
-                {% endif %}
-                    <a class="nav-link" href="{{url_for('page_about')}}">About</a>
-                </li>
-
-                {% if selected_menu_item == "Projects" %}
-                    <li class="nav-item active">
-                {% else %}
-                    <li class="nav-item">
-                {% endif %}
-                    <a class="nav-link" href="{{url_for('page_projects')}}">Projects</a>
-                </li>
-
-                {% if is_entity %}
-                    <li class="nav-item dropdown active">
-                {% else %}
-                <li class="nav-item dropdown">
-                {% endif %}
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarEntitiesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        More Entities
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarEntitiesDropdown">
-                        {% for entity in entities|sort %}
-                            <a class="dropdown-item" href="{{url_for(entity[1])}}">{{ entity[0] }}</a>
-                        {% endfor %}
-                    </div>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarFormsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Forms
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarFormsDropdown">
-                        {% for form_page in all_forms|sort %}
-                        <a class="dropdown-item" href="{{url_for(form_page[1])}}">{{ form_page[0] }}</a>
-                        {% endfor %}
-                    </div>
-                </li>
-            </ul>
-        </div>
-    </nav>
-    {% endblock %}
-</header>
-<main role="main" class="container">
-    {% block content %}
-
-
-    {% endblock %}
-</main>
-<footer class="footer">
-    <div class="container">
-        {% block footer %}
-        <p class="text-muted text-center">&copy; Copyright 2019 by <a href="http://www.library.illinois.edu">University of Illinois at Urbana-Champaign</a>.</p>
+        <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.4/dist/bootstrap-table.min.css">
+{#        <link rel="stylesheet" href="{{url_for('static', filename='css/styles.css')}}"/>#}
+        <link rel="stylesheet" href="{{url_for('static', filename='css/sticky-footer-navbar.css')}}"/>
+        <title>AV Database</title>
         {% endblock %}
-    </div>
-</footer>
-{% block scripts %}
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
-{% endblock %}
-</body>
+    </head>
+    <body>
+        <header>
+
+
+            {% block navigation %}
+
+
+            <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+                    <ul class="navbar-nav mr-auto">
+                        {% if selected_menu_item == "Home" %}
+                            <li class="nav-item active">
+                        {% else %}
+                            <li class="nav-item">
+                        {% endif %}
+                            <a class="nav-link" href="{{url_for('page_index')}}">Home</a>
+                        </li>
+
+                        {% if selected_menu_item == "About" %}
+                            <li class="nav-item active">
+                        {% else %}
+                            <li class="nav-item">
+                        {% endif %}
+                            <a class="nav-link" href="{{url_for('page_about')}}">About</a>
+                        </li>
+
+                        {% if selected_menu_item == "Projects" %}
+                            <li class="nav-item active">
+                        {% else %}
+                            <li class="nav-item">
+                        {% endif %}
+                            <a class="nav-link" href="{{url_for('page_projects')}}">Projects</a>
+                        </li>
+
+                        {% if is_entity %}
+                            <li class="nav-item dropdown active">
+                        {% else %}
+                        <li class="nav-item dropdown">
+                        {% endif %}
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarEntitiesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                More Entities
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarEntitiesDropdown">
+                                {% for entity in entities|sort %}
+                                    <a class="dropdown-item" href="{{url_for(entity[1])}}">{{ entity[0] }}</a>
+                                {% endfor %}
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarFormsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Forms
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarFormsDropdown">
+                                {% for form_page in all_forms|sort %}
+                                <a class="dropdown-item" href="{{url_for(form_page[1])}}">{{ form_page[0] }}</a>
+                                {% endfor %}
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            {% endblock %}
+        </header>
+
+        <main role="main" class="container">
+            <div class="container-fluid">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </main>
+        <footer class="footer">
+            <div class="container">
+                <span class="text-muted ">&copy; Copyright 2019, 2020 by <a href="http://www.library.illinois.edu">University of Illinois at Urbana-Champaign</a></span>
+            </div>
+        </footer>
+        {% block scripts %}
+            <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+            <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
+        {% endblock %}
+    </body>
 </html>
