@@ -1,42 +1,26 @@
 {% extends "layout.html" %}
-{% block content -%}
+{%- block content -%}
 <div class="container-fluid">
-    {% block table_title -%}
-    <h1 class="mt-5">
-    {%- if edit == True -%}
-    Edit
-    {% endif -%}
-    {{ itemType }} Details</h1>
-    {%- endblock%}
+    {%- block table_title %}
+            <h1 class="mt-5"> {{- itemType }} Details</h1>
+    {% endblock -%}
     <div class="row onePadding">
         <div class="col-md-12 col-sm-12">
             <div class="container">
                 {%- block entity_navbar %}
                 <nav class="navbar navbar-expand-lg  navbar-light justify-content-start bg-light">
-                <div class="mx-1">
-                        <button class="btn btn-outline-primary "
-                                type="button"
-                                onclick="location.href='{{ url_for("page_project_new") }}'">New</button>
+                    <div class="mx-1">
+                        <button class="btn btn-outline-primary " type="button" onclick="location.href='{{ url_for("page_project_new") }}'">New</button>
                     </div>
-{#                    <div class="mx-1">#}
-{#                        <button class="btn btn-outline-primary"#}
-{#                                    type="button"#}
-{#                                    onclick="location.href='{{ edit_link }}'"#}
-{#                        {%-if edit == True%}#}
-{#                            disabled#}
-{#                        {%- endif -%}#}
-{#                            >Edit</button>#}
-{#                        </div>#}
-{#                    </nav>#}
-                {%- endblock -%}
-                </div>
-                    <div class="container">
-                        <div class="table-responsive">
-                        <form  id="new-content-form" onsubmit="return editData('{{ api_path }}')">
-                        {%- block detail_table %}
+                </nav>
+                {%- endblock %}
+            </div>
+            <div class="container">
+                <div class="table-responsive">
+                    <form  id="new-content-form" onsubmit="return false">
+                        {% block detail_table %}
 
                         {% endblock %}
-
                         {%- if edit == True -%}
                             <div id="success"
                                  class="modal fade bd-example-modal-sm"
@@ -63,13 +47,9 @@
                                 </div>
                             </div>
                             <button class="btn btn-primary" type="submit">Submit</button>
-                            <button class="btn btn-secondary"
-                                    type="button"
-                                    onclick="location.href='{{ view_details_path }}'">Cancel</button>
-                        {%- endif -%}
-
-                        </form>
-                    </div>
+                            <button class="btn btn-secondary" type="button" onclick="location.href='{{ view_details_path }}'">Cancel</button>
+                        {%- endif %}
+                    </form>
                 </div>
             </div>
         </div>
@@ -108,5 +88,5 @@
         }
     }
 </script>
-    <script src="{{ url_for('static', filename='js/editData.js') }}"></script>
-{% endblock %}
+<script src="{{ url_for('static', filename='js/editData.js') }}"></script>
+{% endblock -%}
