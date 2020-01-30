@@ -158,10 +158,12 @@ class Routes:
     def init_website_routes(self):
         about_page = frontend.AboutPage()
         index_page = frontend.IndexPage()
+        more_page = frontend.MoreMenuPage()
 
         static_web_routes = [
             Route("/", "page_index", index_page.render_page),
             Route("/about", "page_about", about_page.render_page),
+            Route("/more", "page_more", more_page.render_page),
             ]
 
         simple_pages = []

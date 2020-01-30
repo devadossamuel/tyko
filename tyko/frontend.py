@@ -80,6 +80,13 @@ class AboutPage(AbsFrontend):
         return render_template(template, **header)
 
 
+class MoreMenuPage(AbsFrontend):
+
+    def render_page(self, template="more.html", **context):
+        header = self.build_header_context("More", context=context)
+        return render_template(template, **header)
+
+
 class FrontendEntity(AbsFrontend):
     _entities: Set[Tuple[str, str]] = {
         # ("Formats", "page_formats"),

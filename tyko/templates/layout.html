@@ -14,58 +14,7 @@
     <body>
         <header>
             {%-block navigation %}
-            <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav mr-auto">
-                        {%- if selected_menu_item == "Home" -%}
-                        <li class="nav-item active">
-                        {% else %}
-                        <li class="nav-item">
-                        {%-endif-%}
-                        <a class="nav-link" href="{{url_for('page_index')}}">Home</a></li>
-
-                        {%- if selected_menu_item == "About" -%}
-                        <li class="nav-item active">
-                        {% else %}
-                        <li class="nav-item">
-                        {%-endif-%}
-                        <a class="nav-link" href="{{url_for('page_about')}}">About</a></li>
-
-                        {%- if selected_menu_item == "Projects" -%}
-                        <li class="nav-item active">
-                        {% else %}
-                        <li class="nav-item">
-                        {%-endif-%}
-                        <a class="nav-link" href="{{url_for('page_projects')}}">Projects</a></li>
-
-                        {%- if is_entity %}
-                        <li class="nav-item dropdown active">
-                        {% else %}
-                        <li class="nav-item dropdown">
-                            {% endif %}
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarEntitiesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">More Entities</a>
-                            <div class="dropdown-menu" aria-labelledby="navbarEntitiesDropdown">
-                                {% for entity in entities|sort -%}
-                                    <a class="dropdown-item" href="{{url_for(entity[1])}}">{{ entity[0] }}</a>
-                                {% endfor %}
-                            </div>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarFormsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Forms
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="navbarFormsDropdown">
-                                {% for form_page in all_forms|sort -%}
-                                <a class="dropdown-item" href="{{url_for(form_page[1])}}">{{ form_page[0] }}</a>
-                                {% endfor %}
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+            {% include "navbar.html" %}
             {%-endblock %}
         </header>
 
