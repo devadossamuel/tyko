@@ -18,8 +18,9 @@ def create_app(app=None):
 
     app.register_error_handler(DataError, handle_error)
 
-    database = SQLAlchemy(app)
-    data_provider = DataProvider(database.engine)
+    database = SQLAlchemy(app, engine_options={"pool_pre_ping": True})
+    engine = database.get_engine()
+    data_provider = DataProvider(engine)
     app_routes = Routes(data_provider, app)
     # if init_db:
     #     init_database(data_provider.db_engine)
@@ -42,7 +43,6 @@ def main() -> None:
         print("Database initialized")
         sys.exit(0)
     my_app = create_app()
-
     # Run as a local program and not for production
     my_app.run()
 
