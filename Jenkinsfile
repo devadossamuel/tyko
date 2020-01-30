@@ -637,7 +637,8 @@ foreach($file in $opengl32_libraries){
                         label "!aws"
                     }
                     options {
-                      skipDefaultCheckout true
+                        skipDefaultCheckout true
+                        retry(3)
                     }
                     when{
                         equals expected: true, actual: params.DEPLOY_SERVER
