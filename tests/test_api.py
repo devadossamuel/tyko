@@ -29,9 +29,15 @@ def test_project_update(app):
 
         new_project_record = json.loads(post_resp.data)["url"]
 
-        put_resp = server.put(new_project_record, data={
-            "title": "my dumb project has changed"
-        })
+        put_resp = server.put(
+            new_project_record,
+            data=json.dumps(
+                {
+                    "title": "my dumb project has changed"
+                }
+            ),
+            content_type='application/json'
+        )
         assert put_resp.status_code == 200
 
 
@@ -105,9 +111,11 @@ def test_object_update(app):
 
         put_resp = server.put(
             new_object_record_url,
-            data={
+            data=json.dumps({
                 "name": "changed_dummy object"
-            }
+            }),
+            content_type='application/json'
+
         )
 
         assert put_resp.status_code == 200

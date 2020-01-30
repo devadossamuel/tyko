@@ -90,6 +90,9 @@ class ProjectDataConnector(AbsDataProviderConnector):
             if "current_location" in changed_data:
                 project.current_location = changed_data['current_location']
 
+            if "project_code" in changed_data:
+                project.project_code = changed_data['project_code']
+
             if "status" in changed_data:
                 project.status = changed_data['status']
 

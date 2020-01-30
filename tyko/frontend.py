@@ -1,7 +1,7 @@
 # pylint: disable=invalid-name
 
 import abc
-from typing import Tuple, Set
+from typing import Tuple, Set, Optional
 from dataclasses import dataclass
 
 from flask import make_response, render_template, url_for
@@ -15,6 +15,15 @@ class FormField:
     form_id: str
     form_user_text: str
     required: bool
+
+
+@dataclass
+class Details:
+    name: str
+    value: Optional[str] = None
+    key: Optional[str] = None
+    key_branch: Optional[str] = None
+    editable: bool = False
 
 
 class AbsFrontend(metaclass=abc.ABCMeta):
@@ -162,18 +171,34 @@ class ProjectFrontend(FrontendEditable):
     def display_details(self, entity_id):
         selected_project = self._data_connector.get(
             serialize=True, id=entity_id)[0]
+
         edit_link = f"{url_for('page_projects')}/{entity_id}/edit"
-        return self.render_page(template="project_details.html",
-                                project=selected_project,
-                                edit=False,
-                                edit_link=edit_link
-                                )
+
+        fields = [
+            Details(name="Title", key="title", editable=True),
+            Details(name="Project Code", key="project_code", editable=True),
+            Details(name="Status", key="status", editable=True),
+            Details(
+                name="Current Location",
+                key="current_location",
+                editable=True
+            ),
+        ]
+
+        return self.render_page(
+            template="project_details.html",
+            project=selected_project,
+            api_path=f"{url_for('.page_index')}api/project/{entity_id}",
+            edit_link=edit_link,
+            fields=fields
+            )
 
     def edit_details(self, entity_id):
         selected_project = self._data_connector.get(
             serialize=True, id=entity_id)[0]
         api_path = f"{url_for('.page_index')}api/project/{entity_id}"
         view_details_path = f"{url_for('page_projects')}/{entity_id}"
+
         return self.render_page(template="project_details.html",
                                 project=selected_project,
                                 api_path=api_path,
@@ -211,7 +236,19 @@ class ItemFrontend(FrontendEntity):
                                 row_table="items"
                                 )
 
+    def render_page(self, template="items.html", **context):
+        context['itemType'] = "Item"
+        return super().render_page(template, **context)
+
     def display_details(self, entity_id):
+        fields = [
+            Details(name="Name", key="name"),
+            # FIXME: use format name isntead of ID
+            Details(name="Format", key="format_type_id"),
+            Details(name="File Name", key="file_name"),
+            Details(name="Medusa UUID", key="medusa_uuid"),
+            Details(name="Object Sequence", key="obj_sequence"),
+        ]
         selected_item = self._data_connector.get(
             serialize=True, id=entity_id)[0]
 
@@ -220,6 +257,7 @@ class ItemFrontend(FrontendEntity):
                 selected_item['format_type'] = k
                 break
         return self.render_page(template="item_details.html",
+                                fields=fields,
                                 item=selected_item)
 
     @property
@@ -235,7 +273,7 @@ class ItemFrontend(FrontendEntity):
         return "page_item"
 
 
-class ObjectFrontend(FrontendEntity):
+class ObjectFrontend(FrontendEditable):
     def __init__(self, provider: data_provider.DataProvider) -> None:
         super().__init__(provider)
 
@@ -247,6 +285,26 @@ class ObjectFrontend(FrontendEntity):
                                 api_path="api/object",
                                 row_table="objects"
                                 )
+
+    def create(self):
+        return self.render_page(template="object_details.html",
+                                api_path="/api/object/",
+                                title="New Object",
+                                on_success_redirect_base="/object/",
+                                )
+
+    def edit_details(self, entity_id):
+        selected_object = self._data_connector.get(
+            serialize=True, id=entity_id)[0]
+        edit_link = f"{url_for('page_object')}/{entity_id}/edit"
+        api_path = f"{url_for('.page_index')}api/object/{entity_id}"
+        view_details_path = f"{url_for('page_object')}/{entity_id}"
+        return self.render_page(template="object_details.html",
+                                object=selected_object,
+                                api_path=api_path,
+                                view_details_path=view_details_path,
+                                edit_link=edit_link,
+                                edit=True)
 
     @property
     def entity_title(self) -> str:
@@ -261,20 +319,38 @@ class ObjectFrontend(FrontendEntity):
         return "page_object"
 
     def display_details(self, entity_id):
+        fields = [
+            Details(name="Name", key="name", editable=True),
+            Details(name="Collection",
+                    key_branch="collection",
+                    key="collection_name"),
+            Details(name="Project", key_branch="project",
+                    key="title"),
+            Details(name="Barcode", key="barcode", editable=True),
+            Details(name="Originals Received Date", key="originals_rec_date"),
+            Details(
+                name="Originals Returned Date",
+                key="originals_return_date"),
+            Details(name="Contact", key="contact"),
+        ]
 
         selected_object = self._data_connector.get(serialize=True,
                                                    id=entity_id)[0]
-
+        api_path = f"{url_for('.page_index')}api/object/{entity_id}"
+        edit_link = f"{url_for('page_object')}/{entity_id}/edit"
         return self.render_page(template="object_details.html",
+                                edit=False,
+                                fields=fields,
+                                edit_link=edit_link,
+                                api_path=api_path,
                                 object=selected_object)
 
     def render_page(self, template="object_details.html", **context):
+        context['itemType'] = "Object"
         new_context = self.build_header_context(
             current_item=self.entity_title,
             context=context
         )
-        new_context["edit"] = False
-
         return render_template(template, **new_context)
 
 

@@ -1,40 +1,39 @@
 {% extends "layout.html" %}
-{% block content %}
-
+{% block content -%}
 <div class="container-fluid">
-    {% block table_title %}
+    {% block table_title -%}
     <h1 class="mt-5">
     {%- if edit == True -%}
-        Edit
+    Edit
     {% endif -%}
-    {{ itemType }} Details
-    </h1>
-    {% endblock %}
+    {{ itemType }} Details</h1>
+    {%- endblock%}
     <div class="row onePadding">
         <div class="col-md-12 col-sm-12">
             <div class="container">
+                {%- block entity_navbar %}
                 <nav class="navbar navbar-expand-lg  navbar-light justify-content-start bg-light">
                 <div class="mx-1">
-                    <button class="btn btn-outline-primary "
-                            type="button"
-                            onclick="location.href='{{url_for("page_project_new")}}'"
-                            >New</button>
-                </div>
-                <div class="mx-1">
-                    <button class="btn btn-outline-primary"
+                        <button class="btn btn-outline-primary "
                                 type="button"
-                                onclick="location.href='{{ edit_link }}'"
-                    {%-if edit == True%}
-                        disabled
-                    {%- endif -%}
-                        >Edit</button>
+                                onclick="location.href='{{ url_for("page_project_new") }}'">New</button>
                     </div>
-                </nav>
+{#                    <div class="mx-1">#}
+{#                        <button class="btn btn-outline-primary"#}
+{#                                    type="button"#}
+{#                                    onclick="location.href='{{ edit_link }}'"#}
+{#                        {%-if edit == True%}#}
+{#                            disabled#}
+{#                        {%- endif -%}#}
+{#                            >Edit</button>#}
+{#                        </div>#}
+{#                    </nav>#}
+                {%- endblock -%}
                 </div>
                     <div class="container">
                         <div class="table-responsive">
                         <form  id="new-content-form" onsubmit="return editData('{{ api_path }}')">
-                        {% block detail_table %}
+                        {%- block detail_table %}
 
                         {% endblock %}
 
@@ -75,6 +74,39 @@
             </div>
         </div>
     </div>
-
 </div>
+<script>
+    let isEdit = {};
+
+    function cancelEdit(editId, original_text, editButtonId) {
+        document.getElementById(editId).value = original_text;
+        document.getElementById(editButtonId).innerText= "Edit"
+    }
+    function setEditModeOn(displayId, editId) {
+        document.getElementById(displayId).hidden = true;
+        document.getElementById(editId).hidden = false;
+
+
+    }
+    function setEditModeOff(displayId, editId) {
+        document.getElementById(displayId).hidden = false;
+        document.getElementById(editId).hidden = true;
+
+
+    }
+    function flipMode(displayItemId, editItemAreaId, editItemId, originalData, editButtonId){
+        if(isEdit[editItemId] === true){
+            setEditModeOff(displayItemId, editItemAreaId);
+            cancelEdit(editItemId, originalData, editButtonId);
+            document.getElementById(editButtonId).innerText= "Edit";
+            isEdit[editItemId] = false;
+
+        } else {
+            setEditModeOn(displayItemId, editItemAreaId);
+            document.getElementById(editButtonId).innerText= "Cancel";
+            isEdit[editItemId] = true;
+        }
+    }
+</script>
+    <script src="{{ url_for('static', filename='js/editData.js') }}"></script>
 {% endblock %}

@@ -1,65 +1,125 @@
 {% extends "details_table.html" %}
 {% block detail_table %}
+    <div class="card my-1">
+        <div class="card-body">
+            <table class="table">
+                <tbody>
+                    {%- for field in fields -%}
+                        <tr>
+                            <td style="width: 16.66%" class="font-weight-bold">{{field.name}}</td>
+                            <td>
+                                <div id="{{field.name}}Label">
+                                    {{-project.get(field.key) or ""-}}
+                                </div>
+                                <div id="{{field.key}}InputGroup" class="input-group" hidden>
+                                    {% if field.editable %}
+                                        <input id="{{field.key}}Input" type="text" class="form-control" value="{{-project.get(field.key) or ""-}}">
+                                        <div class="input-group-append">
+                                        <button id="{{field.key}}Confirm"
+                                                class="btn btn-outline-secondary"
+                                        >Confirm</button>
+                                        <script>
+                                        document.getElementById("{{field.key}}Confirm").onclick = function () {
+                                            editDataValue(
+                                                '{{ api_path }}',
+                                                '{{field.key}}',
+                                                document.getElementById('{{field.key}}Input').value,
+                                                function () {
+                                                    location.reload()
+                                                },
+                                                function () {
+                                                    alert("Failed to update {{ field.key }}");
 
-<table class="table ">
- <thead class="thead-light"/>
-    <tr>
-        <th style="width: 16.66%">Title </th>
-        <td>
-            {%- if edit == True -%}
-                <input type="text" class="form-control" id="title" name="title" value="{{project['title']}}">
-            {%- else -%}
-            {{project['title']}}
-            {%- endif -%}
-        </td>
-    </tr>
-    <tr>
-        <th>Project Code</th>
-        <td>
-            {%- if edit == True -%}
-                <input type="text" class="form-control" id="project_code" name="project_code" value="{{project['project_code']}}" disabled>
-            {%- else -%}
-                {{project['project_code']}}
-            {%- endif -%}
-        </td>
-    </tr>
-    <tr>
-        <th>Status</th>
-        <td>
-             {%- if edit == True -%}
-                <input type="text" class="form-control" id="status" name="status" value="{{project['status']}}">
-            {%- else -%}
-                {{project['status']}}
-            {%- endif -%}
+                                                }
+                                            );
+                                        }
+                                        </script>
+                                    {% endif %}
+                                  </div>
+                                </div>
+                            </td>
+                            <td style="width: 5%">
+                                {% if field.editable %}
+                                <button id="editButton{{loop.index}}" class="btn btn-secondary float-right btn-sm">Edit</button>
+                                {% endif %}
+                            </td>
+                        {% if field.editable %}
+                            <script>
+                                document.getElementById("editButton{{loop.index}}").onclick = function (){
+                                    flipMode(
+                                        "{{field.name}}Label",
+                                        "{{field.key}}InputGroup",
+                                        "{{field.key}}Input",
+                                        "{{-project.get(field.key) or ""-}}",
+                                        "editButton{{loop.index}}"
+                                    )
+                                };
+                                document.getElementById("{{field.key}}Input").addEventListener('keypress', (e) => {
+                                    if (e.key === "Enter") {
+                                        document.getElementById("{{field.key}}Confirm").click();
+                                    }
+                                });
+                            </script>
+                         {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card my-1">
+        <div class="card-header">
+            <h5 class="card-title">Objects</h5>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <tbody>
+                    {%- for child_object in project['objects'] -%}
+                        <tr>
+                            <td><a href="{{ url_for('page_object')}}/{{ child_object[0] }}"> {{ child_object[1] }}</a></td>
+                            <td><button class="float-right btn btn-danger btn-sm" disabled>Remove</button></td>
+                        </tr>
+                    {%- endfor -%}
+                        <tr>
+                            <td></td>
+                            <td>
+                                <div class="btn-group float-right" role="group">
+                                    <button class="btn btn-primary btn-sm" disabled>Add</button>
+                                </div>
+                            </td>
+                        </tr>
+                </tbody>
+            </table>
 
-        </td>
-    </tr>
-    <tr>
-        <th>Current Location</th>
-        <td>
-            {%- if edit == True -%}
-                <input type="text" class="form-control" id="current_location" name="current_location" value="{{project['current_location']}}">
-            {%- else -%}
-                {{project['current_location']}}
-            {%- endif -%}
-        </td>
-    </tr>
-    <tr>
-        <th rowspan="{{project['notes']|length + 1}}">Notes</th>
+        </div>
+    </div>
+    <div class="card">
+        <h5 class="card-header">Notes</h5>
+        <div class="card-body">
+            <table class="table">
+                <tbody>
 
-        {%- for note in project['notes'] -%}
-            <tr>
-        <td>{{ note['text'] }}</td>
-            </tr>
-        {%- endfor -%}
-    </tr>
-    <tr>
-        <th rowspan="{{ project['objects']|length + 1 }}">Objects</th>
-        {%- for child_object in project['objects'] -%}
-        <tr><td><a href="{{ url_for('page_object')}}/{{child_object[0]}}"> {{child_object[1]}}</a></td></tr>
-        {%- endfor -%}
-    </tr>
+                    {%- for note in project['notes'] -%}
+                        <tr>
+                            <td>{{ note['text'] }}</td>
+                            <td><button class="float-right btn btn-secondary btn-sm" disabled>Edit</button></td>
 
-</table>
+                        </tr>
+                    {%- endfor -%}
+                    <tr>
+                        <td></td>
+                        <td>
+                            <div class="btn-group float-right" role="group">
+                                <button class="btn btn-primary btn-sm" disabled>Add</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+
 
 {% endblock %}

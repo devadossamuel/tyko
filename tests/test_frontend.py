@@ -1,8 +1,14 @@
+import sys
+
+from pyexpat import ExpatError
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import pytest
 import tyko
 import tyko.database
+from xml.dom.minidom import parseString
+
 
 @pytest.fixture()
 def app():
@@ -30,7 +36,12 @@ def test_view_web_object(app):
         resulting_webpage = server.get("/object/1")
         assert resulting_webpage.status_code == 200
         data = str(resulting_webpage.data, encoding="utf-8")
-        assert "<td>my stupid object</td>" in data
+        # try:
+        #     html_page = parseString(data)
+        # except ExpatError as e:
+        #     print("Error with {}".format(data.splitlines()[e.lineno-2:e.lineno]), file=sys.stderr)
+        #     raise
+        assert "my stupid object" in data
 
 
 def test_view_web_item(app):
@@ -45,4 +56,4 @@ def test_view_web_item(app):
         resulting_webpage = server.get("/item/1")
         assert resulting_webpage.status_code == 200
         data = str(resulting_webpage.data, encoding="utf-8")
-        assert "<td>My dummy item</td>" in data
+        assert "My dummy item" in data

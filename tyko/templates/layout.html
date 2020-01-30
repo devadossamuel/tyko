@@ -1,71 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        {% block head %}
-        <!-- Latest compiled and minified CSS -->
-{#            <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">#}
-
-
-        <!-- United theme from https://bootswatch.com/united/ -->
-        <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
-
-        <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.4/dist/bootstrap-table.min.css">
-{#        <link rel="stylesheet" href="{{url_for('static', filename='css/styles.css')}}"/>#}
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+        {% block head -%}
+        <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}"/>
+        <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.4/dist/bootstrap-table.min.css"/>
         <link rel="stylesheet" href="{{url_for('static', filename='css/sticky-footer-navbar.css')}}"/>
         <title>AV Database</title>
-        {% endblock %}
+        {%- endblock %}
     </head>
     <body>
         <header>
-
-
-            {% block navigation %}
-
-
+            {%-block navigation %}
             <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
-
                     <ul class="navbar-nav mr-auto">
-                        {% if selected_menu_item == "Home" %}
-                            <li class="nav-item active">
+                        {%- if selected_menu_item == "Home" -%}
+                        <li class="nav-item active">
                         {% else %}
-                            <li class="nav-item">
-                        {% endif %}
-                            <a class="nav-link" href="{{url_for('page_index')}}">Home</a>
-                        </li>
+                        <li class="nav-item">
+                        {%-endif-%}
+                        <a class="nav-link" href="{{url_for('page_index')}}">Home</a></li>
 
-                        {% if selected_menu_item == "About" %}
-                            <li class="nav-item active">
+                        {%- if selected_menu_item == "About" -%}
+                        <li class="nav-item active">
                         {% else %}
-                            <li class="nav-item">
-                        {% endif %}
-                            <a class="nav-link" href="{{url_for('page_about')}}">About</a>
-                        </li>
+                        <li class="nav-item">
+                        {%-endif-%}
+                        <a class="nav-link" href="{{url_for('page_about')}}">About</a></li>
 
-                        {% if selected_menu_item == "Projects" %}
-                            <li class="nav-item active">
+                        {%- if selected_menu_item == "Projects" -%}
+                        <li class="nav-item active">
                         {% else %}
-                            <li class="nav-item">
-                        {% endif %}
-                            <a class="nav-link" href="{{url_for('page_projects')}}">Projects</a>
-                        </li>
+                        <li class="nav-item">
+                        {%-endif-%}
+                        <a class="nav-link" href="{{url_for('page_projects')}}">Projects</a></li>
 
-                        {% if is_entity %}
-                            <li class="nav-item dropdown active">
+                        {%- if is_entity %}
+                        <li class="nav-item dropdown active">
                         {% else %}
                         <li class="nav-item dropdown">
-                        {% endif %}
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarEntitiesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                More Entities
-                            </a>
+                            {% endif %}
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarEntitiesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">More Entities</a>
                             <div class="dropdown-menu" aria-labelledby="navbarEntitiesDropdown">
-                                {% for entity in entities|sort %}
+                                {% for entity in entities|sort -%}
                                     <a class="dropdown-item" href="{{url_for(entity[1])}}">{{ entity[0] }}</a>
                                 {% endfor %}
                             </div>
@@ -75,7 +58,7 @@
                                 Forms
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarFormsDropdown">
-                                {% for form_page in all_forms|sort %}
+                                {% for form_page in all_forms|sort -%}
                                 <a class="dropdown-item" href="{{url_for(form_page[1])}}">{{ form_page[0] }}</a>
                                 {% endfor %}
                             </div>
@@ -83,7 +66,7 @@
                     </ul>
                 </div>
             </nav>
-            {% endblock %}
+            {%-endblock %}
         </header>
 
         <main role="main" class="container">

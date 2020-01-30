@@ -3,13 +3,22 @@
 import abc
 import hashlib
 import json
+from typing import List
 
 from flask import jsonify, make_response, abort, request, url_for
 from . import data_provider as dp
 from . import pbcore
 
+CACHE_HEADER = "private, max-age=0"
+
 
 class AbsMiddlwareEntity(metaclass=abc.ABCMeta):
+    WRITABLE_FIELDS: List[str] = []
+
+    @classmethod
+    def field_can_edit(cls, field) -> bool:
+        return field in cls.WRITABLE_FIELDS
+
     def __init__(self, data_provider) -> None:
         self._data_provider = data_provider
 
@@ -48,6 +57,11 @@ class Middleware:
 
 
 class ObjectMiddlwareEntity(AbsMiddlwareEntity):
+    WRITABLE_FIELDS = [
+        "name",
+        "barcode"
+    ]
+
     def __init__(self, data_provider: dp.DataProvider) -> None:
         super().__init__(data_provider)
 
@@ -100,11 +114,16 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
     def update(self, id):
         new_object = dict()
 
-        if "name" in request.form:
-            new_object["name"] = request.form.get("name")
+        json_request = request.json
+        for k, _ in json_request.items():
+            if not self.field_can_edit(k):
+                return make_response("Cannot update field: {}".format(k), 400)
 
-        if "barcode" in request.form:
-            new_object["barcode"] = request.form.get("barcode")
+        if "name" in request.json:
+            new_object["name"] = request.json.get("name")
+
+        if "barcode" in request.json:
+            new_object["barcode"] = request.json.get("barcode")
 
         updated_object = \
             self._data_connector.update(
@@ -157,7 +176,7 @@ class CollectionMiddlwareEntity(AbsMiddlwareEntity):
                 hashlib.sha256(bytes(json_data, encoding="utf-8")).hexdigest()
 
             response.headers["ETag"] = str(hash_value)
-            response.headers["Cache-Control"] = "private, max-age=300"
+            response.headers["Cache-Control"] = CACHE_HEADER
             return response
 
         result = collections
@@ -216,6 +235,12 @@ class CollectionMiddlwareEntity(AbsMiddlwareEntity):
 
 
 class ProjectMiddlwareEntity(AbsMiddlwareEntity):
+    WRITABLE_FIELDS = [
+        "title",
+        "project_code",
+        "status",
+        "current_location"
+    ]
 
     def __init__(self, data_provider) -> None:
         super().__init__(data_provider)
@@ -248,7 +273,7 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
                 hashlib.sha256(bytes(json_data, encoding="utf-8")).hexdigest()
 
             response.headers["ETag"] = str(hash_value)
-            response.headers["Cache-Control"] = "private, max-age=300"
+            response.headers["Cache-Control"] = CACHE_HEADER
             return response
 
         result = projects
@@ -273,19 +298,26 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
         return make_response("", 404)
 
     def update(self, id):
+
         new_project = dict()
-        if "project_code" in request.form:
-            new_project["project_code"] = request.form.get("project_code")
 
-        if "current_location" in request.form:
+        json_request = request.json
+        for k, _ in json_request.items():
+            if not self.field_can_edit(k):
+                return make_response("Cannot update field: {}".format(k), 400)
+
+        if "project_code" in request.json:
+            new_project["project_code"] = request.json.get("project_code")
+
+        if "current_location" in request.json:
             new_project["current_location"] = \
-                request.form.get("current_location")
+                request.json.get("current_location")
 
-        if "status" in request.form:
-            new_project["status"] = request.form.get("status")
+        if "status" in request.json:
+            new_project["status"] = request.json.get("status")
 
-        if "title" in request.form:
-            new_project["title"] = request.form.get("title")
+        if "title" in request.json:
+            new_project["title"] = request.json.get("title")
 
         updated_project = \
             self._data_connector.update(
@@ -348,7 +380,7 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
                 hashlib.sha256(bytes(json_data, encoding="utf-8")).hexdigest()
 
             response.headers["ETag"] = str(hash_value)
-            response.headers["Cache-Control"] = "private, max-age=300"
+            response.headers["Cache-Control"] = "private, max-age=0"
             return response
 
         result = items

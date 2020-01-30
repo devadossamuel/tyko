@@ -40,10 +40,10 @@ def main() -> None:
         print("Initializing Database")
         init_database(data_provider.db_engine)
         print("Database initialized")
-        exit(0)
+        sys.exit(0)
     my_app = create_app()
 
-    """Run as a local program and not for production"""
+    # Run as a local program and not for production
     my_app.run()
 
 

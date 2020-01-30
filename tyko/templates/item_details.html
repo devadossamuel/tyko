@@ -1,48 +1,164 @@
-{% extends "layout.html" %}
-
-{% block content %}
-
-<div class="container-fluid">
-    <h1 class="mt-5">Item Details</h1>
-    <div class="row onePadding">
-    <div class="col-md-12 col-sm-12">
-        <div class="table-responsive">
-            <table class="table table-striped table">
-             <thead class="thead-light"/>
-                <tr>
-                    <th style="width: 16.66%">Name </th>
-                    <td>{{item['name']}}</td>
-                </tr>
-                <tr>
-                    <th>Format</th>
-                    <td>{{item['format_type']}}</td>
-                </tr>
-                <tr>
-                    <th>File Name</th>
-                    <td>{{item['file_name']}}</td>
-                </tr>
-                <tr>
-                    <th>Medusa UUID</th>
-                    <td>{{item['medusa_uuid']}}</td>
-                </tr>
-                <tr>
-                    <th>Object Sequence</th>
-                    <td>{{item['obj_sequence']}}</td>
-                </tr>
-                <tr>
-                    <th rowspan="{{item['notes']|length + 1}}">Notes</th>
-
-                    {% for note in item['notes'] %}
+{% extends "details_table.html" %}
+{% block entity_navbar %}
+<nav class="navbar navbar-expand-lg  navbar-light justify-content-start bg-light">
+    <div class="mx-1">
+        <button class="btn btn-outline-primary "
+                type="button"
+                disabled
+                >New</button>
+    </div>
+</nav>
+{% endblock %}
+{% block detail_table %}
+    <div class="card my-1">
+        <div class="card-body">
+            <table class="table">
+                <tbody>
+                    {%- for field in fields -%}
                         <tr>
-                    <td>{{ note['text'] }}</td>
+                            <td style="width: 16.66%" class="font-weight-bold">{{field.name}}</td>
+                            <td>
+                                <div id="{{field.name}}Label">
+
+                                    {% if field.key_branch is not none and field.key_branch in item %}
+                                        {{ item[field.key_branch][field.key]}}
+                                    {% else %}
+                                        {{- item[field.key] -}}
+                                    {% endif %}
+                                </div>
+                                <div id="{{field.key}}InputGroup" class="input-group" hidden>
+                                    {% if field.editable %}
+                                        <input id="{{field.key}}Input" type="text" class="form-control" value="{{-field.key or ""-}}">
+                                        <div class="input-group-append">
+                                        <button id="{{field.key}}Confirm"
+                                                class="btn btn-outline-secondary"
+                                        >Confirm</button>
+                                        <script>
+                                        document.getElementById("{{field.key}}Confirm").onclick = function () {
+                                            editDataValue(
+                                                '{{ api_path }}',
+                                                '{{field.key}}',
+                                                document.getElementById('{{field.key}}Input').value,
+                                                function () {
+                                                    location.reload()
+                                                },
+                                                function () {
+                                                    alert("Failed to update {{ field.key }}");
+
+                                                }
+                                            );
+                                        }
+                                        </script>
+                                    {% endif %}
+
+                                  </div>
+                                </div>
+                            </td>
+                            <td style="width: 5%">
+                                {% if field.editable %}
+                                <button id="editButton{{loop.index}}" class="btn btn-secondary float-right btn-sm">Edit</button>
+                                {% endif %}
+                            </td>
+                        {% if field.editable %}
+                            <script>
+                                document.getElementById("editButton{{loop.index}}").onclick = function (){
+                                    flipMode(
+                                        "{{field.name}}Label",
+                                        "{{field.key}}InputGroup",
+                                        "{{field.key}}Input",
+                                        "{{-object.get(field.key) or ""-}}",
+                                        "editButton{{loop.index}}"
+
+                                    )
+                                };
+                                document.getElementById("{{field.key}}Input").addEventListener('keypress', (e) => {
+                                    if (e.key === "Enter") {
+                                        document.getElementById("{{field.key}}Confirm").click();
+                                    }
+                                });
+                            </script>
+                         {% endif %}
                         </tr>
                     {% endfor %}
-                </tr>
 
+                </tbody>
             </table>
 
         </div>
     </div>
-</div>
-</div>
+    <div class="card">
+        <h5 class="card-header">Notes</h5>
+        <div class="card-body">
+            <table class="table">
+                <tbody>
+
+                    {%- for note in item['notes'] -%}
+                        <tr>
+                            <td>{{ note['text'] }}</td>
+                            <td><button class="float-right btn btn-secondary btn-sm" disabled>Edit</button></td>
+
+                        </tr>
+                    {%- endfor -%}
+                    <tr>
+                        <td></td>
+                        <td>
+                            <div class="btn-group float-right" role="group">
+                                <button class="btn btn-primary btn-sm" disabled>Add</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
 {% endblock %}
+{#{% extends "layout.html" %}#}
+{##}
+{#{% block content %}#}
+{##}
+{#<div class="container-fluid">#}
+{#    <h1 class="mt-5">Item Details</h1>#}
+{#    <div class="row onePadding">#}
+{#    <div class="col-md-12 col-sm-12">#}
+{#        <div class="table-responsive">#}
+{#            <table class="table table-striped table">#}
+{#             <thead class="thead-light"/>#}
+{#                <tr>#}
+{#                    <th style="width: 16.66%">Name </th>#}
+{#                    <td>{{item['name']}}</td>#}
+{#                </tr>#}
+{#                <tr>#}
+{#                    <th>Format</th>#}
+{#                    <td>{{item['format_type']}}</td>#}
+{#                </tr>#}
+{#                <tr>#}
+{#                    <th>File Name</th>#}
+{#                    <td>{{item['file_name']}}</td>#}
+{#                </tr>#}
+{#                <tr>#}
+{#                    <th>Medusa UUID</th>#}
+{#                    <td>{{item['medusa_uuid']}}</td>#}
+{#                </tr>#}
+{#                <tr>#}
+{#                    <th>Object Sequence</th>#}
+{#                    <td>{{item['obj_sequence']}}</td>#}
+{#                </tr>#}
+{#                <tr>#}
+{#                    <th rowspan="{{item['notes']|length + 1}}">Notes</th>#}
+{##}
+{#                    {% for note in item['notes'] %}#}
+{#                        <tr>#}
+{#                    <td>{{ note['text'] }}</td>#}
+{#                        </tr>#}
+{#                    {% endfor %}#}
+{#                </tr>#}
+{##}
+{#            </table>#}
+{##}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
+{#</div>#}
+{#{% endblock %}#}
