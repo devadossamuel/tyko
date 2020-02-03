@@ -269,13 +269,18 @@ class CollectionItem(AVTables):
 
     def serialize(self):
         notes = [note.serialize() for note in self.notes]
+        pass
+        try:
+            item_format = self.format_type.serialize()
+        except AttributeError:
+            item_format = None
         return {
             "item_id": self.id,
             "name": self.name,
             "file_name": self.file_name,
             "medusa_uuid": self.medusa_uuid,
             "obj_sequence": self.obj_sequence,
-            "format_type_id": self.format_type_id,
+            "format": item_format,
             "parent_object_id": self.collection_object_id,
             "notes": notes
         }
