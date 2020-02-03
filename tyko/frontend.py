@@ -1,11 +1,11 @@
 # pylint: disable=invalid-name
 
 import abc
-from typing import Tuple, Set, Optional
+from typing import Tuple, Set, Optional, Callable
 from dataclasses import dataclass
 
 from flask import make_response, render_template, url_for
-from . import data_provider, scheme
+from . import data_provider
 from .decorators import authenticate
 
 
@@ -22,6 +22,7 @@ class Details:
     name: str
     value: Optional[str] = None
     key: Optional[str] = None
+    source_key: Optional[Callable[[], str]] = None
     key_branch: Optional[str] = None
     editable: bool = False
 
@@ -232,14 +233,8 @@ class ItemFrontend(FrontendEntity):
             data_provider.ItemDataConnector(provider.db_session_maker)
 
     def list(self):
-        formats = dict()
-
-        for format_name, format_type in scheme.format_types.items():
-            formats[format_type[0]] = format_name
-
         return self.render_page(template="items.html",
                                 api_path="api/item",
-                                format_types=formats,
                                 row_table="items"
                                 )
 
@@ -248,21 +243,25 @@ class ItemFrontend(FrontendEntity):
         return super().render_page(template, **context)
 
     def display_details(self, entity_id):
+        selected_item = self._data_connector.get(
+            serialize=True, id=entity_id)[0]
+
+        def get_format():
+            if selected_item['format'] is not None:
+                return selected_item['format']['name'].title()
+            else:
+                return None
+
         fields = [
             Details(name="Name", key="name"),
-            # FIXME: use format name isntead of ID
-            Details(name="Format", key="format_type_id"),
+            Details(name="Format", key="format_type", source_key=get_format),
             Details(name="File Name", key="file_name"),
             Details(name="Medusa UUID", key="medusa_uuid"),
             Details(name="Object Sequence", key="obj_sequence"),
         ]
-        selected_item = self._data_connector.get(
-            serialize=True, id=entity_id)[0]
-
-        for k, v in scheme.format_types.items():
-            if v[0] == selected_item["format_type_id"]:
-                selected_item['format_type'] = k
-                break
+        for f in fields:
+            if f.source_key is not None:
+                selected_item[f.key] = f.source_key()
         return self.render_page(template="item_details.html",
                                 fields=fields,
                                 item=selected_item)
