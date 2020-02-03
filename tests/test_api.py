@@ -55,9 +55,13 @@ def test_item_update(app):
         assert post_resp.status_code == 200
 
         new_item_record_url = json.loads(post_resp.data)["url"]
-        put_resp = server.put(new_item_record_url, data={
-            "file_name": "changed_dummy.txt"
-        })
+        put_resp = server.put(
+            new_item_record_url,
+            data=json.dumps({
+                "file_name": "changed_dummy.txt"
+            }),
+            content_type='application/json'
+        )
         assert put_resp.status_code == 200
         put_resp_data = json.loads(put_resp.data)
         put_item = put_resp_data["item"]

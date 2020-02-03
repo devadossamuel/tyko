@@ -255,7 +255,18 @@ class ItemDataConnector(AbsDataProviderConnector):
 
         item = items[0]
         if item:
-            item.file_name = changed_data["file_name"]
+            if "name" in changed_data:
+                item.name = changed_data['name']
+
+            if "file_name" in changed_data:
+                item.file_name = changed_data["file_name"]
+
+            if "medusa_uuid" in changed_data:
+                item.medusa_uuid = changed_data["medusa_uuid"]
+
+            if "obj_sequence" in changed_data:
+                item.obj_sequence = int(changed_data["obj_sequence"])
+
             session = self.session_maker()
 
             session.add(item)

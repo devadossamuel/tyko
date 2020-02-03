@@ -260,21 +260,23 @@ class ItemFrontend(FrontendEntity):
         def get_format():
             if selected_item['format'] is not None:
                 return selected_item['format']['name'].title()
-            else:
-                return None
+            return None
 
         fields = [
-            Details(name="Name", key="name"),
+            Details(name="Name", key="name", editable=True),
             Details(name="Format", key="format_type", source_key=get_format),
-            Details(name="File Name", key="file_name"),
-            Details(name="Medusa UUID", key="medusa_uuid"),
-            Details(name="Object Sequence", key="obj_sequence"),
+            Details(name="File Name", key="file_name", editable=True),
+            Details(name="Medusa UUID", key="medusa_uuid", editable=True),
+            Details(name="Object Sequence", key="obj_sequence", editable=True),
         ]
+
+        api_path = f"{url_for('.page_index')}api/item/{entity_id}"
         for f in fields:
             if f.source_key is not None:
                 selected_item[f.key] = f.source_key()
         return self.render_page(template="item_details.html",
                                 fields=fields,
+                                api_path=api_path,
                                 item=selected_item)
 
     @property

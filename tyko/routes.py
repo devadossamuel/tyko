@@ -106,7 +106,7 @@ class Routes:
                           item.create,
                           methods=["POST"]),
                     Route("/api/item/<string:id>", "update_item",
-                          lambda id: item.update(id=id),
+                          item.update,
                           methods=["PUT"]),
                     Route("/api/item/<string:id>", "delete_item",
                           lambda id: item.delete(id=id),

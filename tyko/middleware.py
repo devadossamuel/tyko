@@ -356,6 +356,13 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
 
 
 class ItemMiddlwareEntity(AbsMiddlwareEntity):
+    WRITABLE_FIELDS = [
+        "name",
+        "file_name",
+        "medusa_uuid",
+        "obj_sequence"
+    ]
+
     def __init__(self, data_provider) -> None:
         super().__init__(data_provider)
 
@@ -407,14 +414,31 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
         return make_response("", 404)
 
     def update(self, id):
-        new_item = {
-            "file_name": request.form.get("file_name"),
-            "medusa_uuid": request.form.get("medusa_uuid")
-        }
-        replacement_item = self._data_connector.update(
-            id, changed_data=new_item
-        )
+        item = dict()
+        json_request = request.json
+        for k, _ in json_request.items():
+            if not self.field_can_edit(k):
+                return make_response("Cannot update field: {}".format(k), 400)
 
+        for field in self.WRITABLE_FIELDS:
+            if field == "obj_sequence":
+                continue
+            if field in request.json:
+                item[field] = request.json.get(field)
+
+        if "obj_sequence" in request.json:
+            obj_sequence = request.json.get("obj_sequence")
+            try:
+                item["obj_sequence"] = int(obj_sequence)
+            except ValueError:
+                return make_response(
+                    "Invalid data type {}".format(obj_sequence), 400)
+
+        replacement_item = self._data_connector.update(
+            id, changed_data=item
+        )
+        if not replacement_item:
+            return make_response("", 204)
         return jsonify(
             {
                 "item": replacement_item

@@ -28,7 +28,7 @@
                                 </div>
                                 <div id="{{field.key}}InputGroup" class="input-group" hidden>
                                     {% if field.editable %}
-                                        <input id="{{field.key}}Input" type="text" class="form-control" value="{{-field.key or ""-}}">
+                                        <input id="{{field.key}}Input" type="text" class="form-control" value="{{-item.get(field.key) or ""-}}">
                                         <div class="input-group-append">
                                         <button id="{{field.key}}Confirm"
                                                 onclick="confirmUpdate('{{ api_path }}', '{{field.key}}')"
@@ -46,7 +46,7 @@
                                             "{{field.name}}Label",
                                             "{{field.key}}InputGroup",
                                             "{{field.key}}Input",
-                                            "{{-object.get(field.key) or ""-}}",
+                                            "{{-item.get(field.key) or ""-}}",
                                             "editButton{{loop.index}}"
 
                                         )
