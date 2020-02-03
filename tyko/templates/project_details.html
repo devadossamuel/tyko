@@ -58,7 +58,7 @@
                 <tbody>
                     {%- for child_object in project['objects'] %}
                     <tr>
-                        <td><a href="{{ url_for('page_object')}}/{{ child_object[0] }}"> {{ child_object[1] }}</a></td>
+                        <td><a href="{{ url_for('page_object')}}/{{ child_object['object_id'] }}"> {{ child_object['name'] }}</a></td>
                         <td><button class="float-right btn btn-danger btn-sm" disabled>Remove</button></td>
                     </tr>
                     {%- endfor %}

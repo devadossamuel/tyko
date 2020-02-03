@@ -141,7 +141,7 @@ class ObjectDataConnector(AbsDataProviderConnector):
             serialized_all_collection_object = []
             for collection_object in all_collection_object:
                 serialized_all_collection_object.append(
-                    collection_object.serialize()
+                    collection_object.serialize(True)
                 )
 
             all_collection_object = serialized_all_collection_object

@@ -1,7 +1,7 @@
 # pylint: disable=invalid-name
 
 import abc
-from typing import Tuple, Set, Optional, Callable
+from typing import Tuple, Set, Optional, Callable, List
 from dataclasses import dataclass
 
 from flask import make_response, render_template, url_for
@@ -33,7 +33,7 @@ class AbsFrontend(metaclass=abc.ABCMeta):
         entity_menu = [
             "Collections",
             "Items",
-            "Objects"
+            "Objects",
         ]
         new_context = dict()
         new_context.update(context)
@@ -84,8 +84,19 @@ class AboutPage(AbsFrontend):
 class MoreMenuPage(AbsFrontend):
 
     def render_page(self, template="more.html", **context):
-        header = self.build_header_context("More", context=context)
-        return render_template(template, **header)
+        entities: List[Tuple[str, str]] = [
+            ("Formats", "page_formats"),
+            ("Items", "page_item"),
+            ("Objects", "page_object"),
+            ("Projects", "page_projects"),
+            ("Collections", "page_collections"),
+        ]
+        forms: List[Tuple[str, str]] = [
+            ("New Collection", "page_new_collection"),
+            ("New Item", "page_new_item"),
+            ("New Object", "page_new_object"),
+            ]
+        return render_template(template, entities=entities, all_forms=forms)
 
 
 class FrontendEntity(AbsFrontend):
