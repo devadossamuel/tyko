@@ -16,22 +16,9 @@
                         <label for="{{field.key}}Input"></label>
                         <input id="{{field.key}}Input" type="text" class="form-control" value="{{-project.get(field.key) or ""-}}"/>
                         <div class="input-group-append">
-                            <button id="{{field.key}}Confirm" class="btn btn-outline-secondary">Confirm</button>
-                            <script>
-                            document.getElementById("{{field.key}}Confirm").onclick = function () {
-                                editDataValue(
-                                    '{{ api_path }}',
-                                    '{{field.key}}',
-                                    document.getElementById('{{field.key}}Input').value,
-                                    function () {
-                                        location.reload()
-                                    },
-                                    function () {
-                                        alert("Failed to update {{ field.key }}");
-                                    }
-                                );
-                            }
-                            </script>
+                            <button id="{{field.key}}Confirm"
+                                    onclick="confirmUpdate('{{ api_path }}', '{{field.key}}')"
+                                    class="btn btn-outline-secondary">Confirm</button>
                             {%- endif %}
                             </div>
                         </div>

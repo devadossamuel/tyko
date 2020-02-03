@@ -1,5 +1,5 @@
 {% extends "details_table.html" %}
-{% block entity_navbar %}
+{%- block entity_navbar -%}
 {#<nav class="navbar navbar-expand-lg  navbar-light justify-content-start bg-light">#}
 {#    <div class="mx-1">#}
 {#        <button class="btn btn-outline-primary"#}
@@ -18,9 +18,8 @@
 {#                        onclick="location.href='{{ url_for('.page_index')}}api/object/{{object['object_id']}}-pbcore.xml'">PBCore Record</button>#}
 {#    </div>#}
 {#</nav>#}
-{% endblock %}
-{% block detail_table %}
-
+{%- endblock -%}
+{%- block detail_table %}
     <div class="card my-1">
         <div class="card-body">
             <table class="table">
@@ -37,50 +36,26 @@
                                         <input id="{{field.key}}Input" type="text" class="form-control" value="{{-object.get(field.key) or ""-}}">
                                         <div class="input-group-append">
                                             <button id="{{field.key}}Confirm"
+                                                    onclick="confirmUpdate('{{ api_path }}', '{{field.key}}')"
                                                     class="btn btn-outline-secondary">Confirm</button>
-                                            <script>
-                                            document.getElementById("{{field.key}}Confirm").onclick = function () {
-                                                editDataValue(
-                                                    '{{ api_path }}',
-                                                    '{{field.key}}',
-                                                    document.getElementById('{{field.key}}Input').value,
-                                                    function () {
-                                                        location.reload()
-                                                    },
-                                                    function () {
-                                                        alert("Failed to update {{ field.key }}");
-
-                                                    }
-                                                );
-                                            }
-                                            </script>
                                         </div>
                                     {% endif %}
                                 </div>
                             </td>
                             <td style="width: 5%">
                                 {% if field.editable %}
-                                <button id="editButton{{loop.index}}" class="btn btn-secondary float-right btn-sm">Edit</button>
+                                <button id="editButton{{loop.index}}"
+                                        onclick="flipMode('{{field.name}}Label', '{{field.key}}InputGroup', '{{field.key}}Input', '{{-object.get(field.key) or ''-}}', 'editButton{{loop.index}}' )"
+                                        class="btn btn-secondary float-right btn-sm">Edit</button>
+                                <script>
+                                    document.getElementById("{{field.key}}Input").addEventListener('keypress', (e) => {
+                                        if (e.key === "Enter") {
+                                            document.getElementById("{{field.key}}Confirm").click();
+                                        }
+                                    });
+                                </script>
                                 {% endif %}
                             </td>
-                        {% if field.editable %}
-                            <script>
-                                document.getElementById("editButton{{loop.index}}").onclick = function (){
-                                    flipMode(
-                                        "{{field.name}}Label",
-                                        "{{field.key}}InputGroup",
-                                        "{{field.key}}Input",
-                                        "{{-object.get(field.key) or ""-}}",
-                                        "editButton{{loop.index}}"
-                                    )
-                                };
-                                document.getElementById("{{field.key}}Input").addEventListener('keypress', (e) => {
-                                    if (e.key === "Enter") {
-                                        document.getElementById("{{field.key}}Confirm").click();
-                                    }
-                                });
-                            </script>
-                         {% endif %}
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -137,5 +112,4 @@
             </table>
         </div>
     </div>
-
 {% endblock %}

@@ -56,6 +56,21 @@
     </div>
 </div>
 <script>
+    function confirmUpdate(api_path, key) {
+        const inputElement = key + "Input";
+        editDataValue(
+            api_path,
+            key,
+            document.getElementById(inputElement).value,
+            function () {
+                location.reload()
+            },
+            function () {
+                alert("Failed to update " + key);
+
+            }
+        );
+    }
     let isEdit = {};
 
     function cancelEdit(editId, original_text, editButtonId) {

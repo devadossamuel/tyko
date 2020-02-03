@@ -31,53 +31,34 @@
                                         <input id="{{field.key}}Input" type="text" class="form-control" value="{{-field.key or ""-}}">
                                         <div class="input-group-append">
                                         <button id="{{field.key}}Confirm"
-                                                class="btn btn-outline-secondary"
-                                        >Confirm</button>
-                                        <script>
-                                        document.getElementById("{{field.key}}Confirm").onclick = function () {
-                                            editDataValue(
-                                                '{{ api_path }}',
-                                                '{{field.key}}',
-                                                document.getElementById('{{field.key}}Input').value,
-                                                function () {
-                                                    location.reload()
-                                                },
-                                                function () {
-                                                    alert("Failed to update {{ field.key }}");
-
-                                                }
-                                            );
-                                        }
-                                        </script>
+                                                onclick="confirmUpdate('{{ api_path }}', '{{field.key}}')"
+                                                class="btn btn-outline-secondary">Confirm</button>
                                     {% endif %}
-
                                   </div>
                                 </div>
                             </td>
                             <td style="width: 5%">
                                 {% if field.editable %}
                                 <button id="editButton{{loop.index}}" class="btn btn-secondary float-right btn-sm">Edit</button>
+                                <script>
+                                    document.getElementById("editButton{{loop.index}}").onclick = function (){
+                                        flipMode(
+                                            "{{field.name}}Label",
+                                            "{{field.key}}InputGroup",
+                                            "{{field.key}}Input",
+                                            "{{-object.get(field.key) or ""-}}",
+                                            "editButton{{loop.index}}"
+
+                                        )
+                                    };
+                                    document.getElementById("{{field.key}}Input").addEventListener('keypress', (e) => {
+                                        if (e.key === "Enter") {
+                                            document.getElementById("{{field.key}}Confirm").click();
+                                        }
+                                    });
+                                </script>
                                 {% endif %}
                             </td>
-                        {% if field.editable %}
-                            <script>
-                                document.getElementById("editButton{{loop.index}}").onclick = function (){
-                                    flipMode(
-                                        "{{field.name}}Label",
-                                        "{{field.key}}InputGroup",
-                                        "{{field.key}}Input",
-                                        "{{-object.get(field.key) or ""-}}",
-                                        "editButton{{loop.index}}"
-
-                                    )
-                                };
-                                document.getElementById("{{field.key}}Input").addEventListener('keypress', (e) => {
-                                    if (e.key === "Enter") {
-                                        document.getElementById("{{field.key}}Confirm").click();
-                                    }
-                                });
-                            </script>
-                         {% endif %}
                         </tr>
                     {% endfor %}
 
