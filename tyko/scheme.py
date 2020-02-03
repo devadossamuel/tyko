@@ -269,7 +269,6 @@ class CollectionItem(AVTables):
 
     def serialize(self):
         notes = [note.serialize() for note in self.notes]
-        pass
         try:
             item_format = self.format_type.serialize()
         except AttributeError:
