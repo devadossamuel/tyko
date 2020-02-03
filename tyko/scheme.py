@@ -100,27 +100,30 @@ class Project(AVTables):
         backref="object_source"
     )
 
-    def serialize(self):
-        notes = []
+    def serialize(self, recurse=True):
 
-        for note in self.notes:
-            notes.append(note.serialize())
-
-        child_object_ids = []
-        for project_object in self.objects:
-            child_object_ids.append(
-                (project_object.id, project_object.name)
-            )
-
-        return {
+        data = {
             "project_id": self.id,
             "project_code": self.project_code,
             "current_location": self.current_location,
             "status": self.status,
             "title": self.title,
-            "notes": notes,
-            "objects": child_object_ids
         }
+        notes = []
+
+        for note in self.notes:
+            notes.append(note.serialize())
+        data["notes"] = notes
+
+        child_objects = []
+        if recurse is True:
+            for project_object in self.objects:
+                project_object_data = project_object.serialize(recurse=False)
+                del project_object_data['parent_project']
+                child_objects.append(project_object_data)
+            data["objects"] = child_objects
+
+        return data
 
 
 class Collection(AVTables):
@@ -182,7 +185,7 @@ class CollectionObject(AVTables):
 
     contact = relationship("Contact", foreign_keys=[contact_id])
 
-    def serialize(self):
+    def serialize(self, recurse=True):
 
         def sorter(collection_items: List[CollectionItem]):
             no_sequence = set()
@@ -199,41 +202,58 @@ class CollectionObject(AVTables):
             resulting_sorted_list += list(no_sequence)
             return resulting_sorted_list
 
+        data = {
+            "object_id": self.id,
+            "name": self.name,
+            "barcode": self.barcode,
+            }
+
         items = []
         for item in sorter(self.items):
-            items.append(item.serialize())
+            if recurse is True:
+                item_data = item.serialize()
+                del item_data['parent_object_id']
+                items.append(item_data)
 
-        notes = [note.serialize() for note in self.notes]
+            else:
+                items.append({
+                    "item_id": item.id,
+                    "name": item.name
+                })
+        data["items"] = items
+
+        if recurse is True:
+            data["notes"] = [note.serialize() for note in self.notes]
 
         if self.collection is not None:
-            collection = self.collection.serialize()
+            if recurse is True:
+                data["collection"] = self.collection.serialize()
+            else:
+                data["collection"] = None
         else:
-            collection = None
+            data["collection"] = None
 
         if self.contact is not None:
             contact = self.contact.serialize()
         else:
             contact = None
+        data["contact"] = contact
 
-        if self.project is not None:
-            project = self.project.serialize()
+        if recurse is True:
+            if self.project is not None:
+                data["project"] = self.project.serialize(recurse=False)
+            else:
+                data["project"] = None
         else:
-            project = None
+            data["parent_project"] = self.project.id
 
-        return {
-            "object_id": self.id,
-            "name": self.name,
-            "collection": collection,
-            "barcode": self.barcode,
-            "originals_rec_date":
-                self.serialize_date(self.originals_rec_date),
-            "originals_return_date":
-                self.serialize_date(self.originals_return_date),
-            "project": project,
-            "contact": contact,
-            "notes": notes,
-            "items": items
-        }
+        data["originals_rec_date"] = \
+            self.serialize_date(self.originals_rec_date)
+
+        data["originals_return_date"] = \
+            self.serialize_date(self.originals_return_date)
+
+        return data
 
 
 class CollectionItem(AVTables):
