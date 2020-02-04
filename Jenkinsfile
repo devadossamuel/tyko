@@ -68,7 +68,7 @@ def get_sonarqube_project_analysis(report_task_file, buildString){
 pipeline {
     agent none
     triggers {
-        cron('@daily')
+        parameterizedCron '@daily % TEST_RUN_TOX=true'
     }
     options {
         disableConcurrentBuilds()  //each branch has 1 job running at a time
@@ -86,7 +86,7 @@ pipeline {
     parameters {
         booleanParam(name: "FRESH_WORKSPACE", defaultValue: false, description: "Purge workspace before staring and checking out source")
         booleanParam(name: "BUILD_CLIENT", defaultValue: false, description: "Build Client program")
-        booleanParam(name: "TEST_RUN_TOX", defaultValue: true, description: "Run Tox Tests")
+        booleanParam(name: "TEST_RUN_TOX", defaultValue: false, description: "Run Tox Tests")
         booleanParam(name: "DEPLOY_SERVER", defaultValue: false, description: "Deploy server software to server")
     }
     stages {
