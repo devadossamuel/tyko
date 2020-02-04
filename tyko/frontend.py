@@ -341,10 +341,9 @@ class ObjectFrontend(FrontendEditable):
         fields = [
             Details(name="Name", key="name", editable=True),
             Details(name="Collection",
-                    key_branch="collection",
                     key="collection_name"),
-            Details(name="Project", key_branch="project",
-                    key="title"),
+            Details(name="Project",
+                    key="project_name"),
             Details(name="Barcode", key="barcode", editable=True),
             Details(name="Originals Received Date", key="originals_rec_date"),
             Details(
@@ -356,11 +355,30 @@ class ObjectFrontend(FrontendEditable):
         selected_object = self._data_connector.get(serialize=True,
                                                    id=entity_id)[0]
         api_path = f"{url_for('.page_index')}api/object/{entity_id}"
-        edit_link = f"{url_for('page_object')}/{entity_id}/edit"
+
+        collection = selected_object.get('collection')
+        if collection is not None:
+            collection_id = selected_object['collection'].get('collection_id')
+            if collection_id is not None:
+
+                collection_url = \
+                    f"{url_for('page_collections')}/{collection_id}"
+
+                selected_object['collection_url'] = collection_url
+
+            collection_name = \
+                selected_object['collection'].get('collection_name')
+
+            if collection_name is not None:
+                selected_object['collection_name'] = collection_name
+
+        project = selected_object.get('project')
+        if project is not None:
+            project_name = project['title']
+            selected_object['project_name'] = project_name
         return self.render_page(template="object_details.html",
                                 edit=False,
                                 fields=fields,
-                                edit_link=edit_link,
                                 api_path=api_path,
                                 object=selected_object)
 
