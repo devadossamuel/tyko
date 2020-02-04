@@ -37,19 +37,25 @@ def get_sonarqube_scan_data(report_task_file){
 }
 
 def get_sonarqube_project_analysis(report_task_file, buildString){
-    def props = readProperties  file: '.scannerwork/report-task.txt'
-    def response = httpRequest url : props['serverUrl'] + "/api/project_analyses/search?project=" + props['projectKey']
-    def project_analyses = readJSON text: response.content
+    script{
+        if (! fileExists(report_task_file)){
+            error "File not found ${report_task_file}"
+        }
 
-    for( analysis in project_analyses['analyses']){
-        if(!analysis.containsKey("buildString")){
-            continue
+        def props = readProperties  file: report_task_file
+        def response = httpRequest url : props['serverUrl'] + "/api/project_analyses/search?project=" + props['projectKey']
+        def project_analyses = readJSON text: response.content
+
+        for( analysis in project_analyses['analyses']){
+            if(!analysis.containsKey("buildString")){
+                continue
+            }
+            def build_string = analysis["buildString"]
+            if(build_string != buildString){
+                continue
+            }
+            return analysis
         }
-        def build_string = analysis["buildString"]
-        if(build_string != buildString){
-            continue
-        }
-        return analysis
     }
 }
 
@@ -485,7 +491,7 @@ foreach($file in $opengl32_libraries){
                         unstash "BANDIT_REPORT"
                         unstash "PYTEST_COVERAGE_DATA"
                         script{
-                                def props = readProperties interpolate: true, file: 'tyko.dist-info/METADATA'
+                            def props = readProperties interpolate: true, file: 'tyko.dist-info/METADATA'
                             withSonarQubeEnv('sonarqube.library.illinois.edu') {
                                 sh(
                                     label: "Running Sonar Scanner",
