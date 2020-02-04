@@ -114,6 +114,7 @@ class ProjectDataConnector(AbsDataProviderConnector):
                 .filter(scheme.Project.id == id)\
                 .delete()
 
+            session.commit()
             session.close()
             return items_deleted > 0
         return False
