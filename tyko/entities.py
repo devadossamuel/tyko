@@ -66,6 +66,14 @@ def load_entity(name, provider: data_provider.DataProvider) \
     return new_entity
 
 
+class NotesFactory(AbsFactory):
+    def middleware(self):
+        return middleware.NotestMiddlwareEntity(self._data_provider)
+
+    def web_frontend(self) -> frontend.FrontendEntity:
+        pass
+
+
 all_entities = {
     "project": EntityComponent(
         factory=ProjectFactory,
@@ -83,4 +91,8 @@ all_entities = {
         factory=ObjectFactory,
         data_connector=data_provider.ObjectDataConnector
     ),
+    "notes": EntityComponent(
+        factory=NotesFactory,
+        data_connector=data_provider.NotesDataConnector
+    )
 }

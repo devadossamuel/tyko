@@ -55,6 +55,8 @@ class Routes:
         project_object = \
             entities.load_entity("object", self.db_engine).middleware()
 
+        notes = entities.load_entity("notes", self.db_engine).middleware()
+
         if self.app:
             api_entities = [
                 APIEntity("Projects", rules=[
@@ -137,6 +139,23 @@ class Routes:
                           lambda id: project_object.delete(id=id),
                           methods=["DELETE"]),
                     ]),
+                APIEntity("Notes", rules=[
+                    Route("/api/notes", "notes",
+                          lambda serialize=True: notes.get(serialize),
+                          methods=["GET"]),
+                    Route("/api/notes/<string:id>", "note_by_id",
+                          lambda id: notes.get(id=id),
+                          methods=["GET"]),
+                    Route("/api/notes/", "add_note",
+                          notes.create,
+                          methods=["POST"]),
+                    Route("/api/notes/<string:id>", "update_note",
+                          notes.update,
+                          methods=["PUT"]),
+                    Route("/api/notes/<string:id>", "delete_note",
+                          notes.delete,
+                          methods=["DELETE"]),
+                    ])
 
             ]
 

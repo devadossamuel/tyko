@@ -82,7 +82,13 @@
                     {%- for note in project['notes'] %}
                     <tr>
                         <td>{{ note['text'] }}</td>
-                        <td><button class="float-right btn btn-secondary btn-sm" disabled>Edit</button></td>
+                        <td>
+                            <button class="float-right btn btn-secondary btn-sm"
+                                    data-toggle="modal"
+                                    data-target="#noteEditor"
+                                    data-text="{{ note['text'] }}"
+                                    data-destination="{{ url_for('notes') }}/{{ note['note_id'] }}">Edit</button>
+                        </td>
                     </tr>
                     {% endfor -%}
                     <tr>
@@ -95,7 +101,9 @@
                     </tr>
                 </tbody>
             </table>
+
         </div>
     </div>
 </div>
+
 {%- endblock -%}

@@ -104,4 +104,23 @@
     }
 </script>
 <script src="{{ url_for('static', filename='js/editData.js') }}"></script>
-{% endblock -%}
+{% include "edit_note.html" %}
+
+{% endblock %}
+
+
+{%- block scripts %}
+    <script type="application/javascript">
+        $(document).ready(function () {
+            $('#noteEditor').on('show.bs.modal', function (event) {
+              const button = $(event.relatedTarget);
+              const message = button.data('text');
+              const apiRoute = button.data('destination');
+              console.log("apiRoute = " + apiRoute);
+              const modal = $(this);
+              modal.find('#message-text').val(message);
+              modal.find('#saveNoteButton').attr('onclick', "updateNote('" + apiRoute + "')");
+        })
+    })
+    </script>
+{% endblock %}

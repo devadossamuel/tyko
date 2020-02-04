@@ -461,3 +461,109 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
                 "url": url_for("item_by_id", id=new_item_id)
             }
         )
+
+
+class NotestMiddlwareEntity(AbsMiddlwareEntity):
+    WRITABLE_FIELDS = [
+        "text"
+    ]
+
+    def __init__(self, data_provider) -> None:
+        super().__init__(data_provider)
+
+        self._data_connector = \
+            dp.NotesDataConnector(data_provider.db_session_maker)
+
+    @staticmethod
+    def resolve_parents(source: dict) -> dict:
+        newone = source.copy()
+        parent_routes = []
+
+        for pid in source.get('parent_project_ids', []):
+            parent_routes.append(f"{url_for('projects')}/{pid}")
+
+        for pid in source.get('parent_object_ids', []):
+            parent_routes.append(f"{url_for('object')}/{pid}")
+
+        for pid in source.get('parent_item_ids', []):
+            parent_routes.append(f"{url_for('item')}/{pid}")
+
+        newone['parents'] = parent_routes
+        return newone
+
+    def get(self, serialize=False, **kwargs):
+        if "id" in kwargs:
+            note = self._data_connector.get(kwargs['id'], serialize=True)
+            note_data = self.resolve_parents(note[0])
+            del note_data['parent_project_ids']
+            del note_data['parent_object_ids']
+            del note_data['parent_item_ids']
+
+            return jsonify({
+                "note": note_data
+            })
+
+        notes = self._data_connector.get(serialize=serialize)
+        if serialize:
+            note_data = []
+            for n in notes:
+                new_data = n.copy()
+                del new_data['parent_project_ids']
+                del new_data['parent_object_ids']
+                del new_data['parent_item_ids']
+                note_data.append(new_data)
+            data = {
+                "notes": note_data,
+                "total": len(note_data)
+            }
+            json_data = json.dumps(data)
+            response = make_response(jsonify(data), 200)
+
+            hash_value = \
+                hashlib.sha256(bytes(json_data, encoding="utf-8")).hexdigest()
+
+            response.headers["ETag"] = str(hash_value)
+            response.headers["Cache-Control"] = "private, max-age=0"
+            return response
+        return notes
+
+    def delete(self, id):
+        res = self._data_connector.delete(id)
+
+        if res is True:
+            return make_response("", 204)
+        return make_response("", 404)
+
+    def update(self, id):
+        new_object = dict()
+        json_request = request.json
+        for k, _ in json_request.items():
+            if not self.field_can_edit(k):
+                return make_response("Cannot update field: {}".format(k), 400)
+
+        if "text" in request.json:
+            new_object["text"] = request.json.get("text")
+
+        updated_note = \
+            self._data_connector.update(
+                id, changed_data=new_object)
+
+        if not updated_note:
+            return make_response("", 204)
+
+        return jsonify(
+            {"note": updated_note}
+        )
+
+    def create(self):
+        note_type = int(request.form.get('note_type_id'))
+        text = request.form.get('text')
+        new_note_id = self._data_connector.create(
+            text=text, note_types_id=note_type
+        )
+        return jsonify(
+            {
+                "id": new_note_id,
+                "url": url_for("note_by_id", id=new_note_id)
+            }
+        )
