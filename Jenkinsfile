@@ -528,8 +528,6 @@ foreach($file in $opengl32_libraries){
                                 unstable("SonarQube quality gate: ${sonarqube_result}")
                             }
                             def sonarqube_data = get_sonarqube_scan_data(".scannerwork/report-task.txt")
-                            echo sonarqube_data.toString()
-
                             echo get_sonarqube_project_analysis(".scannerwork/report-task.txt", BUILD_TAG).toString()
                             def outstandingIssues = get_sonarqube_unresolved_issues(".scannerwork/report-task.txt")
                             writeJSON file: 'reports/sonar-report.json', json: outstandingIssues
