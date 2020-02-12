@@ -1,4 +1,12 @@
-/.mypy_cache
-/.pytest_cache
+.eggs
+.mypy_cache
+.pytest_cache
+.tox
+build
+reports
 /buildClient
 /cmake-build-*
+node_modules
+coverage
+venv
+__pycache__/
