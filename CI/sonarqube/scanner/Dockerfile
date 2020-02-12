@@ -20,3 +20,4 @@ RUN mkdir /.sonar
 
 VOLUME /home/user/.sonar
 RUN chown user /home/user/.sonar
+RUN chown user /usr/local/lib/node_modules/sonarqube-scanner
