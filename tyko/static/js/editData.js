@@ -39,7 +39,7 @@ function editDataValue(apiPath, apiParameter, data,
 }
 
 function add_data(url, text, noteType, onSuccess= function(){}, onFailure= function(){} ){
-    data = {
+    const data = {
         "note_type_id": noteType,
         "text": text
     };
@@ -55,7 +55,7 @@ function add_data(url, text, noteType, onSuccess= function(){}, onFailure= funct
     xhr.open("POST", url);
     xhr.setRequestHeader('Content-Type', 'application/json');
     const dataToSend = JSON.stringify(data);
-    console.log("dataToSend = " + dataToSend)
+    console.log("dataToSend = " + dataToSend);
     xhr.onload = function(){
         if (this.readyState === XMLHttpRequest.DONE) {
             if(this.status === 200){
