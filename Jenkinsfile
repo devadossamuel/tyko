@@ -73,7 +73,6 @@ pipeline {
     options {
         disableConcurrentBuilds()  //each branch has 1 job running at a time
         timeout(180)  // Timeout after 180 minutes. This shouldn't take this long
-        checkoutToSubdirectory("scm")
         buildDiscarder logRotator(artifactDaysToKeepStr: '30', artifactNumToKeepStr: '30', daysToKeepStr: '100', numToKeepStr: '100')
     }
     environment{
@@ -154,22 +153,15 @@ foreach($file in $opengl32_libraries){
                       dockerfile {
                         filename 'CI/server_testing/Dockerfile'
                         label "linux && docker"
-                        dir 'scm'
                       }
                     }
                     steps{
-                        dir("scm"){
-                            sh "python setup.py build -b ../build/server dist_info"
-                        }
+                        sh "python setup.py build -b build/server dist_info"
                     }
                     post{
                         success{
-                            dir("scm"){
-                                stash includes: "deploy/**,database/**", name: 'SERVER_DEPLOY_FILES'
-                                stash includes: "tyko.dist-info/**", name: 'DIST-INFO'
-
-                            }
-
+                            stash includes: "deploy/**,database/**", name: 'SERVER_DEPLOY_FILES'
+                            stash includes: "tyko.dist-info/**", name: 'DIST-INFO'
                         }
                         cleanup{
                             cleanWs()
@@ -181,7 +173,6 @@ foreach($file in $opengl32_libraries){
                       dockerfile {
                         filename 'CI/build_VS2019/Dockerfile'
                         label "windows && docker"
-                        dir 'scm'
                       }
                     }
                     when {
@@ -199,11 +190,11 @@ foreach($file in $opengl32_libraries){
 
                                 bat(
                                     label: "installing dependencies",
-                                    script: "cd build && conan install ../scm//"
+                                    script: "cd build && conan install .."
                                     )
                                 bat(
                                     label: "Configuring CMake Project",
-                                    script:"cmake -S scm -B build -DCMAKE_TOOLCHAIN_FILE:FILE=${WORKSPACE}\\build\\conan_paths.cmake"
+                                    script:"cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE:FILE=${WORKSPACE}\\build\\conan_paths.cmake"
                                     )
                                 bat(
                                     label: "Building project",
@@ -333,29 +324,24 @@ foreach($file in $opengl32_libraries){
                               dockerfile {
                                 filename 'CI/server_testing/Dockerfile'
                                 label "linux && docker"
-                                dir 'scm'
                               }
                             }
                             steps{
                                 sh "mkdir -p reports/pytest"
-                                dir("scm"){
-                                    catchError(buildResult: 'UNSTABLE', message: 'Did not pass all pytest tests', stageResult: 'UNSTABLE') {
-                                        sh(
-                                            label: "Run PyTest",
-                                            script: "coverage run --parallel-mode --branch --source=tyko,tests -m pytest --junitxml=../reports/pytest/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest"
-                                        )
-                                    }
+                                catchError(buildResult: 'UNSTABLE', message: 'Did not pass all pytest tests', stageResult: 'UNSTABLE') {
+                                    sh(
+                                        label: "Run PyTest",
+                                        script: "coverage run --parallel-mode --branch --source=tyko,tests -m pytest --junitxml=reports/pytest/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest"
+                                    )
                                 }
                             }
                             post {
                                 always{
 
                                     junit "reports/pytest/junit-*.xml"
-                                    dir("scm"){
-                                        sh "coverage combine"
-                                        sh "coverage xml -o ../reports/coverage.xml"
-                                    }
-                                    stash includes: "scm/.coverage.*,reports/pytest/junit-*.xml,reports/coverage.xml", name: 'PYTEST_COVERAGE_DATA'
+                                    sh "coverage combine"
+                                    sh "coverage xml -o reports/coverage.xml"
+                                    stash includes: ".coverage.*,reports/pytest/junit-*.xml,reports/coverage.xml", name: 'PYTEST_COVERAGE_DATA'
 
                                     publishCoverage(
                                         adapters: [
@@ -382,25 +368,22 @@ foreach($file in $opengl32_libraries){
                               dockerfile {
                                 filename 'CI/server_testing/Dockerfile'
                                 label "linux && docker"
-                                dir 'scm'
                               }
                             }
                             steps {
                                 sh "mkdir -p logs"
-                                dir("scm"){
-                                    script{
-                                        try{
-                                            sh (
-                                                label: "Run Tox",
-                                                script: "tox --parallel=auto --parallel-live --workdir ../.tox -vv --result-json=../logs/tox_report.json"
-                                            )
+                                script{
+                                    try{
+                                        sh (
+                                            label: "Run Tox",
+                                            script: "tox --parallel=auto --parallel-live --workdir .tox -vv --result-json=logs/tox_report.json"
+                                        )
 
-                                        } catch (exc) {
-                                            sh(
-                                                label: "Run Tox with new environments",
-                                                script: "tox --recreate --parallel=auto --parallel-live --workdir ../.tox -vv --result-json=../logs/tox_report.json"
-                                            )
-                                        }
+                                    } catch (exc) {
+                                        sh(
+                                            label: "Run Tox with new environments",
+                                            script: "tox --recreate --parallel=auto --parallel-live --workdir .tox -vv --result-json=logs/tox_report.json"
+                                        )
                                     }
                                 }
                             }
@@ -425,21 +408,17 @@ foreach($file in $opengl32_libraries){
                               dockerfile {
                                 filename 'CI/server_testing/Dockerfile'
                                 label "linux && docker"
-                                dir 'scm'
                               }
                             }
                             steps{
                                 sh "mkdir -p reports/mypy/html"
                                 sh "mkdir -p logs"
                                 tee('logs/mypy.log') {
-                                    dir("scm"){
-                                        catchError(buildResult: 'SUCCESS', message: 'MyPy found issues', stageResult: 'UNSTABLE') {
-                                            sh(
-                                                script: "mypy tyko --html-report ../reports/mypy/html",
-                                                label: "Running MyPy"
-                                                )
-                                        }
-
+                                    catchError(buildResult: 'SUCCESS', message: 'MyPy found issues', stageResult: 'UNSTABLE') {
+                                        sh(
+                                            script: "mypy tyko --html-report reports/mypy/html",
+                                            label: "Running MyPy"
+                                            )
                                     }
                                 }
                             }
@@ -447,10 +426,7 @@ foreach($file in $opengl32_libraries){
                                 always {
                                     stash includes: "logs/mypy.log", name: 'MYPY_LOGS'
                                     publishHTML([allowMissing: true, alwaysLinkToLastBuild: false, keepAll: false, reportDir: "reports/mypy/html/", reportFiles: 'index.html', reportName: 'MyPy HTML Report', reportTitles: ''])
-                                        dir("scm"){
-                                            unstash "MYPY_LOGS"
-                                            recordIssues(tools: [myPy(name: 'MyPy', pattern: 'logs/mypy.log')])
-                                        }
+                                    recordIssues(tools: [myPy(name: 'MyPy', pattern: 'logs/mypy.log')])
                                 }
                                 cleanup{
                                     cleanWs(
@@ -467,19 +443,15 @@ foreach($file in $opengl32_libraries){
                               dockerfile {
                                 filename 'CI/server_testing/Dockerfile'
                                 label "linux && docker"
-                                dir 'scm'
                               }
                             }
                             steps{
                                 sh "mkdir -p reports"
-                                dir("scm"){
-                                    catchError(buildResult: 'SUCCESS', message: 'Bandit found issues', stageResult: 'UNSTABLE') {
-                                        sh(
-                                            label: "Running bandit",
-                                            script: "bandit --format json --output ../reports/bandit-report.json --recursive ../scm/tyko ||  bandit -f html --recursive ../scm/tyko --output ../reports/bandit-report.html"
-                                        )
-                                    }
-
+                                catchError(buildResult: 'SUCCESS', message: 'Bandit found issues', stageResult: 'UNSTABLE') {
+                                    sh(
+                                        label: "Running bandit",
+                                        script: "bandit --format json --output reports/bandit-report.json --recursive tyko ||  bandit -f html --recursive tyko --output reports/bandit-report.html"
+                                    )
                                 }
                             }
                             post {
@@ -510,30 +482,23 @@ foreach($file in $opengl32_libraries){
                               dockerfile {
                                 filename 'CI/server_testing/Dockerfile'
                                 label "linux && docker"
-                                dir 'scm'
                               }
                             }
                             steps{
                                 sh "mkdir -p logs"
-                                dir("scm"){
-                                    catchError(buildResult: 'SUCCESS', message: 'Flake8 found issues', stageResult: 'UNSTABLE') {
+                                catchError(buildResult: 'SUCCESS', message: 'Flake8 found issues', stageResult: 'UNSTABLE') {
 
-                                        sh(
-                                            script: "flake8 tyko --tee --output-file=../logs/flake8.log",
-                                            label: "Running Flake8"
-                                        )
-                                    }
+                                    sh(
+                                        script: "flake8 tyko --tee --output-file=logs/flake8.log",
+                                        label: "Running Flake8"
+                                    )
                                 }
                             }
                             post {
                                 always {
                                     stash includes: "logs/flake8.log", name: 'FLAKE8_LOGS'
                                     archiveArtifacts 'logs/flake8.log'
-                                    dir('scm') {
-                                        unstash "FLAKE8_LOGS"
-                                        recordIssues(tools: [flake8(pattern: 'logs/flake8.log')])
-                                    }
-
+                                    recordIssues(tools: [flake8(pattern: 'logs/flake8.log')])
                                 }
                                 cleanup{
                                     cleanWs(
@@ -550,7 +515,6 @@ foreach($file in $opengl32_libraries){
                               dockerfile {
                                 filename 'CI/server_testing/Dockerfile'
                                 label "linux && docker"
-                                dir 'scm'
                               }
                             }
                             environment{
@@ -558,29 +522,25 @@ foreach($file in $opengl32_libraries){
                             }
                             steps{
                                 sh "mkdir -p reports"
-                                dir("scm"){
 
-                                    catchError(buildResult: 'SUCCESS', message: 'Pylint found issues', stageResult: 'UNSTABLE') {
-                                        sh(
-                                            script: 'pylint tyko  -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > ../reports/pylint.txt',
-                                            label: "Running pylint"
-                                        )
-                                    }
+                                catchError(buildResult: 'SUCCESS', message: 'Pylint found issues', stageResult: 'UNSTABLE') {
                                     sh(
-                                        script: 'pylint tyko  -r n --msg-template="{path}:{module}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > ../reports/pylint_issues.txt',
-                                        label: "Running pylint for sonarqube",
-                                        returnStatus: true
+                                        script: 'pylint tyko  -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > reports/pylint.txt',
+                                        label: "Running pylint"
                                     )
                                 }
+                                sh(
+                                    script: 'pylint tyko  -r n --msg-template="{path}:{module}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > reports/pylint_issues.txt',
+                                    label: "Running pylint for sonarqube",
+                                    returnStatus: true
+                                )
                             }
                             post{
                                 always{
                                     stash includes: "reports/pylint_issues.txt,reports/pylint.txt", name: 'PYLINT_REPORT'
                                     archiveArtifacts allowEmptyArchive: true, artifacts: "reports/pylint.txt"
-                                    dir("scm"){
-                                        unstash "PYLINT_REPORT"
-                                        recordIssues(tools: [pyLint(pattern: 'reports/pylint_issues.txt')])
-                                    }
+                                    unstash "PYLINT_REPORT"
+                                    recordIssues(tools: [pyLint(pattern: 'reports/pylint_issues.txt')])
                                 }
                                 cleanup{
                                     cleanWs(
@@ -598,7 +558,6 @@ foreach($file in $opengl32_libraries){
                                     filename 'CI/testing_javascript/Dockerfile'
                                     label "linux && docker"
                                     additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                                    dir 'scm'
                                 }
                             }
                             environment{
@@ -607,14 +566,12 @@ foreach($file in $opengl32_libraries){
                             }
                             steps{
                                 sh "mkdir -p reports"
-                                dir("scm"){
-                                    sh("npm install  -y")
-                                    withEnv(["JEST_JUNIT_OUTPUT_DIR=${WORKSPACE}/reports"]) {
-                                        sh(
-                                            label:  "Running Jest",
-                                            script: "npm test --  --ci --reporters=default --reporters=jest-junit"
-                                        )
-                                    }
+                                sh("npm install  -y")
+                                withEnv(["JEST_JUNIT_OUTPUT_DIR=${WORKSPACE}/reports"]) {
+                                    sh(
+                                        label:  "Running Jest",
+                                        script: "npm test --  --ci --reporters=default --reporters=jest-junit"
+                                    )
                                 }
                             }
                             post{
@@ -627,7 +584,7 @@ foreach($file in $opengl32_libraries){
                                     cleanWs(
                                         deleteDirs: true,
                                         patterns: [
-                                            [pattern: 'scm/node_modules', type: 'INCLUDE'],
+                                            [pattern: 'node_modules', type: 'INCLUDE'],
                                             [pattern: 'reports/', type: 'INCLUDE'],
                                             ]
                                     )
@@ -641,7 +598,6 @@ foreach($file in $opengl32_libraries){
                         dockerfile {
                             filename 'CI/sonarqube/scanner/Dockerfile'
                             label "linux && docker"
-                            dir 'scm'
                             additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                             }
                     }
@@ -661,8 +617,8 @@ foreach($file in $opengl32_libraries){
                                 sh(
                                     label: "Running Sonar Scanner",
                                     script: "sonar-scanner \
--Dproject.settings=${WORKSPACE}/scm/sonar-project.properties \
--Dsonar.projectBaseDir=${WORKSPACE}/scm \
+-Dproject.settings=${WORKSPACE}/sonar-project.properties \
+-Dsonar.projectBaseDir=${WORKSPACE} \
 -Dsonar.python.coverage.reportPaths=reports/coverage.xml \
 -Dsonar.python.xunit.reportPath=reports/pytest/junit-${env.NODE_NAME}-pytest.xml \
 -Dsonar.projectVersion=${props.Version} \
@@ -696,11 +652,7 @@ foreach($file in $opengl32_libraries){
                         always{
                             stash includes: "reports/sonar-report.json", name: 'SONAR_REPORT'
                             archiveArtifacts allowEmptyArchive: true, artifacts: 'reports/sonar-report.json'
-                            dir("scm"){
-                                unstash "SONAR_REPORT"
-                                recordIssues(tools: [sonarQube(pattern: 'reports/sonar-report.json')])
-                            }
-
+                            recordIssues(tools: [sonarQube(pattern: 'reports/sonar-report.json')])
                         }
                     }
                 }
@@ -732,13 +684,10 @@ foreach($file in $opengl32_libraries){
                       dockerfile {
                         filename 'CI/server_testing/Dockerfile'
                         label "linux && docker"
-                        dir 'scm'
                       }
                     }
                     steps{
-                        dir("scm"){
-                            sh script: "python setup.py sdist -d ../dist --format=zip,gztar bdist_wheel -d ../dist"
-                        }
+                        sh script: "python setup.py sdist -d dist --format=zip,gztar bdist_wheel -d dist"
                     }
                     post {
                         success {
