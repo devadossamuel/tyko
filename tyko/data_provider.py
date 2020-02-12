@@ -30,10 +30,6 @@ class AbsDataProviderConnector(metaclass=abc.ABCMeta):
         """Delete an existing entity"""
 
 
-class DataConnectorWitHNotes:
-    pass
-
-
 class ProjectDataConnector(AbsDataProviderConnector):
 
     def get(self, id=None, serialize=False):
