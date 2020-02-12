@@ -570,13 +570,13 @@ foreach($file in $opengl32_libraries){
                                 withEnv(["JEST_JUNIT_OUTPUT_DIR=${WORKSPACE}/reports"]) {
                                     sh(
                                         label:  "Running Jest",
-                                        script: "npm test --  --ci --reporters=default --reporters=jest-junit"
+                                        script: "npm test --  --ci --reporters=default --reporters=jest-junit --collectCoverage"
                                     )
                                 }
                             }
                             post{
                                 always{
-                                    stash includes: "test-report.xml,reports/*.xml", name: 'JEST_REPORT'
+                                    stash includes: "reports/*.xml,coverage/**", name: 'JEST_REPORT'
                                     junit "reports/*.xml"
                                     archiveArtifacts allowEmptyArchive: true, artifacts: "reports/*.xml"
                                 }

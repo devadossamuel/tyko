@@ -35,5 +35,8 @@
   },
   "jest": {
     "testResultsProcessor": "jest-sonar-reporter"
+  },
+  "jestSonar": {
+    "reportPath": "reports"
   }
 }
