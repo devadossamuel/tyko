@@ -432,7 +432,6 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
 
     def add_note(self, project_id):
 
-        # note_id = int(request.form.get('note_id'))
         data = request.get_json()
         try:
             note_type_id = data.get("note_type_id")
@@ -450,7 +449,6 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
         except AttributeError:
             traceback.print_exc(file=sys.stderr)
             return make_response("Invalid data", 400)
-        # return make_response("not ready", 501)
 
 
 class ItemMiddlwareEntity(AbsMiddlwareEntity):
