@@ -37,7 +37,8 @@
     "testResultsProcessor": "jest-sonar-reporter",
     "coverageReporters": [
       "text",
-      "cobertura"
+      "cobertura",
+      "lcov"
     ]
   },
   "jestSonar": {
