@@ -576,7 +576,7 @@ foreach($file in $opengl32_libraries){
                             }
                             post{
                                 always{
-                                    stash includes: "reports/*.xml", name: 'JEST_REPORT'
+                                    stash includes: "test-report.xml,reports/*.xml", name: 'JEST_REPORT'
                                     junit "reports/*.xml"
                                     archiveArtifacts allowEmptyArchive: true, artifacts: "reports/*.xml"
                                 }
@@ -584,7 +584,8 @@ foreach($file in $opengl32_libraries){
                                     cleanWs(
                                         deleteDirs: true,
                                         patterns: [
-                                            [pattern: 'node_modules', type: 'INCLUDE'],
+                                            [pattern: 'test-report.xml', type: 'INCLUDE'],
+                                            [pattern: 'node_modules/', type: 'INCLUDE'],
                                             [pattern: 'reports/', type: 'INCLUDE'],
                                             ]
                                     )
@@ -611,6 +612,7 @@ foreach($file in $opengl32_libraries){
                         unstash "PYLINT_REPORT"
                         unstash "BANDIT_REPORT"
                         unstash "PYTEST_COVERAGE_DATA"
+                        unstash "JEST_REPORT"
                         script{
                             def props = readProperties interpolate: true, file: 'tyko.dist-info/METADATA'
                             withSonarQubeEnv('sonarqube.library.illinois.edu') {
