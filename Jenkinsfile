@@ -579,6 +579,13 @@ foreach($file in $opengl32_libraries){
                                     stash includes: "reports/*.xml,coverage/**", name: 'JEST_REPORT'
                                     junit "reports/*.xml"
                                     archiveArtifacts allowEmptyArchive: true, artifacts: "reports/*.xml"
+
+                                    publishCoverage(
+                                        adapters: [
+                                                coberturaAdapter('coverage/cobertura-coverage.xml')
+                                                ],
+                                        sourceFileResolver: sourceFiles('STORE_ALL_BUILD'),
+                                    )
                                 }
                                 cleanup{
                                     cleanWs(

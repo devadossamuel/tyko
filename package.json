@@ -34,7 +34,11 @@
     "includeConsoleOutput": true
   },
   "jest": {
-    "testResultsProcessor": "jest-sonar-reporter"
+    "testResultsProcessor": "jest-sonar-reporter",
+    "coverageReporters": [
+      "text",
+      "cobertura"
+    ]
   },
   "jestSonar": {
     "reportPath": "reports"
