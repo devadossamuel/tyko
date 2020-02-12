@@ -17,3 +17,5 @@ RUN npm config set unsafe-perm true && \
     sonar-scanner --version
 
 RUN mkdir /.sonar
+
+VOLUME /home/user/.sonar
