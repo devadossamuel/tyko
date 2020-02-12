@@ -1,17 +1,17 @@
 import QtQuick 2.9
 import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.3
-import Api 1.0
+//import Api 1.0
 
 Page{
     id: root
     property url sourceURL
-    ProjectAdder{
-            id: myAdder
-            property url sourceURL: root.sourceURL
-            url: sourceURL
-            route: "/api/project/"
-    }
+    //ProjectAdder{
+    //        id: myAdder
+    //        property url sourceURL: root.sourceURL
+    //        url: sourceURL
+    //        route: "/api/project/"
+    //}
     onSourceURLChanged: {
         console.log(" SourceURL Changed to " + sourceURL)
         projectsModel.update()

@@ -1,9 +1,10 @@
-#include "projectadder.h"
-#include <QGuiApplication>
+//#include "projectadder.h"
 #include <QQmlApplicationEngine>
-#include <QQuickView>
+//#include <QGuiApplication>
+//#include <QQuickView>
 #include <QQmlComponent>
-
+#include <QtCore/QtCore>
+#include <QApplication>
 
 
 int main(int argc, char *argv[])
@@ -13,7 +14,7 @@ int main(int argc, char *argv[])
 #endif
 
     QGuiApplication app(argc, argv);
-    qmlRegisterType<ProjectAdder>("Api", 1, 0, "ProjectAdder");
+//    qmlRegisterType<ProjectAdder>("Api", 1, 0, "ProjectAdder");
     QQmlApplicationEngine engine;
     engine.load(QStringLiteral("qrc:/main.qml"));
     if(engine.rootObjects().isEmpty()){

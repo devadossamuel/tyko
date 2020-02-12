@@ -1,5 +1,0 @@
-<Options>
-    <Option Name="InstallAllUsers" Value="yes" />
-    <Option Name="PrependPath" Value="yes" />
-    <Option Name="Include_test" Value="no" />
-</Options>

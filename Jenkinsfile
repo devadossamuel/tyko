@@ -85,7 +85,7 @@ pipeline {
     }
     parameters {
         booleanParam(name: "FRESH_WORKSPACE", defaultValue: false, description: "Purge workspace before staring and checking out source")
-        booleanParam(name: "BUILD_CLIENT", defaultValue: false, description: "Build Client program")
+        booleanParam(name: "BUILD_CLIENT", defaultValue: true, description: "Build Client program")
         booleanParam(name: "TEST_RUN_TOX", defaultValue: false, description: "Run Tox Tests")
         booleanParam(name: "DEPLOY_SERVER", defaultValue: false, description: "Deploy server software to server")
     }
@@ -122,6 +122,30 @@ pipeline {
 //                }
 //            }
 //        }
+        stage("Getting build required files"){
+            when {
+                equals expected: true, actual: params.BUILD_CLIENT
+                beforeAgent true
+            }
+            agent{
+                label "Windows&&opengl32"
+            }
+            steps{
+                script{
+                    if(!fileExists('opengl32.dll')){
+                        powershell(
+                            label: "Searching for opengl32.dll",
+                            script: '''
+$opengl32_libraries = Get-ChildItem -Path c:\\Windows\\System32 -Recurse -Include opengl32.dll
+foreach($file in $opengl32_libraries){
+    Copy-Item $file.FullName
+    break
+}''')
+                    }
+                }
+                stash includes: 'opengl32.dll', name: 'OPENGL'
+            }
+        }
         stage("Building"){
             failFast true
             parallel{
@@ -152,86 +176,148 @@ pipeline {
                         }
                     }
                 }
-                stage("Build Client with Docker Container"){
-                    agent{
-                        label "Docker && Windows && 1903"
+                stage("Build Client Software"){
+                    agent {
+                      dockerfile {
+                        filename 'CI/build_VS2019/Dockerfile'
+                        label "windows && docker"
+                        dir 'scm'
+                      }
                     }
                     when {
                         equals expected: true, actual: params.BUILD_CLIENT
                         beforeAgent true
-                    }
-                    environment{
-                        DOCKER_PATH = tool name: 'Docker', type: 'org.jenkinsci.plugins.docker.commons.tools.DockerTool'
-                        PATH = "${DOCKER_PATH};$PATH"
                     }
                     options{
                         timestamps()
                     }
 
                     stages{
-                        stage("Build Docker Container"){
+                        stage("Build Client"){
                             steps{
-                                dir("scm"){
-                                    script{
-                                        if(!fileExists('opengl32.dll')){
-                                            node('Windows&&opengl32') {
-                                                powershell(
-                                                    label: "Searching for opengl32.dll",
-                                                    script: '''
-$opengl32_libraries = Get-ChildItem -Path c:\\Windows\\System32 -Recurse -Include opengl32.dll
-foreach($file in $opengl32_libraries){
-    Copy-Item $file.FullName
-    break
-}'''
-                                                )
-                                                stash includes: 'opengl32.dll', name: 'OPENGL'
-                                            }
-                                            unstash 'OPENGL'
-                                        }
-                                    }
+                                bat "if not exist build mkdir build"
 
-                                    bat("docker build . -f CI/build_VS2019/Dockerfile -m 2GB -t %DOCKER_IMAGE_TAG%")
+                                bat(
+                                    label: "installing dependencies",
+                                    script: "cd build && conan install ../scm//"
+                                    )
+                                bat(
+                                    label: "Configuring CMake Project",
+                                    script:"cmake -S scm -B build -DCMAKE_TOOLCHAIN_FILE:FILE=${WORKSPACE}\\build\\conan_paths.cmake"
+                                    )
+                                bat(
+                                    label: "Building project",
+                                    script: "cmake --build build --config Release"
+                                    )
+                            }
+                            post{
+                                success{
+                                    bat "dumpbin /DEPENDENTS build\\Release\\avdatabaseEditor.exe"
                                 }
                             }
                         }
-                        stage("Install Dependencies"){
+                        stage("Package Client"){
                             steps{
-                                bat "if not exist build mkdir build"
-                                bat(
-                                    label: "Using conan to install dependencies to build directory.",
-                                    script: "docker run -v \"${WORKSPACE}\\build:c:\\build\" -v \"${WORKSPACE}\\scm:c:\\source:ro\" --workdir=\"c:\\build\" --rm %DOCKER_IMAGE_TAG% conan install c:\\source"
-                                    )
-                            }
-                        }
-                        stage("Configure and Build Client"){
-                            steps{
-                                bat(
-                                    label: "Configuring CMake",
-                                    script: "docker run --rm -v \"${WORKSPACE}\\build:c:\\build\" -v \"${WORKSPACE}\\scm:c:\\source:ro\" --workdir=\"c:\\build\" %DOCKER_IMAGE_TAG% cmake -G Ninja -S c:\\source -B c:\\build -DCMAKE_TOOLCHAIN_FILE=conan_paths.cmake -DCMAKE_BUILD_TYPE=Release"
-                                )
-                                bat(
-                                    label: "Running build command from CMake",
-                                    script: "docker run --rm -v \"${WORKSPACE}\\build:c:\\build\" -v \"${WORKSPACE}\\scm:c:\\source:ro\" --workdir=\"c:\\build\" %DOCKER_IMAGE_TAG% cmake --build c:\\build --config Release"
-                                )
-
+                                unstash "OPENGL"
+                                // ONLY DO THIS IN A DOCKER CONTAINER!!
+                                powershell "Move-Item -Path OPENGL32.dll -Destination c:\\Windows\\System32\\OPENGL32.dll"
+                                dir("build"){
+                                    bat(script: "cpack -G WIX;ZIP;NSIS --verbose")
+                                }
                             }
                         }
                     }
                     post{
                         success{
-                            stash includes: "build/**", name: 'CLIENT_BUILD_DOCKER'
+                            script{
+                                def install_files = findFiles(glob: "build/tyko-*-win64.zip,build/tyko-*-win64.msi,build/tyko-*-win64.exe")
+                                bat "if not exist dist mkdir dist"
+                                install_files.each{
+                                    powershell "Move-Item -Path ${it.path} -Destination .\\dist\\${it.name}"
+                                }
+
+                            }
+                            stash includes: "dist/*", name: 'CLIENT_BUILD_PACKAGES'
+                        }
+                        failure{
+                            bat "tree /A /F build"
                         }
                         cleanup{
                             cleanWs(
                                 deleteDirs: true,
                                 patterns: [
-                                    [pattern: 'build', type: 'INCLUDE'],
-                                    ]
+                                    [pattern: 'dist', type: 'INCLUDE'],
+                                    [pattern: 'dist/', type: 'INCLUDE'],
+                                    [pattern: 'build/', type: 'INCLUDE']
+                                ]
                             )
                         }
-
                     }
                 }
+
+//                        stage("Build Docker Container"){
+//                            steps{
+//                                dir("scm"){
+//                                    script{
+//                                        if(!fileExists('opengl32.dll')){
+//                                            node('Windows&&opengl32') {
+//                                                powershell(
+//                                                    label: "Searching for opengl32.dll",
+//                                                    script: '''
+//$opengl32_libraries = Get-ChildItem -Path c:\\Windows\\System32 -Recurse -Include opengl32.dll
+//foreach($file in $opengl32_libraries){
+//    Copy-Item $file.FullName
+//    break
+//}'''
+//                                                )
+//                                                stash includes: 'opengl32.dll', name: 'OPENGL'
+//                                            }
+//                                            unstash 'OPENGL'
+//                                        }
+//                                    }
+//
+//                                    bat("docker build . -f CI/build_VS2019/Dockerfile -m 2GB -t %DOCKER_IMAGE_TAG%")
+//                                }
+//                            }
+//                        }
+//                        stage("Install Dependencies"){
+//                            steps{
+//                                bat "if not exist build mkdir build"
+//                                bat(
+//                                    label: "Using conan to install dependencies to build directory.",
+//                                    script: "docker run -v \"${WORKSPACE}\\build:c:\\build\" -v \"${WORKSPACE}\\scm:c:\\source:ro\" --workdir=\"c:\\build\" --rm %DOCKER_IMAGE_TAG% conan install c:\\source"
+//                                    )
+//                            }
+//                        }
+//                        stage("Configure and Build Client"){
+//                            steps{
+//                                bat(
+//                                    label: "Configuring CMake",
+//                                    script: "docker run --rm -v \"${WORKSPACE}\\build:c:\\build\" -v \"${WORKSPACE}\\scm:c:\\source:ro\" --workdir=\"c:\\build\" %DOCKER_IMAGE_TAG% cmake -G Ninja -S c:\\source -B c:\\build -DCMAKE_TOOLCHAIN_FILE=conan_paths.cmake -DCMAKE_BUILD_TYPE=Release"
+//                                )
+//                                bat(
+//                                    label: "Running build command from CMake",
+//                                    script: "docker run --rm -v \"${WORKSPACE}\\build:c:\\build\" -v \"${WORKSPACE}\\scm:c:\\source:ro\" --workdir=\"c:\\build\" %DOCKER_IMAGE_TAG% cmake --build c:\\build --config Release"
+//                                )
+//
+//                            }
+//                        }
+//                    }
+//                    post{
+//                        success{
+//                            stash includes: "build/**", name: 'CLIENT_BUILD_DOCKER'
+//                        }
+//                        cleanup{
+//                            cleanWs(
+//                                deleteDirs: true,
+//                                patterns: [
+//                                    [pattern: 'build', type: 'INCLUDE'],
+//                                    ]
+//                            )
+//                        }
+//
+//                    }
+//                }
             }
         }
         stage('Testing') {
@@ -596,49 +682,93 @@ foreach($file in $opengl32_libraries){
                         }
                     }
                 }
-                stage("Creating Package Installers for Client"){
-                    agent{
-                        label "Docker && Windows && 1903"
 
-                    }
-                    when {
-                        equals expected: true, actual: params.BUILD_CLIENT
-                        beforeAgent true
-                    }
-                    environment{
-                        DOCKER_PATH = tool name: 'Docker', type: 'org.jenkinsci.plugins.docker.commons.tools.DockerTool'
-                        PATH = "${DOCKER_PATH};$PATH"
-                    }
-                    steps{
-                            unstash "CLIENT_BUILD_DOCKER"
-                            bat "if not exist dist mkdir dist"
-                            bat(
-                                label: "Running build command from CMake on node ${NODE_NAME}",
-                                script: "docker run --rm -v \"${WORKSPACE}\\build:c:\\build:rw\" -v \"${WORKSPACE}\\dist:c:\\dist\" -v \"${WORKSPACE}\\scm:c:\\source:rw\" -v \"${WORKSPACE}\\scm\\CI\\shared_docker_scripts:c:\\ci_scripts:ro\" --workdir=\"c:\\build\" %DOCKER_IMAGE_TAG% cpack -G NSIS;WIX;ZIP -C Release --verbose"
-                            )
-
-                    }
-                    post{
-                        cleanup{
-                            cleanWs(
-                                deleteDirs: true,
-                                patterns: [
-                                    [pattern: 'build', type: 'INCLUDE'],
-                                    [pattern: 'dist', type: 'INCLUDE'],
-                                    ]
-                            )
-                        }
-                        failure{
-                            archiveArtifacts allowEmptyArchive: true, artifacts: 'build/**/*.log'
-                        }
-                        success{
-                            archiveArtifacts allowEmptyArchive: true, artifacts: 'build/*.exe,build/*.msi,build/*.zip'
-                            stash includes: 'build/*.exe,build/*.msi,build/*.zip,', name: "CLIENT_INSTALLERS"
-                        }
-                    }
-                }
+//                stage("Creating Package Installers for Client"){
+//                    agent{
+//                        label "Docker && Windows && 1903"
+//
+//                    }
+//                    when {
+//                        equals expected: true, actual: params.BUILD_CLIENT
+//                        beforeAgent true
+//                    }
+//                    environment{
+//                        DOCKER_PATH = tool name: 'Docker', type: 'org.jenkinsci.plugins.docker.commons.tools.DockerTool'
+//                        PATH = "${DOCKER_PATH};$PATH"
+//                    }
+//                    steps{
+//                            unstash "CLIENT_BUILD_DOCKER"
+//                            bat "if not exist dist mkdir dist"
+//                            bat(
+//                                label: "Running build command from CMake on node ${NODE_NAME}",
+//                                script: "docker run --rm -v \"${WORKSPACE}\\build:c:\\build:rw\" -v \"${WORKSPACE}\\dist:c:\\dist\" -v \"${WORKSPACE}\\scm:c:\\source:rw\" -v \"${WORKSPACE}\\scm\\CI\\shared_docker_scripts:c:\\ci_scripts:ro\" --workdir=\"c:\\build\" %DOCKER_IMAGE_TAG% cpack -G NSIS;WIX;ZIP -C Release --verbose"
+//                            )
+//
+//                    }
+//                    post{
+//                        cleanup{
+//                            cleanWs(
+//                                deleteDirs: true,
+//                                patterns: [
+//                                    [pattern: 'build', type: 'INCLUDE'],
+//                                    [pattern: 'dist', type: 'INCLUDE'],
+//                                    ]
+//                            )
+//                        }
+//                        failure{
+//                            archiveArtifacts allowEmptyArchive: true, artifacts: 'build/**/*.log'
+//                        }
+//                        success{
+//                            archiveArtifacts allowEmptyArchive: true, artifacts: 'build/*.exe,build/*.msi,build/*.zip'
+//                            stash includes: 'build/*.exe,build/*.msi,build/*.zip,', name: "CLIENT_INSTALLERS"
+//                        }
+//                    }
+//                }
             }
 
+        }
+        stage("Testing Package Installers"){
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/windows/servercore:ltsc2019'
+                    label 'windows && docker'
+                }
+            }
+            when {
+                equals expected: true, actual: params.BUILD_CLIENT
+                beforeAgent true
+            }
+            steps{
+                unstash "CLIENT_BUILD_PACKAGES"
+                script{
+                    findFiles(glob: "dist/*.msi").each{
+                        powershell (
+                            label: "Installing ${it.name}",
+                            script:"New-Item -ItemType Directory -Force -Path ${WORKSPACE}\\logs; msiexec /i ${it.path} /qn /norestart /L*v! ${WORKSPACE}\\logs\\msiexec.log"
+                        )
+                    }
+                }
+
+            }
+            post{
+                always{
+                    archiveArtifacts allowEmptyArchive: true, artifacts: "logs\\msiexec.log"
+                    bat 'dir "C:\\Program Files\\"'
+                }
+                success{
+                    archiveArtifacts artifacts: "dist/*.msi,dist/*.exe,dist/*.zip"
+                }
+                cleanup{
+                    cleanWs(
+                        deleteDirs: true,
+                        patterns: [
+                            [pattern: 'build/', type: 'INCLUDE'],
+                            [pattern: 'dist/', type: 'INCLUDE'],
+                            [pattern: 'logs/', type: 'INCLUDE'],
+                        ]
+                    )
+                }
+            }
         }
         stage("Deploy"){
             parallel{
