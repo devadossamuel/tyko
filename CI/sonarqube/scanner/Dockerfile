@@ -19,3 +19,4 @@ RUN npm config set unsafe-perm true && \
 RUN mkdir /.sonar
 
 VOLUME /home/user/.sonar
+RUN chown user /home/user/.sonar
