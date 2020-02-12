@@ -365,7 +365,12 @@ foreach($file in $opengl32_libraries){
                                         )
                                 }
                                 cleanup{
-                                    cleanWs()
+                                    cleanWs(
+                                        deleteDirs: true,
+                                        patterns: [
+                                            [pattern: 'reports/', type: 'INCLUDE'],
+                                        ]
+                                    )
                                 }
                             }
                         }
@@ -405,7 +410,13 @@ foreach($file in $opengl32_libraries){
                                     recordIssues(tools: [pep8(id: 'tox', name: 'Tox', pattern: '.tox/py*/log/*.log,.tox/log/*.log')])
                                 }
                                 cleanup{
-                                    cleanWs()
+                                    cleanWs(
+                                        deleteDirs: true,
+                                        patterns: [
+                                            [pattern: 'logs/', type: 'INCLUDE'],
+                                            [pattern: '.tox/', type: 'INCLUDE'],
+                                            ]
+                                    )
                                 }
                             }
                         }
@@ -442,7 +453,12 @@ foreach($file in $opengl32_libraries){
                                         }
                                 }
                                 cleanup{
-                                    cleanWs()
+                                    cleanWs(
+                                        deleteDirs: true,
+                                        patterns: [
+                                            [pattern: 'logs/', type: 'INCLUDE'],
+                                            ]
+                                    )
                                 }
                             }
                         }
@@ -480,7 +496,12 @@ foreach($file in $opengl32_libraries){
                                     }
                                 }
                                 cleanup{
-                                    cleanWs()
+                                    cleanWs(
+                                        deleteDirs: true,
+                                        patterns: [
+                                            [pattern: 'reports/', type: 'INCLUDE'],
+                                            ]
+                                    )
                                 }
                             }
                         }
@@ -515,11 +536,16 @@ foreach($file in $opengl32_libraries){
 
                                 }
                                 cleanup{
-                                    cleanWs(patterns: [[pattern: 'logs/flake8.log', type: 'INCLUDE']])
+                                    cleanWs(
+                                        deleteDirs: true,
+                                        patterns: [
+                                            [pattern: 'logs/', type: 'INCLUDE'],
+                                            ]
+                                    )
                                 }
                             }
                         }
-                         stage("Run Pylint Static Analysis") {
+                        stage("Run Pylint Static Analysis") {
                             agent {
                               dockerfile {
                                 filename 'CI/server_testing/Dockerfile'
@@ -557,7 +583,54 @@ foreach($file in $opengl32_libraries){
                                     }
                                 }
                                 cleanup{
-                                    cleanWs()
+                                    cleanWs(
+                                        deleteDirs: true,
+                                        patterns: [
+                                            [pattern: 'reports/', type: 'INCLUDE'],
+                                            ]
+                                    )
+                                }
+                            }
+                        }
+                        stage("Testing Javascript with Jest"){
+                            agent {
+                                dockerfile {
+                                    filename 'CI/testing_javascript/Dockerfile'
+                                    label "linux && docker"
+                                    additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                                    dir 'scm'
+                                }
+                            }
+                            environment{
+                                JEST_JUNIT_OUTPUT_NAME="js-junit.xml"
+                                JEST_JUNIT_ADD_FILE_ATTRIBUTE="true"
+                            }
+                            steps{
+                                sh "mkdir -p reports"
+                                dir("scm"){
+                                    sh("npm install  -y")
+                                    withEnv(["JEST_JUNIT_OUTPUT_DIR=${WORKSPACE}/reports"]) {
+                                        sh(
+                                            label:  "Running Jest",
+                                            script: "npm test --  --ci --reporters=default --reporters=jest-junit"
+                                        )
+                                    }
+                                }
+                            }
+                            post{
+                                always{
+                                    stash includes: "reports/*.xml", name: 'JEST_REPORT'
+                                    junit "reports/*.xml"
+                                    archiveArtifacts allowEmptyArchive: true, artifacts: "reports/*.xml"
+                                }
+                                cleanup{
+                                    cleanWs(
+                                        deleteDirs: true,
+                                        patterns: [
+                                            [pattern: 'scm/node_modules', type: 'INCLUDE'],
+                                            [pattern: 'reports/', type: 'INCLUDE'],
+                                            ]
+                                    )
                                 }
                             }
                         }

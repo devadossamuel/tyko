@@ -1,0 +1,35 @@
+{
+  "name": "tyko",
+  "version": "1.0.0",
+  "description": "Tyko ====",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UIUCLibrary/tyko.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/UIUCLibrary/tyko/issues"
+  },
+  "homepage": "https://github.com/UIUCLibrary/tyko#readme",
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-jest": "^23.6.0",
+    "@babel/preset-env": "*",
+    "babel-preset-env": "^1.7.0",
+    "jest": "^25.1.0",
+    "jest-junit": "^10.0.0"
+  },
+  "jest-junit": {
+    "addFileAttribute": "true",
+    "includeConsoleOutput": true
+  }
+}

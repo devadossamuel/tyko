@@ -110,17 +110,36 @@
 
 
 {%- block scripts %}
-    <script type="application/javascript">
-        $(document).ready(function () {
-            $('#noteEditor').on('show.bs.modal', function (event) {
-              const button = $(event.relatedTarget);
-              const message = button.data('text');
-              const apiRoute = button.data('destination');
-              console.log("apiRoute = " + apiRoute);
-              const modal = $(this);
-              modal.find('#message-text').val(message);
-              modal.find('#saveNoteButton').attr('onclick', "updateNote('" + apiRoute + "')");
-        })
-    })
-    </script>
+{#    <script type="application/javascript">#}
+{#        $(document).ready(function () {#}
+{#            $('#noteEditor').on('show.bs.modal', function (event) {#}
+{#            const button = $(event.relatedTarget);#}
+{#            const message = button.data('text');#}
+{##}
+{#            const noteId = button.data('notetype');#}
+{#            const windowType = button.data('dialogtype');#}
+{#            const modal = $(this);#}
+{#            const title = button.data("title");#}
+{#            modal.find('.modal-title').text(title);#}
+{#            modal.find('#message-text').val(message);#}
+{##}
+{#            let submitFunction;#}
+{#            switch (windowType) {#}
+{#                case "edit":#}
+{#                    const apiRoute = button.data('apiroute');#}
+                    {#submitFunction = "updateNote('" + apiRoute + "')";#}
+{#                    modal.find('#noteTypeSelect').val(noteId);#}
+{#                    break;#}
+{#                case "new":#}
+{#                    const source = button.data('source');#}
+                    {#submitFunction = "newNote('" + source +"/notes')";#}
+{#                    break;#}
+{#                default:#}
+{#                    console.error("Invalid selection");#}
+{#                    return#}
+{#            }#}
+          {#modal.find('#saveNoteButton').attr('onclick', submitFunction);#}
+{#        })#}
+{#    })#}
+{#    </script>#}
 {% endblock %}

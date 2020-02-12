@@ -3,9 +3,12 @@
 import abc
 import hashlib
 import json
+import sys
+import traceback
 from typing import List
 
 from flask import jsonify, make_response, abort, request, url_for
+
 from . import data_provider as dp
 from . import pbcore
 
@@ -147,6 +150,51 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
             "id": new_object_id,
             "url": url_for("object_by_id", id=new_object_id)
         })
+
+    def add_note(self, project_id, object_id):  # pylint: disable=W0613
+        data = request.get_json()
+        try:
+            note_type_id = int(data.get("note_type_id"))
+            note_text = data.get("text")
+            update_object = \
+                self._data_connector.add_note(
+                    object_id=object_id,
+                    note_type_id=note_type_id,
+                    note_text=note_text)
+            return jsonify(
+                {
+                    "object": update_object
+                }
+            )
+        except AttributeError:
+            traceback.print_exc(file=sys.stderr)
+            return make_response("Invalid data", 400)
+
+    def remove_note(self, object_id, note_id):
+        updated_object = self._data_connector.remove_note(
+            object_id=object_id,
+            note_id=note_id
+        )
+
+        return make_response(
+            jsonify({
+                "object": updated_object
+            }),
+            202
+        )
+
+    def update_note(self, object_id, note_id):
+        data = request.get_json()
+        updated_object = \
+            self._data_connector.update_note(object_id=object_id,
+                                             note_id=note_id,
+                                             changed_data=data)
+        if not updated_object:
+            return make_response("", 204)
+
+        return jsonify(
+            {"object": updated_object}
+        )
 
 
 class CollectionMiddlwareEntity(AbsMiddlwareEntity):
@@ -354,6 +402,56 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
             }
         )
 
+    def update_note(self, project_id, note_id):
+
+        data = request.get_json()
+        note_id_value = int(note_id)
+        updated_project = \
+            self._data_connector.update_note(project_id=project_id,
+                                             note_id=note_id_value,
+                                             changed_data=data)
+        if not updated_project:
+            return make_response("", 204)
+
+        return jsonify(
+            {"project": updated_project}
+        )
+
+    def remove_note(self, project_id, note_id):
+        updated_project = self._data_connector.remove_note(
+            project_id=project_id,
+            note_id=note_id
+        )
+
+        return make_response(
+            jsonify({
+                "project": updated_project
+            }),
+            202
+        )
+
+    def add_note(self, project_id):
+
+        # note_id = int(request.form.get('note_id'))
+        data = request.get_json()
+        try:
+            note_type_id = data.get("note_type_id")
+            note_text = data.get("text")
+            updated_project = \
+                self._data_connector.include_note(
+                    project_id=project_id,
+                    note_type_id=note_type_id,
+                    note_text=note_text)
+            return jsonify(
+                {
+                    "project": updated_project
+                }
+            )
+        except AttributeError:
+            traceback.print_exc(file=sys.stderr)
+            return make_response("Invalid data", 400)
+        # return make_response("not ready", 501)
+
 
 class ItemMiddlwareEntity(AbsMiddlwareEntity):
     WRITABLE_FIELDS = [
@@ -445,6 +543,25 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
             }
         )
 
+    def add_note(self, item_id):
+        data = request.get_json()
+        try:
+            note_type_id = int(data.get("note_type_id"))
+            note_text = data.get("text")
+            update_item = \
+                self._data_connector.add_note(
+                    item_id=item_id,
+                    note_type_id=note_type_id,
+                    note_text=note_text)
+            return jsonify(
+                {
+                    "item": update_item
+                }
+            )
+        except AttributeError:
+            traceback.print_exc(file=sys.stderr)
+            return make_response("Invalid data", 400)
+
     def create(self):
         name = request.form.get('name')
         file_name = request.form.get('file_name')
@@ -462,10 +579,37 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
             }
         )
 
+    def remove_note(self, item_id, note_id):
+        updated_item = self._data_connector.remove_note(
+            item_id=item_id,
+            note_id=note_id
+        )
+
+        return make_response(
+            jsonify({
+                "item": updated_item
+            }),
+            202
+        )
+
+    def update_note(self, item_id, note_id):
+        data = request.get_json()
+        updated_object = \
+            self._data_connector.update_note(item_id=item_id,
+                                             note_id=note_id,
+                                             changed_data=data)
+        if not updated_object:
+            return make_response("", 204)
+
+        return jsonify(
+            {"item": updated_object}
+        )
+
 
 class NotestMiddlwareEntity(AbsMiddlwareEntity):
     WRITABLE_FIELDS = [
-        "text"
+        "text",
+        "note_type_id"
     ]
 
     def __init__(self, data_provider) -> None:
@@ -541,8 +685,10 @@ class NotestMiddlwareEntity(AbsMiddlwareEntity):
             if not self.field_can_edit(k):
                 return make_response("Cannot update field: {}".format(k), 400)
 
-        if "text" in request.json:
-            new_object["text"] = request.json.get("text")
+        if "text" in json_request:
+            new_object["text"] = json_request.get("text")
+        if 'note_type_id' in json_request:
+            new_object['note_type_id'] = int(json_request['note_type_id'])
 
         updated_note = \
             self._data_connector.update(
@@ -556,7 +702,8 @@ class NotestMiddlwareEntity(AbsMiddlwareEntity):
         )
 
     def create(self):
-        note_type = int(request.form.get('note_type_id'))
+        data = request.form
+        note_type = int(data['note_type_id'])
         text = request.form.get('text')
         new_note_id = self._data_connector.create(
             text=text, note_types_id=note_type

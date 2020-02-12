@@ -165,7 +165,7 @@ def test_note_create(app):
             data={
                 "note_type_id": "3",
                 "text": "MY dumb note",
-                }
+                },
             )
         assert post_resp.status_code == 200
         new_record_id = json.loads(post_resp.data)["id"]
@@ -187,7 +187,7 @@ def test_note_create_and_delete(app):
             data={
                 "note_type_id": "3",
                 "text": "MY dumb note",
-                }
+                },
             )
         assert post_resp.status_code == 200
         new_record_url = json.loads(post_resp.data)["url"]
@@ -202,7 +202,6 @@ def test_note_create_and_delete(app):
         get_all_notes_again = server.get(f"/api/notes")
         new_note_data = json.loads(get_all_notes_again.data)
         assert new_note_data['total'] == 0
-
 
 
 def test_note_update(app):
@@ -234,6 +233,39 @@ def test_note_update(app):
         created_collection = newly_created_data["note"]
         assert created_collection["text"] == "My Note has changed"
         assert created_collection["note_type_id"] == 3
+
+
+def test_create_new_project_note(app):
+    with app.test_client() as server:
+
+        project_post_resp = server.post(
+            "/api/project/",
+            data={
+                "title": "my dumb project",
+            }
+        )
+
+        assert project_post_resp.status_code == 200
+        new_project_url = json.loads(project_post_resp.data)["url"]
+        new_note_url = f"{new_project_url}/notes"
+        note_post_resp = server.post(
+            new_note_url,
+            data=json.dumps({
+                "note_type_id": "3",
+                "text": "MY dumb note",
+            }
+            ),
+            content_type='application/json'
+        )
+
+        assert note_post_resp.status_code == 200
+        project_get_resp = server.get(new_project_url)
+        assert project_get_resp.status_code == 200
+        updated_project = \
+            json.loads(project_get_resp.data)['project'][0]
+        project_notes = updated_project['notes']
+        assert len(project_notes) == 1
+        assert project_notes[0]['text'] == "MY dumb note"
 
 
 def test_collection_update(app):
@@ -277,7 +309,6 @@ def test_collection_update(app):
         get_object = edited_data["collection"][0]
         assert get_object["collection_name"] == "My changed dummy collection"
         assert get_object["department"] == "preservation"
-
 
 
 def test_collection_delete(app):

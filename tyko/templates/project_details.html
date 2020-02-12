@@ -58,7 +58,7 @@
                 <tbody>
                     {%- for child_object in project['objects'] %}
                     <tr>
-                        <td><a href="{{ url_for('page_object')}}/{{ child_object['object_id'] }}"> {{ child_object['name'] }}</a></td>
+                        <td><a href="{{ url_for('page_projects')}}/{{ project_id }}/object/{{ child_object['object_id'] }}"> {{ child_object['name'] }}</a></td>
                         <td><button class="float-right btn btn-danger btn-sm" disabled>Remove</button></td>
                     </tr>
                     {%- endfor %}
@@ -78,32 +78,146 @@
         <h5 class="card-header">Notes</h5>
         <div class="card-body">
             <table class="table">
+                {% if project['notes']|length > 0 %}
+                <thead>
+                    <tr>
+                        <th scope="col">Type</th>
+                        <th class="col-sm-3">Message</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+            {% endif %}
                 <tbody>
                     {%- for note in project['notes'] %}
                     <tr>
+                        <td >{{ note['note_type'] }}</td>
                         <td>{{ note['text'] }}</td>
                         <td>
-                            <button class="float-right btn btn-secondary btn-sm"
+                            <button class="btn btn-secondary btn-sm"
                                     data-toggle="modal"
                                     data-target="#noteEditor"
+                                    data-title="Edit Note"
+                                    data-dialogtype="edit"
                                     data-text="{{ note['text'] }}"
-                                    data-destination="{{ url_for('notes') }}/{{ note['note_id'] }}">Edit</button>
+                                    data-notetype="{{ note['note_type_id'] }}"
+                                    data-apiroute="{{ api_path }}/notes/{{ note['note_id'] }}">Edit</button>
+                        </td>
+                        <td>
+                            <button class="btn btn-secondary btn-danger btn-sm"
+                                    data-toggle="modal"
+                                    data-target="#noteRemoveConfirm"
+                                    data-title="Remove Note"
+                                    data-text="{{ note['text'] }}"
+                                    data-apiroute="{{ api_path }}/notes/{{ note['note_id'] }}">Remove</button>
                         </td>
                     </tr>
                     {% endfor -%}
                     <tr>
                         <td></td>
+                        <td></td>
+                        <td></td>
                         <td>
                             <div class="btn-group float-right" role="group">
-                                <button class="btn btn-primary btn-sm" disabled>Add</button>
+                                <button class="btn btn-primary btn-sm"
+                                        data-toggle="modal"
+                                        data-target="#noteEditor"
+                                        data-title="Create New Note"
+                                        data-dialogtype="new"
+                                        data-source="{{ api_path }}"
+                                        data-notetype="{{ note_type_id }}">Add</button>
                             </div>
                         </td>
+
                     </tr>
                 </tbody>
             </table>
-
         </div>
     </div>
 </div>
 
 {%- endblock -%}
+{% block scripts %}
+    {{ super() }}
+    <script type="module">
+        import {notes} from "{{url_for('static', filename="js/api.js")}}"
+        const apiPath = "{{ api_path }}";
+        function editNote(apiPath, noteTypeId, noteText){
+            console.log(`Editing note at ${apiPath}, it's now a ${noteTypeId} with text ${noteText}`);
+        }
+
+        $(document).ready(function () {
+            {%- for note_name, note_id in valid_note_types %}
+            $("#noteTypeSelect").append(new Option("{{ note_name }}", "{{note_id}}"));
+            {%- endfor %}
+
+            $('#noteRemoveConfirm').on('show.bs.modal', function (event) {
+                const modal = $(this);
+                const button = $(event.relatedTarget);
+                const apiroute = button.data("apiroute");
+                modal.find('#confirmRemoveNoteButton').bind('click',
+                    function () {
+                        notes.removeNote(apiroute)
+                            .then(function () {
+                                console.log("success");
+                                location.reload();
+                            }).catch(function (data) {
+                                alert("Failed: " + data.responseText);
+                                console.log("Failed");
+                            });
+
+                    });
+            });
+
+            $('#noteEditor').on('show.bs.modal', function (event) {
+                const button = $(event.relatedTarget);
+                const title = button.data("title");
+                const dialogType = button.data('dialogtype');
+                const modal = $(this);
+                const message = button.data('text');
+
+                modal.find('.modal-title').text(title);
+                modal.find('#message-text').val(message);
+
+                switch (dialogType) {
+                    case "edit":
+                        const noteId = button.data('notetype');
+                        modal.find('#noteTypeSelect').val(noteId);
+                        modal.find('#saveNoteButton').bind('click',
+                            function () {
+                                const noteApiRoute = button.data('apiroute');
+                                const noteTypeId = modal.find('#noteTypeSelect').val();
+                                const noteText = modal.find('#message-text').val();
+                                notes.editNote(noteApiRoute, noteTypeId, noteText)
+                                    .then(function (data) {
+                                        console.log("success");
+                                        location.reload();
+                                    }).catch(function (data) {
+                                        alert("Failed: " + data.responseText);
+                                        console.log("Failed");
+
+                                    });
+                            });
+                        break;
+                    case "new":
+                        modal.find('#saveNoteButton').bind('click',
+                            function (){
+                                const noteTypeId = modal.find('#noteTypeSelect').val();
+                                const noteText = modal.find('#message-text').val();
+                                notes.addNote(apiPath, noteTypeId, noteText)
+                                    .then(function () {
+                                        console.log("success");
+                                        location.reload();
+                                    }).catch(function (data) {
+                                        alert("Failed: " + data.responseText);
+                                        console.log("Failed")
+                                    })
+                            });
+                        break;
+                }
+            });
+        })
+
+    </script>
+{%- endblock -%}
+

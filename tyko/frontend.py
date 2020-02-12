@@ -5,6 +5,7 @@ from typing import Tuple, Set, Optional, Callable, List
 from dataclasses import dataclass
 
 from flask import make_response, render_template, url_for
+
 from . import data_provider
 from .decorators import authenticate
 
@@ -114,7 +115,7 @@ class FrontendEntity(AbsFrontend):
             (self.entity_title, self.entity_list_page_name)
         )
 
-    def display_details(self, entity_id):  # pylint: disable=unused-argument
+    def display_details(self, entity_id, *args, **kwargs):  # noqa: E501 pylint: disable=unused-argument
         return make_response(
             "{}.display_details not implemented".format(
                 self.__class__.__name__), 404)
@@ -187,7 +188,7 @@ class ProjectFrontend(FrontendEditable):
     def entity_list_page_name(self) -> str:
         return "page_projects"
 
-    def display_details(self, entity_id):
+    def display_details(self, entity_id, *args, **kwargs):
         selected_project = self._data_connector.get(
             serialize=True, id=entity_id)[0]
 
@@ -204,17 +205,24 @@ class ProjectFrontend(FrontendEditable):
             ),
         ]
 
+        valid_note_types = []
+        for note_type in self._data_connector.get_note_types():
+            valid_note_types.append((note_type.name, note_type.id))
+
         return self.render_page(
             template="project_details.html",
             project=selected_project,
             api_path=f"{url_for('.page_index')}api/project/{entity_id}",
             edit_link=edit_link,
+            project_id=entity_id,
+            valid_note_types=valid_note_types,
             fields=fields
             )
 
     def edit_details(self, entity_id):
         selected_project = self._data_connector.get(
             serialize=True, id=entity_id)[0]
+
         api_path = f"{url_for('.page_index')}api/project/{entity_id}"
         view_details_path = f"{url_for('page_projects')}/{entity_id}"
 
@@ -253,7 +261,7 @@ class ItemFrontend(FrontendEntity):
         context['itemType'] = "Item"
         return super().render_page(template, **context)
 
-    def display_details(self, entity_id):
+    def display_details(self, entity_id, *args, **kwargs):
         selected_item = self._data_connector.get(
             serialize=True, id=entity_id)[0]
 
@@ -274,7 +282,14 @@ class ItemFrontend(FrontendEntity):
         for f in fields:
             if f.source_key is not None:
                 selected_item[f.key] = f.source_key()
+
+        valid_note_types = []
+        for note_type in self._data_connector.get_note_types():
+            valid_note_types.append((note_type.name, note_type.id))
         return self.render_page(template="item_details.html",
+                                project_id=kwargs.get("project_id"),
+                                valid_note_types=valid_note_types,
+                                object_id=kwargs.get("object_id"),
                                 fields=fields,
                                 api_path=api_path,
                                 item=selected_item)
@@ -337,7 +352,7 @@ class ObjectFrontend(FrontendEditable):
     def entity_list_page_name(self) -> str:
         return "page_object"
 
-    def display_details(self, entity_id):
+    def display_details(self, entity_id, *args, **kwargs):
         fields = [
             Details(name="Name", key="name", editable=True),
             Details(name="Collection",
@@ -372,14 +387,22 @@ class ObjectFrontend(FrontendEditable):
             if collection_name is not None:
                 selected_object['collection_name'] = collection_name
 
+        valid_note_types = []
+        for note_type in self._data_connector.get_note_types():
+            valid_note_types.append((note_type.name, note_type.id))
+
         project = selected_object.get('project')
         if project is not None:
             project_name = project['title']
+            project_id = project['project_id']
             selected_object['project_name'] = project_name
+            selected_object['project_id'] = project_id
+
         return self.render_page(template="object_details.html",
                                 edit=False,
                                 fields=fields,
                                 api_path=api_path,
+                                valid_note_types=valid_note_types,
                                 object=selected_object)
 
     def render_page(self, template="object_details.html", **context):
@@ -404,7 +427,7 @@ class CollectiontFrontend(FrontendEntity):
                                 row_table="collections"
                                 )
 
-    def display_details(self, entity_id):
+    def display_details(self, entity_id, *args, **kwargs):
         selected_object = self._data_connector.get(serialize=True,
                                                    id=entity_id)[0]
 

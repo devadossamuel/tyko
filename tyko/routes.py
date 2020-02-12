@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from typing import Any, List
-from flask import jsonify, render_template
+from flask import jsonify, render_template, views
 
 from . import middleware
 from .data_provider import DataProvider
@@ -34,6 +34,49 @@ class EntityPage:
 
 _all_entities = set()
 all_forms = set()
+
+
+class ProjectNotesAPI(views.MethodView):
+
+    def __init__(self, project: middleware.ProjectMiddlwareEntity) -> None:
+        super().__init__()
+        self._project = project
+
+    def put(self, project_id, note_id):
+        return self._project.update_note(project_id, note_id)
+
+    def delete(self, project_id, note_id):
+        return self._project.remove_note(project_id, note_id)
+
+
+class ObjectAPI(views.MethodView):
+    def __init__(self, project_object: middleware.ObjectMiddlwareEntity):
+        self._project_object = project_object
+
+
+class ProjectObjectNotesAPI(views.MethodView):
+
+    def __init__(self,
+                 project_object: middleware.ObjectMiddlwareEntity) -> None:
+
+        self._project_object = project_object
+
+    def delete(self, project_id, object_id, note_id):  # pylint: disable=W0613
+        return self._project_object.remove_note(object_id, note_id)
+
+    def put(self, project_id, object_id, note_id):  # pylint: disable=W0613
+        return self._project_object.update_note(object_id, note_id)
+
+
+class ObjectItemNotesAPI(views.MethodView):
+    def __init__(self, item: middleware.ItemMiddlwareEntity) -> None:
+        self._item = item
+
+    def put(self, project_id, object_id, item_id, note_id):  # noqa: E501 pylint: disable=W0613,C0301
+        return self._item.update_note(item_id, note_id)
+
+    def delete(self, project_id, object_id, item_id, note_id):  # noqa: E501  pylint: disable=W0613,C0301
+        return self._item.remove_note(item_id, note_id)
 
 
 class Routes:
@@ -165,7 +208,47 @@ class Routes:
                                           rule.viewFunction,
                                           methods=rule.methods)
 
-            # ##############
+            self.app.add_url_rule(
+                "/api/project/<string:project_id>/notes",
+                "project_add_note",
+                project.add_note,
+                methods=["POST"]
+            )
+
+            self.app.add_url_rule(
+                "/api/project/<int:project_id>/notes/<int:note_id>",
+                view_func=ProjectNotesAPI.as_view("project_notes",
+                                                  project=project),
+                methods=["PUT", "DELETE"]
+            )
+            self.app.add_url_rule(
+                "/api/project/<int:project_id>/object/<int:object_id>/notes",
+                "project_object_add_note",
+                project_object.add_note,
+                methods=["POST"]
+            )
+            self.app.add_url_rule(
+                "/api/project/<int:project_id>/object/<int:object_id>/notes/<int:note_id>",  # noqa: E501 pylint: disable=C0301
+                view_func=ProjectObjectNotesAPI.as_view(
+                    "object_notes",
+                    project_object=project_object),
+                methods=["PUT", "DELETE"]
+            )
+            self.app.add_url_rule(
+                "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/notes",  # noqa: E501 pylint: disable=C0301
+                "project_object_item_add_note",
+                lambda project_id, object_id, item_id: item.add_note(item_id),
+                methods=["POST"]
+            )
+
+            self.app.add_url_rule(
+                "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/notes/<int:note_id>",  # noqa: E501 pylint: disable=C0301
+                view_func=ObjectItemNotesAPI.as_view(
+                    "item_notes",
+                    item=item),
+                methods=["PUT", "DELETE"]
+            )
+
             self.app.add_url_rule(
                 "/api",
                 "list_routes",
@@ -186,11 +269,6 @@ class Routes:
             ]
 
         simple_pages = []
-        # for entity in ["collection"]:
-        #
-        #     simple_pages.append(
-        #         entities.load_entity(entity, self.db_engine).web_frontend()
-        #     )
 
         entity_pages = [
             EntityPage(
@@ -291,6 +369,22 @@ class Routes:
                     "page_project_details",
                     lambda project_id: frontend.ProjectFrontend(
                         self.mw.data_provider).display_details(project_id)
+                ),
+                Route(
+                    "/project/<int:project_id>/object/<int:object_id>",
+                    "page_project_object_details",
+                    lambda project_id, object_id: frontend.ObjectFrontend(
+                        self.mw.data_provider).display_details(object_id)
+                ),
+                Route(
+                    "/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>",  # noqa: E501 pylint: disable=C0301
+                    "page_project_object_item_details",
+                    lambda project_id, object_id, item_id:
+                    frontend.ItemFrontend(
+                        self.mw.data_provider).display_details(
+                            item_id,
+                            project_id=project_id,
+                            object_id=object_id)
                 ),
                 Route(
                     "/project/<string:project_id>/edit",
