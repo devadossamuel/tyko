@@ -16,7 +16,7 @@ RUN mkdir /.sonar
 USER user
 
 RUN npm config set prefix "${HOME}/.npm-packages"
-
+ENV PATH /home/user/.npm-packages/lib/node_modules/sonarqube-scanner/dist/bin:$PATH
 RUN npm config set unsafe-perm true && \
     npm install -g sonarqube-scanner && \
     sonar-scanner --version
