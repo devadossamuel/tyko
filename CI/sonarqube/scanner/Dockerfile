@@ -13,10 +13,10 @@ RUN groupadd -g $GROUP_ID user && \
     useradd -u $USER_ID -s /bin/sh -m -d /home/user  -g user user
 
 RUN mkdir /.sonar
-VOLUME /home/user/.sonar
-
-RUN chown user /home/user/.sonar
 USER user
+
+RUN npm config set prefix "${HOME}/.npm-packages"
+
 RUN npm config set unsafe-perm true && \
     npm install -g sonarqube-scanner && \
     sonar-scanner --version
