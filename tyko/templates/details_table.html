@@ -21,6 +21,15 @@
                         {% block detail_table %}
 
                         {% endblock %}
+                    <div class="card">
+                        <h5 class="card-header">Notes</h5>
+                        <div class="card-body">
+                            {% block notes_table%}
+                            {% endblock %}
+                        </div>
+                    </div>
+
+
                         {%- if edit == True -%}
                             <div id="success"
                                  class="modal fade bd-example-modal-sm"

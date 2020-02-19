@@ -61,68 +61,6 @@
                             </td>
                         </tr>
                     {% endfor %}
-
-                </tbody>
-            </table>
-
-        </div>
-    </div>
-    <div class="card">
-        <h5 class="card-header">Notes</h5>
-        <div class="card-body">
-            <table class="table">
-            {% if item['notes']|length > 0 %}
-                <thead>
-                    <tr>
-                        <th scope="col">Type</th>
-                        <th class="col-sm-3">Message</th>
-                        <th scope="col"></th>
-                        <th scope="col"></th>
-                    </tr>
-            {% endif %}
-                </thead>
-                <tbody>
-
-                    {%- for note in item['notes'] -%}
-                        <tr>
-                            <td >{{ note['note_type'] }}</td>
-                            <td>{{ note['text'] }}</td>
-                            <td>
-                                <button class="btn btn-secondary btn-sm"
-                                        data-toggle="modal"
-                                        data-target="#noteEditor"
-                                        data-title="Edit Note"
-                                        data-dialogtype="edit"
-                                        data-text="{{ note['text'] }}"
-                                        data-notetype="{{ note['note_type_id'] }}"
-                                        data-apiroute="/api/project/{{ project_id }}/object/{{ object_id }}/item/{{ item.item_id }}/notes/{{ note['note_id'] }}">Edit</button>
-                            </td>
-                            <td>
-                                <button class="btn btn-secondary btn-danger btn-sm"
-                                        data-toggle="modal"
-                                        data-target="#noteRemoveConfirm"
-                                        data-title="Remove Note"
-                                        data-text="{{ note['text'] }}"
-                                        data-apiroute="/api/project/{{ project_id }}/object/{{ object_id }}/item/{{ item.item_id }}/notes/{{ note['note_id'] }}">Remove</button>
-                            </td>
-                        </tr>
-                    {%- endfor -%}
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td>
-                            <div class="btn-group float-right" role="group">
-                                    <button class="btn btn-primary btn-sm"
-                                            data-toggle="modal"
-                                            data-target="#noteEditor"
-                                            data-title="Create New Note"
-                                            data-dialogtype="new"
-                                            data-source="{{ api_path }}"
-                                            data-notetype="/api/project/{{ project_id }}/object/{{ object_id }}/item/{{ item.item_id }}/notes">Add</button>
-                            </div>
-                        </td>
-                    </tr>
                 </tbody>
             </table>
         </div>
@@ -133,18 +71,18 @@
     <script type="module">
         import {notes} from "{{url_for('static', filename="js/api.js")}}"
         const apiPath = "/api/project/{{ project_id }}/object/{{ object_id }}/item/{{ item.item_id }}";
-        function editNote(apiPath, noteTypeId, noteText){
-            console.log(`Editing note at ${apiPath}, it's now a ${noteTypeId} with text ${noteText}`);
-        }
-
         $(document).ready(function () {
             {%- for note_name, note_id in valid_note_types %}
             $("#noteTypeSelect").append(new Option("{{ note_name }}", "{{note_id}}"));
             {%- endfor %}
 
             $('#noteRemoveConfirm').on('show.bs.modal', function (event) {
-                const button = $(event.relatedTarget);
-                setup_confirm_note_removal_modal(button, $(this), button.data("apiroute"), notes.removeNote);
+                setup_confirm_note_removal_modal(
+                    $(event.relatedTarget),
+                    $(this),
+                    $(event.relatedTarget).data("apiroute"),
+                    notes.removeNote
+                );
             });
 
             $('#noteEditor').on('show.bs.modal', function (event) {
@@ -163,4 +101,61 @@
         })
 
     </script>
+{% endblock %}
+{% block notes_table %}
+<table class="table">
+{% if item['notes']|length > 0 %}
+    <thead>
+        <tr>
+            <th scope="col">Type</th>
+            <th class="col-sm-3">Message</th>
+            <th scope="col"></th>
+            <th scope="col"></th>
+        </tr>
+{% endif %}
+    </thead>
+    <tbody>
+
+        {%- for note in item['notes'] -%}
+            <tr>
+                <td >{{ note['note_type'] }}</td>
+                <td>{{ note['text'] }}</td>
+                <td>
+                    <button class="btn btn-secondary btn-sm"
+                            data-toggle="modal"
+                            data-target="#noteEditor"
+                            data-title="Edit Note"
+                            data-dialogtype="edit"
+                            data-text="{{ note['text'] }}"
+                            data-notetype="{{ note['note_type_id'] }}"
+                            data-apiroute="/api/project/{{ project_id }}/object/{{ object_id }}/item/{{ item.item_id }}/notes/{{ note['note_id'] }}">Edit</button>
+                </td>
+                <td>
+                    <button class="btn btn-secondary btn-danger btn-sm"
+                            data-toggle="modal"
+                            data-target="#noteRemoveConfirm"
+                            data-title="Remove Note"
+                            data-text="{{ note['text'] }}"
+                            data-apiroute="/api/project/{{ project_id }}/object/{{ object_id }}/item/{{ item.item_id }}/notes/{{ note['note_id'] }}">Remove</button>
+                </td>
+            </tr>
+        {%- endfor -%}
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>
+                <div class="btn-group float-right" role="group">
+                        <button class="btn btn-primary btn-sm"
+                                data-toggle="modal"
+                                data-target="#noteEditor"
+                                data-title="Create New Note"
+                                data-dialogtype="new"
+                                data-source="{{ api_path }}"
+                                data-notetype="/api/project/{{ project_id }}/object/{{ object_id }}/item/{{ item.item_id }}/notes">Add</button>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
 {% endblock %}

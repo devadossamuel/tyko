@@ -74,10 +74,10 @@
             </table>
         </div>
     </div>
-    <div class="card">
-        <h5 class="card-header">Notes</h5>
-        <div class="card-body">
-            <table class="table">
+
+{%- endblock -%}
+{% block notes_table %}
+    <table class="table">
                 {% if project['notes']|length > 0 %}
                 <thead>
                     <tr>
@@ -132,28 +132,25 @@
                     </tr>
                 </tbody>
             </table>
-        </div>
-    </div>
-</div>
+{% endblock %}
 
-{%- endblock -%}
 {% block scripts %}
     {{ super() }}
     <script type="module">
         import {notes} from "{{url_for('static', filename="js/api.js")}}"
         const apiPath = "{{ api_path }}";
-        function editNote(apiPath, noteTypeId, noteText){
-            console.log(`Editing note at ${apiPath}, it's now a ${noteTypeId} with text ${noteText}`);
-        }
-
         $(document).ready(function () {
             {%- for note_name, note_id in valid_note_types %}
             $("#noteTypeSelect").append(new Option("{{ note_name }}", "{{note_id}}"));
             {%- endfor %}
 
             $('#noteRemoveConfirm').on('show.bs.modal', function (event) {
-                const button = $(event.relatedTarget);
-                setup_confirm_note_removal_modal(button, $(this), button.data("apiroute"), notes.removeNote);
+                setup_confirm_note_removal_modal(
+                    $(event.relatedTarget),
+                    $(this),
+                    $(event.relatedTarget).data("apiroute"),
+                    notes.removeNote
+                );
             });
 
             $('#noteEditor').on('show.bs.modal', function (event) {
