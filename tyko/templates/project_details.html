@@ -155,18 +155,7 @@
                 const modal = $(this);
                 const button = $(event.relatedTarget);
                 const apiroute = button.data("apiroute");
-                modal.find('#confirmRemoveNoteButton').bind('click',
-                    function () {
-                        notes.removeNote(apiroute)
-                            .then(function () {
-                                console.log("success");
-                                location.reload();
-                            }).catch(function (data) {
-                                alert("Failed: " + data.responseText);
-                                console.log("Failed");
-                            });
-
-                    });
+                setup_confirm_note_removal_modal(button, modal, apiroute, notes.removeNote);
             });
 
             $('#noteEditor').on('show.bs.modal', function (event) {

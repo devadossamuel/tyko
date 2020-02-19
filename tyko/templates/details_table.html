@@ -147,37 +147,20 @@
                 })
         });
     }
+
+    function setup_confirm_note_removal_modal(button, modal, apiroute, promise){
+        modal.find('#confirmRemoveNoteButton').bind('click',
+            function () {
+                promise(apiroute)
+                    .then(function () {
+                        console.log("success");
+                        location.reload();
+                    }).catch(function (data) {
+                        alert("Failed: " + data.responseText);
+                        console.log("Failed");
+                    });
+
+            });
+    }
     </script>
-{#    <script type="application/javascript">#}
-{#        $(document).ready(function () {#}
-{#            $('#noteEditor').on('show.bs.modal', function (event) {#}
-{#            const button = $(event.relatedTarget);#}
-{#            const message = button.data('text');#}
-{##}
-{#            const noteId = button.data('notetype');#}
-{#            const windowType = button.data('dialogtype');#}
-{#            const modal = $(this);#}
-{#            const title = button.data("title");#}
-{#            modal.find('.modal-title').text(title);#}
-{#            modal.find('#message-text').val(message);#}
-{##}
-{#            let submitFunction;#}
-{#            switch (windowType) {#}
-{#                case "edit":#}
-{#                    const apiRoute = button.data('apiroute');#}
-                    {#submitFunction = "updateNote('" + apiRoute + "')";#}
-{#                    modal.find('#noteTypeSelect').val(noteId);#}
-{#                    break;#}
-{#                case "new":#}
-{#                    const source = button.data('source');#}
-                    {#submitFunction = "newNote('" + source +"/notes')";#}
-{#                    break;#}
-{#                default:#}
-{#                    console.error("Invalid selection");#}
-{#                    return#}
-{#            }#}
-          {#modal.find('#saveNoteButton').attr('onclick', submitFunction);#}
-{#        })#}
-{#    })#}
-{#    </script>#}
 {% endblock %}
