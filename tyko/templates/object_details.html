@@ -154,18 +154,18 @@
     <script type="module">
         import {notes} from "{{url_for('static', filename="js/api.js")}}"
         const apiPath = "/api/project/{{ object['project_id'] }}/object/{{ object['object_id'] }}";
-        function editNote(apiPath, noteTypeId, noteText){
-            console.log(`Editing note at ${apiPath}, it's now a ${noteTypeId} with text ${noteText}`);
-        }
-
         $(document).ready(function () {
             {%- for note_name, note_id in valid_note_types %}
             $("#noteTypeSelect").append(new Option("{{ note_name }}", "{{note_id}}"));
             {%- endfor %}
 
             $('#noteRemoveConfirm').on('show.bs.modal', function (event) {
-                const button = $(event.relatedTarget);
-                setup_confirm_note_removal_modal(button, $(this), button.data("apiroute"), notes.removeNote);
+                setup_confirm_note_removal_modal(
+                    $(event.relatedTarget),
+                    $(this),
+                    $(event.relatedTarget).data("apiroute"),
+                    notes.removeNote
+                );
             });
 
             $('#noteEditor').on('show.bs.modal', function (event) {
