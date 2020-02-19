@@ -164,10 +164,8 @@
             {%- endfor %}
 
             $('#noteRemoveConfirm').on('show.bs.modal', function (event) {
-                const modal = $(this);
                 const button = $(event.relatedTarget);
-                const apiroute = button.data("apiroute");
-                setup_confirm_note_removal_modal(button, modal, apiroute, notes.removeNote);
+                setup_confirm_note_removal_modal(button, $(this), button.data("apiroute"), notes.removeNote);
             });
 
             $('#noteEditor').on('show.bs.modal', function (event) {
