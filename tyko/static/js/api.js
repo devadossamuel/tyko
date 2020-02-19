@@ -2,13 +2,13 @@ import {requests} from "./request.js"
 
 function addNote(apiRoute, noteTypeId, text) {
   if(apiRoute === undefined){
-    throw("apiRoute is a required field")
+    throw new TypeError("apiRoute is a required field")
   }
   if(noteTypeId === undefined){
-    throw("noteTypeId is a required field")
+    throw new TypeError("noteTypeId is a required field")
   }
   if(text === undefined){
-    throw("text is a required field")
+    throw new TypeError("text is a required field")
   }
 
   const newNoteRoute = apiRoute + "/notes";

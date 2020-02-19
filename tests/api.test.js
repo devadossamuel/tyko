@@ -27,5 +27,21 @@ describe('Testing api', ()=>{
             expect(data).toBe(sample_notes_data)
         });
     });
-    test("get notes", ()=> {})
+    test("add note no args", ()=> {
+        expect(() => {
+            notes.addNote()
+        }).toThrow(TypeError)
+    });
+
+    test("add note only api", ()=> {
+        expect(() => {
+            notes.addNote("/api")
+        }).toThrow(TypeError)
+    });
+
+    test("add note no text", ()=> {
+        expect(() => {
+            notes.addNote("/api", 2)
+        }).toThrow(TypeError)
+    });
 });
