@@ -102,6 +102,7 @@
             isEdit[editItemId] = true;
         }
     }
+
 </script>
 <script src="{{ url_for('static', filename='js/editData.js') }}"></script>
 {% include "edit_note.html" %}
@@ -110,6 +111,43 @@
 
 
 {%- block scripts %}
+    {{ super() }}
+    <script>
+    function setup_edit(button, modal, promise){
+            const noteId = button.data('notetype');
+            modal.find('#noteTypeSelect').val(noteId);
+            modal.find('#saveNoteButton').bind('click',
+            function () {
+                const noteApiRoute = button.data('apiroute');
+                const noteTypeId = modal.find('#noteTypeSelect').val();
+                const noteText = modal.find('#message-text').val();
+                promise(noteApiRoute, noteTypeId, noteText)
+                    .then(function (data) {
+                        console.log("success");
+                        location.reload();
+                    }).catch(function (data) {
+                        alert("Failed: " + data.responseText);
+                        console.log("Failed");
+                    });
+            });
+        }
+
+    function setup_new_note(button, modal, apiPath, promise) {
+        modal.find('#saveNoteButton').bind('click',
+        function (){
+            const noteTypeId = modal.find('#noteTypeSelect').val();
+            const noteText = modal.find('#message-text').val();
+            promise(apiPath, noteTypeId, noteText)
+                .then(function () {
+                    console.log("success");
+                    location.reload();
+                }).catch(function (data) {
+                    alert("Failed: " + data.responseText);
+                    console.log("Failed")
+                })
+        });
+    }
+    </script>
 {#    <script type="application/javascript">#}
 {#        $(document).ready(function () {#}
 {#            $('#noteEditor').on('show.bs.modal', function (event) {#}

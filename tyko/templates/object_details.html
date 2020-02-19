@@ -150,6 +150,7 @@
     </div>
 {% endblock %}
 {% block scripts %}
+    {{ super() }}
     <script type="module">
         import {notes} from "{{url_for('static', filename="js/api.js")}}"
         const apiPath = "/api/project/{{ object['project_id'] }}/object/{{ object['object_id'] }}";
@@ -192,38 +193,10 @@
 
                 switch (dialogType) {
                     case "edit":
-                        const noteId = button.data('notetype');
-                        modal.find('#noteTypeSelect').val(noteId);
-                        modal.find('#saveNoteButton').bind('click',
-                            function () {
-                                const noteApiRoute = button.data('apiroute');
-                                const noteTypeId = modal.find('#noteTypeSelect').val();
-                                const noteText = modal.find('#message-text').val();
-                                notes.editNote(noteApiRoute, noteTypeId, noteText)
-                                    .then(function (data) {
-                                        console.log("success");
-                                        location.reload();
-                                    }).catch(function (data) {
-                                        alert("Failed: " + data.responseText);
-                                        console.log("Failed");
-
-                                    });
-                            });
+                        setup_edit(button, modal, notes.editNote);
                         break;
                     case "new":
-                        modal.find('#saveNoteButton').bind('click',
-                            function (){
-                                const noteTypeId = modal.find('#noteTypeSelect').val();
-                                const noteText = modal.find('#message-text').val();
-                                notes.addNote(apiPath, noteTypeId, noteText)
-                                    .then(function () {
-                                        console.log("success");
-                                        location.reload();
-                                    }).catch(function (data) {
-                                        alert("Failed: " + data.responseText);
-                                        console.log("Failed")
-                                    })
-                            });
+                        setup_new_note(button, modal, apiPath, notes.addNote);
                         break;
                 }
             });
