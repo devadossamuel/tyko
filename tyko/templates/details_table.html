@@ -147,7 +147,10 @@
                 })
         });
     }
-
+    function setup_modal_window(modal, button){
+        modal.find('.modal-title').text(button.data("title"));
+        modal.find('#message-text').val(button.data('text'));
+    }
     function setup_confirm_note_removal_modal(button, modal, apiroute, promise){
         modal.find('#confirmRemoveNoteButton').bind('click',
             function () {

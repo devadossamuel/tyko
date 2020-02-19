@@ -158,15 +158,9 @@
 
             $('#noteEditor').on('show.bs.modal', function (event) {
                 const button = $(event.relatedTarget);
-                const title = button.data("title");
-                const dialogType = button.data('dialogtype');
                 const modal = $(this);
-                const message = button.data('text');
-
-                modal.find('.modal-title').text(title);
-                modal.find('#message-text').val(message);
-
-                switch (dialogType) {
+                setup_modal_window(modal, button);
+                switch (button.data('dialogtype')) {
                     case "edit":
                         setup_edit(button, modal, notes.editNote);
                         break;
