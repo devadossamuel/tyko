@@ -1,3 +1,4 @@
+# syntax = docker/dockerfile:experimental
 FROM python:3.7-alpine as builder
 RUN apk add --no-cache gcc musl-dev linux-headers mariadb-client mariadb-dev libressl-dev libxml2-dev libxslt-dev
 
@@ -6,8 +7,6 @@ RUN pip install gunicorn mysqlclient lxml flask sqlalchemy
 COPY ["requirements.txt", "setup.py", "setup.cfg", "/build/"]
 COPY tyko/ /build/tyko/
 WORKDIR /build
-RUN pip wheel --wheel-dir /build/wheels gunicorn mysqlclient
-RUN pip wheel --wheel-dir /build/wheels -r /build/requirements.txt
 RUN python setup.py bdist_wheel
 
 FROM python:3.7-alpine as app
@@ -16,12 +15,9 @@ ARG TYKO_PASSWORD
 ARG DB_URI
 
 COPY requirements.txt ./requirements.txt
-COPY --from=builder /build/wheels/*.whl ./wheel/
 COPY --from=builder /build/dist/*.whl ./dist/
-
-RUN apk update && apk add --no-cache mariadb-client mariadb-dev \
-    && pip install --no-index --find-links=./wheel dist/tyko-*.whl gunicorn mysqlclient -r requirements.txt
-
+RUN --mount=type=cache,target=/root/.cache/pip apk update && apk add --no-cache mariadb-client mariadb-dev \
+    && pip install gunicorn mysqlclient dist/tyko-*.whl -r requirements.txt
 
 WORKDIR /app
 VOLUME /database

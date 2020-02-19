@@ -876,8 +876,8 @@ foreach($file in $opengl32_libraries){
                                     sshPut remote: remote, from: 'deploy', into: './package/'
                                     sshPut remote: remote, from: 'database', into: './package/'
                                     sshCommand remote: remote, command: """cd package &&
-        docker-compose -f deploy/docker-compose.yml -p avdatabase build &&
-        docker-compose -f deploy/docker-compose.yml -p avdatabase up -d"""
+        COMPOSE_DOCKER_CLI_BUILD=1 docker-compose -f deploy/docker-compose.yml -p avdatabase build &&
+        COMPOSE_DOCKER_CLI_BUILD=1 docker-compose -f deploy/docker-compose.yml -p avdatabase up -d"""
                                     sshRemove remote: remote, path: "package", failOnError: false
                                 }
                                 addBadge(icon: 'success.gif', id: '', link: "http://${SERVER_URL}:8000/", text: 'Server Application Deployed')
