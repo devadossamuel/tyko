@@ -66,42 +66,43 @@
         </div>
     </div>
 {% endblock %}
-{% block scripts %}
-    {{ super() }}
-    <script type="module">
-        import {notes} from "{{url_for('static', filename="js/api.js")}}"
-        const apiPath = "/api/project/{{ project_id }}/object/{{ object_id }}/item/{{ item.item_id }}";
-        $(document).ready(function () {
-            {%- for note_name, note_id in valid_note_types %}
-            $("#noteTypeSelect").append(new Option("{{ note_name }}", "{{note_id}}"));
-            {%- endfor %}
+{#{% block scripts %}#}
+{#    {{ super() }}#}
+{#    <script type="module">#}
+{#        import {notes} from "{{url_for('static', filename="js/api.js")}}"#}
+{#        const apiPath = "/api/project/{{ project_id }}/object/{{ object_id }}/item/{{ item.item_id }}";#}
+{#        $(document).ready(function () {#}
+{#            {%- for note_name, note_id in valid_note_types %}#}
+{#            $("#noteTypeSelect").append(new Option("{{ note_name }}", "{{note_id}}"));#}
+{#            {%- endfor %}#}
+{##}
+{#            $('#noteRemoveConfirm').on('show.bs.modal', function (event) {#}
+{#                setup_confirm_note_removal_modal(#}
+{#                    $(event.relatedTarget),#}
+{#                    $(this),#}
+{#                    $(event.relatedTarget).data("apiroute"),#}
+{#                    notes.removeNote#}
+{#                );#}
+{#            });#}
+{##}
+{#            $('#noteEditor').on('show.bs.modal', function (event) {#}
+{#                const button = $(event.relatedTarget);#}
+{#                const modal = $(this);#}
+{#                setup_modal_window(modal, button);#}
+{#                switch (button.data('dialogtype')) {#}
+{#                    case "edit":#}
+{#                        setup_edit(button, modal, notes.editNote);#}
+{#                        break;#}
+{#                    case "new":#}
+{#                        setup_new_note(button, modal, apiPath, notes.addNote);#}
+{#                        break;#}
+{#                }#}
+{#            });#}
+{#        })#}
+{##}
+{#    </script>#}
+{#{% endblock %}#}
 
-            $('#noteRemoveConfirm').on('show.bs.modal', function (event) {
-                setup_confirm_note_removal_modal(
-                    $(event.relatedTarget),
-                    $(this),
-                    $(event.relatedTarget).data("apiroute"),
-                    notes.removeNote
-                );
-            });
-
-            $('#noteEditor').on('show.bs.modal', function (event) {
-                const button = $(event.relatedTarget);
-                const modal = $(this);
-                setup_modal_window(modal, button);
-                switch (button.data('dialogtype')) {
-                    case "edit":
-                        setup_edit(button, modal, notes.editNote);
-                        break;
-                    case "new":
-                        setup_new_note(button, modal, apiPath, notes.addNote);
-                        break;
-                }
-            });
-        })
-
-    </script>
-{% endblock %}
 {% block notes_table %}
 <table class="table">
 {% if item['notes']|length > 0 %}
@@ -158,4 +159,8 @@
         </tr>
     </tbody>
 </table>
+{% endblock %}
+
+{% block apiPath_assignment %}
+    const apiPath = "/api/project/{{ project_id }}/object/{{ object_id }}/item/{{ item.item_id }}";
 {% endblock %}
