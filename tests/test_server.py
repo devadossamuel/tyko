@@ -161,7 +161,7 @@ def test_create_and_read2(data_type, data_value):
         assert read_res.status_code == 200 , "{} failed with status {}".format(route, read_res.status_code)
 
         read_resp_data = json.loads(read_res.data)
-        data_object = read_resp_data[data_type][0]
+        data_object = read_resp_data[data_type]
 
         for k, v in data_value.items():
             assert data_object[k] == v

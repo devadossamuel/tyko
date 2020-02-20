@@ -441,11 +441,26 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
                     project_id=project_id,
                     note_type_id=note_type_id,
                     note_text=note_text)
+
             return jsonify(
                 {
                     "project": updated_project
                 }
             )
+        except AttributeError:
+            traceback.print_exc(file=sys.stderr)
+            return make_response("Invalid data", 400)
+
+    def add_object(self, project_id):
+        data = request.get_json()
+        try:
+            new_object = self._data_connector.add_object(project_id, data=data)
+            return jsonify(
+                {
+                    "object": new_object
+                }
+            )
+
         except AttributeError:
             traceback.print_exc(file=sys.stderr)
             return make_response("Invalid data", 400)
@@ -636,7 +651,7 @@ class NotestMiddlwareEntity(AbsMiddlwareEntity):
     def get(self, serialize=False, **kwargs):
         if "id" in kwargs:
             note = self._data_connector.get(kwargs['id'], serialize=True)
-            note_data = self.resolve_parents(note[0])
+            note_data = self.resolve_parents(note)
             del note_data['parent_project_ids']
             del note_data['parent_object_ids']
             del note_data['parent_item_ids']

@@ -190,7 +190,7 @@ class ProjectFrontend(FrontendEditable):
 
     def display_details(self, entity_id, *args, **kwargs):
         selected_project = self._data_connector.get(
-            serialize=True, id=entity_id)[0]
+            serialize=True, id=entity_id)
 
         edit_link = f"{url_for('page_projects')}/{entity_id}/edit"
 
@@ -263,7 +263,7 @@ class ItemFrontend(FrontendEntity):
 
     def display_details(self, entity_id, *args, **kwargs):
         selected_item = self._data_connector.get(
-            serialize=True, id=entity_id)[0]
+            serialize=True, id=entity_id)
 
         def get_format():
             if selected_item['format'] is not None:
@@ -368,7 +368,7 @@ class ObjectFrontend(FrontendEditable):
         ]
 
         selected_object = self._data_connector.get(serialize=True,
-                                                   id=entity_id)[0]
+                                                   id=entity_id)
         api_path = f"{url_for('.page_index')}api/object/{entity_id}"
 
         collection = selected_object.get('collection')
@@ -429,7 +429,7 @@ class CollectiontFrontend(FrontendEntity):
 
     def display_details(self, entity_id, *args, **kwargs):
         selected_object = self._data_connector.get(serialize=True,
-                                                   id=entity_id)[0]
+                                                   id=entity_id)
 
         return self.render_page(template="collection_details.html",
                                 collection=selected_object)

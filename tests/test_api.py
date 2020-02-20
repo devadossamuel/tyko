@@ -71,7 +71,7 @@ def test_item_update(app):
         assert get_resp.status_code == 200
 
         edited_data = json.loads(get_resp.data)
-        item = edited_data["item"][0]
+        item = edited_data["item"]
         assert item["file_name"] == "changed_dummy.txt"
         assert item["medusa_uuid"] == "03de08f0-dada-0136-5326-0050569601ca-4"
         assert item["name"] == "My dummy item"
@@ -132,7 +132,7 @@ def test_object_update(app):
         assert get_resp.status_code == 200
 
         edited_data = json.loads(get_resp.data)
-        get_object = edited_data["object"][0]
+        get_object = edited_data["object"]
         assert get_object["name"] == "changed_dummy object"
         assert get_object["barcode"] == "12345"
 
@@ -262,7 +262,7 @@ def test_create_new_project_note(app):
         project_get_resp = server.get(new_project_url)
         assert project_get_resp.status_code == 200
         updated_project = \
-            json.loads(project_get_resp.data)['project'][0]
+            json.loads(project_get_resp.data)['project']
         project_notes = updated_project['notes']
         assert len(project_notes) == 1
         assert project_notes[0]['text'] == "MY dumb note"
@@ -285,7 +285,7 @@ def test_collection_update(app):
         get_resp = server.get(new_record_url)
         assert get_resp.status_code == 200
         newly_created_data = json.loads(get_resp.data)
-        created_collection = newly_created_data["collection"][0]
+        created_collection = newly_created_data["collection"]
         assert created_collection['collection_name'] == "My dummy collection"
         assert created_collection["department"] == "preservation"
 
@@ -306,7 +306,7 @@ def test_collection_update(app):
         assert get_resp.status_code == 200
 
         edited_data = json.loads(get_resp.data)
-        get_object = edited_data["collection"][0]
+        get_object = edited_data["collection"]
         assert get_object["collection_name"] == "My changed dummy collection"
         assert get_object["department"] == "preservation"
 
@@ -329,3 +329,46 @@ def test_collection_delete(app):
 
         delete_resp = server.delete(new_record_url)
         assert delete_resp.status_code == 204
+
+
+@pytest.fixture()
+def server_with_project():
+    testing_app = Flask(__name__, template_folder="../tyko/templates")
+    db = SQLAlchemy(testing_app)
+    tyko.create_app(testing_app)
+    tyko.database.init_database(db.engine)
+    testing_app.config["TESTING"] = True
+    with testing_app.test_client() as server:
+        assert server.post(
+            "/api/project/",
+            data={
+                "title": "my dumb project",
+            },
+            # FIXME: fix project api creation needs json
+            # content_type='application/json'
+        ).status_code == 200
+        yield server
+
+
+def test_add_object_to_project(server_with_project):
+    project_api_url = "/api/project/1"
+    new_object_api_url = f"{project_api_url}/object"
+
+    post_new_object_project_resp = server_with_project.post(
+        new_object_api_url,
+        data=json.dumps({
+            "name": "My dummy object",
+            "barcode": "12345",
+        }),
+        content_type='application/json'
+    )
+
+    assert post_new_object_project_resp.status_code == 200
+    new_object_data = json.loads(post_new_object_project_resp.data)['object']
+    assert new_object_data["name"] == "My dummy object"
+
+    project_resp = server_with_project.get(project_api_url)
+    assert project_resp.status_code == 200
+    data = json.loads(project_resp.data)['project']
+    assert len(data['objects']) == 1
+    assert data['objects'][0]['barcode'] == "12345"

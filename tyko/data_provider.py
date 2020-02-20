@@ -50,6 +50,10 @@ class ProjectDataConnector(AbsDataProviderConnector):
 
             all_projects = serialized_projects
         session.close()
+
+        if id is not None:
+            return all_projects[0]
+
         return all_projects
 
     def create(self, *args, **kwargs):
@@ -154,12 +158,7 @@ class ProjectDataConnector(AbsDataProviderConnector):
 
     def update(self, id, changed_data):
         updated_project = None
-        projects = self.get_project(id)
-
-        if len(projects) != 1:
-            return updated_project
-
-        project = projects[0]
+        project = self.get_project(id)
 
         if project:
             if "title" in changed_data:
@@ -247,6 +246,25 @@ class ProjectDataConnector(AbsDataProviderConnector):
         finally:
             session.close()
 
+    def add_object(self, project_id, data):
+        session = self.session_maker()
+        try:
+            projects = session.query(scheme.Project) \
+                .filter(scheme.Project.id == project_id) \
+                .all()
+            if len(projects) == 0:
+                raise ValueError("Not a valid project")
+
+            project = projects[0]
+
+            object_connector = ObjectDataConnector(self.session_maker)
+            new_object_id = object_connector.create(**data)
+            project.objects.append(object_connector.get(id=new_object_id))
+            session.commit()
+            return object_connector.get(id=new_object_id, serialize=True)
+        finally:
+            session.close()
+
 
 class ObjectDataConnector(AbsDataProviderConnector):
 
@@ -275,6 +293,10 @@ class ObjectDataConnector(AbsDataProviderConnector):
 
             all_collection_object = serialized_all_collection_object
         session.close()
+
+        if id is not None:
+            return all_collection_object[0]
+
         return all_collection_object
 
     def create(self, *args, **kwargs):
@@ -297,12 +319,7 @@ class ObjectDataConnector(AbsDataProviderConnector):
 
     def update(self, id, changed_data):
         updated_object = None
-        objects = self.get(id, serialize=False)
-
-        if len(objects) != 1:
-            return updated_object
-
-        collection_object = objects[0]
+        collection_object = self.get(id, serialize=False)
 
         if collection_object:
             if "name" in changed_data:
@@ -481,6 +498,10 @@ class ItemDataConnector(AbsDataProviderConnector):
 
             all_collection_item = serialized_all_collection_item
         session.close()
+
+        if id is not None:
+            return all_collection_item[0]
+
         return all_collection_item
 
     def add_note(self, item_id: int, note_text: str, note_type_id: int):
@@ -534,11 +555,7 @@ class ItemDataConnector(AbsDataProviderConnector):
 
     def update(self, id, changed_data):
         updated_item = None
-        items = self.get_item(id)
-        if len(items) != 1:
-            return None
-
-        item = items[0]
+        item = self.get_item(id)
         if item:
             if "name" in changed_data:
                 item.name = changed_data['name']
@@ -689,6 +706,10 @@ class CollectionDataConnector(AbsDataProviderConnector):
             all_collections = serialized_collections
 
         session.close()
+
+        if id is not None:
+            return all_collections[0]
+
         return all_collections
 
     def create(self, *args, **kwargs):
@@ -713,12 +734,8 @@ class CollectionDataConnector(AbsDataProviderConnector):
 
     def update(self, id, changed_data):
         updated_collection = None
-        collections = self.get(id, serialize=False)
+        collection = self.get(id, serialize=False)
 
-        if len(collections) != 1:
-            return None
-
-        collection = collections[0]
         if collection:
             if "collection_name" in changed_data:
                 collection.collection_name = changed_data["collection_name"]
@@ -784,6 +801,10 @@ class NotesDataConnector(AbsDataProviderConnector):
             all_notes = serialized_notes
 
         session.close()
+
+        if id is not None:
+            return all_notes[0]
+
         return all_notes
 
     def create(self, *args, **kwargs):
@@ -804,12 +825,8 @@ class NotesDataConnector(AbsDataProviderConnector):
 
     def update(self, id, changed_data):
         updated_note = None
-        notes = self.get(id, serialize=False)
+        note = self.get(id, serialize=False)
 
-        if len(notes) != 1:
-            return updated_note
-
-        note = notes[0]
         if note:
             session = self.session_maker()
             if "text" in changed_data:

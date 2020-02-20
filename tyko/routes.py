@@ -214,6 +214,13 @@ class Routes:
                 project.add_note,
                 methods=["POST"]
             )
+            # Project
+            self.app.add_url_rule(
+                "/api/project/<int:project_id>/object",
+                "project_add_object",
+                project.add_object,
+                methods=["POST"]
+            )
 
             self.app.add_url_rule(
                 "/api/project/<int:project_id>/notes/<int:note_id>",
