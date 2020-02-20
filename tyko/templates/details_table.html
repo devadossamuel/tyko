@@ -1,3 +1,4 @@
+{% from "_macros.html" import note_editor_events %}
 {% extends "layout.html" %}
 {%- block content -%}
 <div class="container-fluid">
@@ -21,14 +22,6 @@
                         {% block detail_table %}
 
                         {% endblock %}
-                    <div class="card">
-                        <h5 class="card-header">Notes</h5>
-                        <div class="card-body">
-                            {% block notes_table%}
-                            {% endblock %}
-                        </div>
-                    </div>
-
 
                         {%- if edit == True -%}
                             <div id="success"
@@ -177,38 +170,39 @@
 
     </script>
 
-    <script type="module">
-     import {notes} from "{{url_for('static', filename="js/api.js")}}"
-    {% block apiPath_assignment %}
-
-    {% endblock %}
-        $(document).ready(function () {
-            {%- for note_name, note_id in valid_note_types %}
-            $("#noteTypeSelect").append(new Option("{{ note_name }}", "{{note_id}}"));
-            {%- endfor %}
-
-            $('#noteRemoveConfirm').on('show.bs.modal', function (event) {
-                setup_confirm_note_removal_modal(
-                    $(event.relatedTarget),
-                    $(this),
-                    $(event.relatedTarget).data("apiroute"),
-                    notes.removeNote
-                );
-            });
-
-            $('#noteEditor').on('show.bs.modal', function (event) {
-                const button = $(event.relatedTarget);
-                const modal = $(this);
-                setup_modal_window(modal, button);
-                switch (button.data('dialogtype')) {
-                    case "edit":
-                        setup_edit(button, modal, notes.editNote);
-                        break;
-                    case "new":
-                        setup_new_note(button, modal, apiPath, notes.addNote);
-                        break;
-                }
-            });
-        })
-    </script>
+{#    <script type="module">#}
+{#     import {notes} from "{{url_for('static', filename="js/api.js")}}"#}
+{#    {% block apiPath_assignment %}#}
+{##}
+{#    {% endblock %}#}
+{##}
+{#        $(document).ready(function () {#}
+{#            {%- for note_name, note_id in valid_note_types %}#}
+{#            $("#noteTypeSelect").append(new Option("{{ note_name }}", "{{note_id}}"));#}
+{#            {%- endfor %}#}
+{##}
+{#            $('#noteRemoveConfirm').on('show.bs.modal', function (event) {#}
+{#                setup_confirm_note_removal_modal(#}
+{#                    $(event.relatedTarget),#}
+{#                    $(this),#}
+{#                    $(event.relatedTarget).data("apiroute"),#}
+{#                    notes.removeNote#}
+{#                );#}
+{#            });#}
+{##}
+{#            $('#noteEditor').on('show.bs.modal', function (event) {#}
+{#                const button = $(event.relatedTarget);#}
+{#                const modal = $(this);#}
+{#                setup_modal_window(modal, button);#}
+{#                switch (button.data('dialogtype')) {#}
+{#                    case "edit":#}
+{#                        setup_edit(button, modal, notes.editNote);#}
+{#                        break;#}
+{#                    case "new":#}
+{#                        setup_new_note(button, modal, apiPath, notes.addNote);#}
+{#                        break;#}
+{#                }#}
+{#            });#}
+{#        })#}
+{#    </script>#}
 {% endblock %}

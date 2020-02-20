@@ -34,8 +34,8 @@
     <script>
         function submitNew(api_path) {
             console.log("click");
-            var formData = new FormData(document.forms["new-project-form"]);
-            var xhr = new XMLHttpRequest();
+            const formData = new FormData(document.forms["new-project-form"]);
+            let xhr = new XMLHttpRequest();
             xhr.withCredentials = true;
             xhr.open("POST", api_path);
             xhr.onload = function() {

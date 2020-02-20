@@ -1,3 +1,4 @@
+{% from "_macros.html" import notes_table_head, notes_table_row, notes_new_button_row %}
 {% extends "details_table.html" %}
 {% block entity_navbar %}
 <nav class="navbar navbar-expand-lg  navbar-light justify-content-start bg-light">
@@ -10,121 +11,78 @@
 </nav>
 {% endblock %}
 {% block detail_table %}
-    <div class="card my-1">
-        <div class="card-body">
-            <table class="table">
-                <tbody>
-                    {%- for field in fields -%}
-                        <tr>
-                            <td style="width: 16.66%" class="font-weight-bold">{{field.name}}</td>
-                            <td>
-                                <div id="{{field.name}}Label">
+<div class="card my-1">
+    <div class="card-body">
+        <table class="table">
+            <tbody>
+                {%- for field in fields -%}
+                    <tr>
+                        <td style="width: 16.66%" class="font-weight-bold">{{field.name}}</td>
+                        <td>
+                            <div id="{{field.name}}Label">
 
-                                    {% if field.key_branch is not none and field.key_branch in item %}
-                                        {{ item[field.key_branch][field.key]}}
-                                    {% else %}
-                                        {{- item[field.key] -}}
-                                    {% endif %}
-                                </div>
-                                <div id="{{field.key}}InputGroup" class="input-group" hidden>
-                                    {% if field.editable %}
-                                        <input id="{{field.key}}Input" type="text" class="form-control" value="{{-item.get(field.key) or ""-}}">
-                                        <div class="input-group-append">
-                                        <button id="{{field.key}}Confirm"
-                                                onclick="confirmUpdate('{{ api_path }}', '{{field.key}}')"
-                                                class="btn btn-outline-secondary">Confirm</button>
-                                    {% endif %}
-                                  </div>
-                                </div>
-                            </td>
-                            <td style="width: 5%">
-                                {% if field.editable %}
-                                <button id="editButton{{loop.index}}" class="btn btn-secondary float-right btn-sm">Edit</button>
-                                <script>
-                                    document.getElementById("editButton{{loop.index}}").onclick = function (){
-                                        flipMode(
-                                            "{{field.name}}Label",
-                                            "{{field.key}}InputGroup",
-                                            "{{field.key}}Input",
-                                            "{{-item.get(field.key) or ""-}}",
-                                            "editButton{{loop.index}}"
-
-                                        )
-                                    };
-                                    document.getElementById("{{field.key}}Input").addEventListener('keypress', (e) => {
-                                        if (e.key === "Enter") {
-                                            document.getElementById("{{field.key}}Confirm").click();
-                                        }
-                                    });
-                                </script>
+                                {% if field.key_branch is not none and field.key_branch in item %}
+                                    {{ item[field.key_branch][field.key]}}
+                                {% else %}
+                                    {{- item[field.key] -}}
                                 {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                            </div>
+                            <div id="{{field.key}}InputGroup" class="input-group" hidden>
+                                {% if field.editable %}
+                                    <input id="{{field.key}}Input" type="text" class="form-control" value="{{-item.get(field.key) or ""-}}">
+                                    <div class="input-group-append">
+                                    <button id="{{field.key}}Confirm"
+                                            onclick="confirmUpdate('{{ api_path }}', '{{field.key}}')"
+                                            class="btn btn-outline-secondary">Confirm</button>
+                                {% endif %}
+                              </div>
+                            </div>
+                        </td>
+                        <td style="width: 5%">
+                            {% if field.editable %}
+                            <button id="editButton{{loop.index}}" class="btn btn-secondary float-right btn-sm">Edit</button>
+                            <script>
+                                document.getElementById("editButton{{loop.index}}").onclick = function (){
+                                    flipMode(
+                                        "{{field.name}}Label",
+                                        "{{field.key}}InputGroup",
+                                        "{{field.key}}Input",
+                                        "{{-item.get(field.key) or ""-}}",
+                                        "editButton{{loop.index}}"
+
+                                    )
+                                };
+                                document.getElementById("{{field.key}}Input").addEventListener('keypress', (e) => {
+                                    if (e.key === "Enter") {
+                                        document.getElementById("{{field.key}}Confirm").click();
+                                    }
+                                });
+                            </script>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+</div>
+<div class="card">
+    <h5 class="card-header">Notes</h5>
+    <div class="card-body">
+        <table class="table">
+            {{ notes_table_head(item['notes']) }}
+            <tbody>
+                {%- for note in item['notes'] -%}
+                    {{ notes_table_row(note, "/api/project/" ~ project_id ~ "/object/" ~ object_id ~ "/item/" ~ item.item_id ~ "/notes/" ~ note['note_id']) }}
+                {%- endfor -%}
+                {{ notes_new_button_row(api_path) }}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}
 
-{% block notes_table %}
-<table class="table">
-{% if item['notes']|length > 0 %}
-    <thead>
-        <tr>
-            <th scope="col">Type</th>
-            <th class="col-sm-3">Message</th>
-            <th scope="col"></th>
-            <th scope="col"></th>
-        </tr>
-{% endif %}
-    </thead>
-    <tbody>
-
-        {%- for note in item['notes'] -%}
-            <tr>
-                <td >{{ note['note_type'] }}</td>
-                <td>{{ note['text'] }}</td>
-                <td>
-                    <button class="btn btn-secondary btn-sm"
-                            data-toggle="modal"
-                            data-target="#noteEditor"
-                            data-title="Edit Note"
-                            data-dialogtype="edit"
-                            data-text="{{ note['text'] }}"
-                            data-notetype="{{ note['note_type_id'] }}"
-                            data-apiroute="/api/project/{{ project_id }}/object/{{ object_id }}/item/{{ item.item_id }}/notes/{{ note['note_id'] }}">Edit</button>
-                </td>
-                <td>
-                    <button class="btn btn-secondary btn-danger btn-sm"
-                            data-toggle="modal"
-                            data-target="#noteRemoveConfirm"
-                            data-title="Remove Note"
-                            data-text="{{ note['text'] }}"
-                            data-apiroute="/api/project/{{ project_id }}/object/{{ object_id }}/item/{{ item.item_id }}/notes/{{ note['note_id'] }}">Remove</button>
-                </td>
-            </tr>
-        {%- endfor -%}
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>
-                <div class="btn-group float-right" role="group">
-                        <button class="btn btn-primary btn-sm"
-                                data-toggle="modal"
-                                data-target="#noteEditor"
-                                data-title="Create New Note"
-                                data-dialogtype="new"
-                                data-source="{{ api_path }}"
-                                data-notetype="/api/project/{{ project_id }}/object/{{ object_id }}/item/{{ item.item_id }}/notes">Add</button>
-                </div>
-            </td>
-        </tr>
-    </tbody>
-</table>
-{% endblock %}
-
-{% block apiPath_assignment %}
-    const apiPath = "/api/project/{{ project_id }}/object/{{ object_id }}/item/{{ item.item_id }}";
+{% block scripts %}
+    {{ super() }}
+    {{ note_editor_events("/api/project/" ~ project_id ~ "/object/" ~ object_id ~ "/item/" ~ item.item_id, valid_note_types) }}
 {% endblock %}
