@@ -1,45 +1,45 @@
 {% macro notes_table(notes, api_route, notetype) %}
 <table class="table">
     {% if notes|length > 0 %}
-    <thead>
-        <tr>
-            <th scope="col">Type</th>
-            <th class="col-sm-3">Message</th>
-            <th scope="col"></th>
-            <th scope="col"></th>
-        </tr>
+        <thead>
+            <tr>
+                <th scope="col">Type</th>
+                <th class="col-sm-3">Message</th>
+                <th scope="col"></th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
     {% endif %}
-    </thead>
     <tbody>
         {%- for note in notes -%}
-        <tr>
-            <td >{{ note['note_type'] }}</td>
-            <td>{{ note['text'] }}</td>
-            <td>
-                <button
-                    class="btn btn-secondary btn-sm"
-                    data-toggle="modal"
-                    data-target="#noteEditor"
-                    data-title="Edit Note"
-                    data-dialogtype="edit"
-                    data-text="{{ note['text'] }}"
-                    data-notetype="{{ note['note_type_id'] }}"
-                    data-apiroute="{{ api_route }}">
-                    Edit
-                </button>
-            </td>
-            <td>
-                <button
-                    class="btn btn-secondary btn-danger btn-sm"
-                    data-toggle="modal"
-                    data-target="#noteRemoveConfirm"
-                    data-title="Remove Note"
-                    data-text="{{ note['text'] }}"
-                    data-apiroute="{{ api_route }}">
-                    Remove
-                </button>
-            </td>
-        </tr>~
+            <tr>
+                <td >{{ note['note_type'] }}</td>
+                <td>{{ note['text'] }}</td>
+                <td>
+                    <button
+                        class="btn btn-secondary btn-sm"
+                        data-toggle="modal"
+                        data-target="#noteEditor"
+                        data-title="Edit Note"
+                        data-dialogtype="edit"
+                        data-text="{{ note['text'] }}"
+                        data-notetype="{{ note['note_type_id'] }}"
+                        data-apiroute="{{ api_route }}">
+                        Edit
+                    </button>
+                </td>
+                <td>
+                    <button
+                        class="btn btn-secondary btn-danger btn-sm"
+                        data-toggle="modal"
+                        data-target="#noteRemoveConfirm"
+                        data-title="Remove Note"
+                        data-text="{{ note['text'] }}"
+                        data-apiroute="{{ api_route }}">
+                        Remove
+                    </button>
+                </td>
+            </tr>~
         {%- endfor -%}
         <tr>
             <td></td>
@@ -54,8 +54,7 @@
                         data-title="Create New Note"
                         data-dialogtype="new"
                         data-source="{{ api_path }}"
-                        data-notetype="{{ notetype }}">
-                    Add</button>
+                        data-notetype="{{ notetype }}">Add</button>
                 </div>
             </td>
         </tr>
@@ -65,7 +64,7 @@
 
 
 {% macro notes_table_head(notes) %}
-    {% if notes|length > 0 %}
+{% if notes|length > 0 %}
     <thead>
         <tr>
             <th scope="col">Type</th>
@@ -74,58 +73,58 @@
             <th scope="col"></th>
         </tr>
     </thead>
-    {% endif %}
+{% endif %}
 {% endmacro %}
 
 {% macro notes_table_row(note, note_api_route) %}
-    <tr>
-        <td >{{ note['note_type'] }}</td>
-        <td>{{ note['text'] }}</td>
-        <td>
-            <button
-                class="btn btn-secondary btn-sm"
-                data-toggle="modal"
-                data-target="#noteEditor"
-                data-title="Edit Note"
-                data-dialogtype="edit"
-                data-text="{{ note['text'] }}"
-                data-notetype="{{ note['note_type_id'] }}"
-                data-apiroute="{{ note_api_route }}"
-            >Edit</button>
-        </td>
-        <td>
-            <button
-                class="btn btn-secondary btn-danger btn-sm"
-                data-toggle="modal"
-                data-target="#noteRemoveConfirm"
-                data-title="Remove Note"
-                data-text="{{ note['text'] }}"
-                data-apiroute="{{ note_api_route }}">
-                Remove
-            </button>
-        </td>
-    </tr>
+<tr>
+    <td >{{ note['note_type'] }}</td>
+    <td>{{ note['text'] }}</td>
+    <td>
+        <button
+            class="btn btn-secondary btn-sm"
+            data-toggle="modal"
+            data-target="#noteEditor"
+            data-title="Edit Note"
+            data-dialogtype="edit"
+            data-text="{{ note['text'] }}"
+            data-notetype="{{ note['note_type_id'] }}"
+            data-apiroute="{{ note_api_route }}"
+        >Edit</button>
+    </td>
+    <td>
+        <button
+            class="btn btn-secondary btn-danger btn-sm"
+            data-toggle="modal"
+            data-target="#noteRemoveConfirm"
+            data-title="Remove Note"
+            data-text="{{ note['text'] }}"
+            data-apiroute="{{ note_api_route }}">
+            Remove
+        </button>
+    </td>
+</tr>
 {% endmacro %}
 
 {% macro notes_new_button_row(note_api_route) %}
-    <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td>
-            <div class="btn-group float-right" role="group">
-                <button
-                    class="btn btn-primary btn-sm"
-                    data-toggle="modal"
-                    data-target="#noteEditor"
-                    data-title="Create New Note"
-                    data-dialogtype="new"
-                    data-source="{{ note_api_route }}">
-                    Add
-                </button>
-            </div>
-        </td>
-    </tr>
+<tr>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>
+        <div class="btn-group float-right" role="group">
+            <button
+                class="btn btn-primary btn-sm"
+                data-toggle="modal"
+                data-target="#noteEditor"
+                data-title="Create New Note"
+                data-dialogtype="new"
+                data-source="{{ note_api_route }}">
+                Add
+            </button>
+        </div>
+    </td>
+</tr>
 {% endmacro %}
 
 {% macro note_editor_events(apiPath, valid_note_types) %}

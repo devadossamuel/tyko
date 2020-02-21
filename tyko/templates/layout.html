@@ -1,39 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8"/>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
-        {% block head -%}
-        <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}"/>
-        <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.4/dist/bootstrap-table.min.css"/>
-        <link rel="stylesheet" href="{{url_for('static', filename='css/sticky-footer-navbar.css')}}"/>
-        <title>AV Database</title>
-        {%- endblock %}
-    </head>
-    <body>
-        <header>
-            {%-block navigation %}
-            {% include "navbar.html" %}
-            {%-endblock %}
-        </header>
+<head>
+<meta charset="utf-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+{% block head -%}
+    <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}"/>
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.4/dist/bootstrap-table.min.css"/>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/sticky-footer-navbar.css')}}"/>
+    <title>AV Database</title>
+{%- endblock %}
+</head>
+<body>
+<header>
+{%-block navigation %}
+    {% include "navbar.html" %}
+{%-endblock %}
+</header>
 
-        <main role="main" class="container">
-            <div class="container-fluid">
-                {% block content %}
-                {% endblock %}
-            </div>
-        </main>
-        <footer class="footer">
-            <div class="container">
-                <span class="text-muted ">&copy; Copyright 2019, 2020 by <a href="http://www.library.illinois.edu">University of Illinois at Urbana-Champaign</a></span>
-            </div>
-        </footer>
-            <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-            <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
-        {% block scripts %}
+<main role="main" class="container">
+    <div class="container-fluid">
+        {% block content %}
         {% endblock %}
-    </body>
+    </div>
+</main>
+<footer class="footer">
+    <div class="container">
+        <span class="text-muted ">&copy; Copyright 2019, 2020 by <a href="http://www.library.illinois.edu">University of Illinois at Urbana-Champaign</a></span>
+    </div>
+</footer>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
+{% block scripts %}
+{% endblock %}
+</body>
 </html>

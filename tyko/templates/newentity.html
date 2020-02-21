@@ -1,26 +1,23 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1 class="mt-5">{{ form_title }}</h1>
-<script type="text/javascript"
-    src = "{{ url_for('static', filename = 'js/submitform.js') }}">
-</script>
-<form id="new-content-form" onsubmit="return submitNewEntity('{{ api_location }}');">
-<!--    <div>-->
+    <h1 class="mt-5">{{ form_title }}</h1>
+    <script type="text/javascript"
+            src = "{{ url_for('static', filename = 'js/submitform.js') }}">
+    </script>
+    <form id="new-content-form" onsubmit="return submitNewEntity('{{ api_location }}');">
         <div>
             {% for field in form_fields %}
-            <div class="form-group">
-                <label for="{{ field.form_id }}">{{ field.form_user_text }}</label>
-                <input type="{{ field.form_type }}" class="form-control" id="{{ field.form_id }}" name="{{ field.form_id }}"
-                       placeholder="{{ field.form_user_text }}"
-                       {% if field.required -%}
-                       required{% endif
-                       -%}>
-            </div>
+                <div class="form-group">
+                    <label for="{{ field.form_id }}">{{ field.form_user_text }}</label>
+                    <input type="{{ field.form_type }}" class="form-control" id="{{ field.form_id }}" name="{{ field.form_id }}"
+                           placeholder="{{ field.form_user_text }}"
+                           {% if field.required -%}
+                               required
+                           {% endif-%}>
+                </div>
             {% endfor %}
-    </div>
-{#        <input type="submit" value="Submit">#}
+        </div>
         <button type="submit" class="btn btn-primary">Submit</button>
-{#        <button type="submit" class="btn btn-primary" onclick = "submitNewEntity('{{ api_location }}')">Submit</button>#}
-</form>
+    </form>
 {% endblock %}

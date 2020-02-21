@@ -4,24 +4,24 @@
 {% endblock %}
 {% block tableDetails %}
     <thead class="thead-light">
-    <tr>
-      <th data-field="collection_name"
-          data-formatter="collectionFormatter"
-          data-sortable="true">Name</th>
-      <th data-field="department"
-          data-sortable="true">Department</th>
-    </tr>
-  </thead>
+        <tr>
+            <th data-field="collection_name"
+                data-formatter="collectionFormatter"
+                data-sortable="true">Name</th>
+            <th data-field="department"
+                data-sortable="true">Department</th>
+        </tr>
+    </thead>
 {% endblock %}
 
 {% block dataParsing %}
-var data = JSON.parse(this.responseText)[0].collections;
+    var data = JSON.parse(this.responseText)[0].collections;
 {% endblock %}
 
 {% block formatters %}
-<script>
-    function collectionFormatter(value, row) {
-        return '<a href="{{ url_for("page_collections") }}/'+row.collection_id +'">' + value + "</a>";
-    }
-</script>
+    <script>
+        function collectionFormatter(value, row) {
+            return '<a href="{{ url_for("page_collections") }}/'+row.collection_id +'">' + value + "</a>";
+        }
+    </script>
 {% endblock %}

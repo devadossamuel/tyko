@@ -97,7 +97,10 @@ class MoreMenuPage(AbsFrontend):
             ("New Item", "page_new_item"),
             ("New Object", "page_new_object"),
             ]
-        return render_template(template, entities=entities, all_forms=forms)
+        context['all_forms'] = forms
+        header = self.build_header_context("More", context=context)
+        header['entities'] = entities
+        return render_template(template, **header)
 
 
 class FrontendEntity(AbsFrontend):

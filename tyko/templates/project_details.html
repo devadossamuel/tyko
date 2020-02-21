@@ -2,56 +2,56 @@
 {% from "_macros.html" import notes_table_head, notes_table_row, notes_new_button_row, note_editor_events %}
 {% from "_details_macros.html" import add_field_row %} }}
 {% block detail_table -%}
-<div class="card my-1">
-    <div class="card-body">
-        <table class="table">
-            <tbody>
-                {%- for field in fields %}
-                    {{ add_field_row(field.name, field.key, (project.get(field.key) or ""), field.editable, api_path, loop.index) }}
-                {%- endfor %}
-            </tbody>
-        </table>
+    <div class="card my-1">
+        <div class="card-body">
+            <table class="table">
+                <tbody>
+                    {%- for field in fields %}
+                        {{ add_field_row(field.name, field.key, (project.get(field.key) or ""), field.editable, api_path, loop.index) }}
+                    {%- endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
-<div class="card my-1">
-    <div class="card-header">
-        <h5 class="card-title">Objects</h5>
+    <div class="card my-1">
+        <div class="card-header">
+            <h5 class="card-title">Objects</h5>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <tbody>
+                    {%- for child_object in project['objects'] %}
+                        <tr>
+                            <td><a href="{{ url_for('page_projects')}}/{{ project_id }}/object/{{ child_object['object_id'] }}"> {{ child_object['name'] }}</a></td>
+                            <td><button class="float-right btn btn-danger btn-sm" disabled>Remove</button></td>
+                        </tr>
+                    {%- endfor %}
+                    <tr>
+                        <td></td>
+                        <td>
+                            <div class="btn-group float-right" role="group">
+                                <button class="btn btn-primary btn-sm" disabled>Add</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-    <div class="card-body">
-        <table class="table">
-            <tbody>
-                {%- for child_object in project['objects'] %}
-                <tr>
-                    <td><a href="{{ url_for('page_projects')}}/{{ project_id }}/object/{{ child_object['object_id'] }}"> {{ child_object['name'] }}</a></td>
-                    <td><button class="float-right btn btn-danger btn-sm" disabled>Remove</button></td>
-                </tr>
-                {%- endfor %}
-                <tr>
-                    <td></td>
-                    <td>
-                        <div class="btn-group float-right" role="group">
-                            <button class="btn btn-primary btn-sm" disabled>Add</button>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="card">
+        <h5 class="card-header">Notes</h5>
+        <div class="card-body">
+            <table class="table">
+                {{ notes_table_head(project['notes']) }}
+                <tbody>
+                    {%- for note in project['notes'] %}
+                        {{ notes_table_row(note, api_path + "/notes/" ~ note['note_id'] ) }}
+                    {% endfor -%}
+                    {{ notes_new_button_row(api_path) }}
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
-<div class="card">
-    <h5 class="card-header">Notes</h5>
-    <div class="card-body">
-        <table class="table">
-            {{ notes_table_head(project['notes']) }}
-            <tbody>
-                {%- for note in project['notes'] %}
-                    {{ notes_table_row(note, api_path + "/notes/" ~ note['note_id'] ) }}
-                {% endfor -%}
-                {{ notes_new_button_row(api_path) }}
-            </tbody>
-        </table>
-    </div>
-</div>
 {%- endblock -%}
 {% block scripts %}
     {{ super() }}

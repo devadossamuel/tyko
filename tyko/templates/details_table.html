@@ -1,113 +1,113 @@
 {% extends "layout.html" %}
 {% from "_macros.html" import note_editor_events %}
 {%- block content -%}
-<div class="container-fluid">
-    {%- block table_title %}
+    <div class="container-fluid">
+        {%- block table_title %}
             <h1 class="mt-5"> {{- itemType }} Details</h1>
-    {% endblock -%}
-    <div class="row onePadding">
-        <div class="col-md-12 col-sm-12">
-            <div class="container">
-                {%- block entity_navbar %}
-                <nav class="navbar navbar-expand-lg  navbar-light justify-content-start bg-light">
-                    <div class="mx-1">
-                        <button class="btn btn-outline-primary " type="button" onclick="location.href='{{ url_for("page_project_new") }}'">New</button>
-                    </div>
-                </nav>
-                {%- endblock %}
-            </div>
-            <div class="container">
-                <div class="table-responsive">
-                    <form  id="new-content-form" onsubmit="return false">
-                        {% block detail_table %}
+        {% endblock -%}
+        <div class="row onePadding">
+            <div class="col-md-12 col-sm-12">
+                <div class="container">
+                    {%- block entity_navbar %}
+                        <nav class="navbar navbar-expand-lg  navbar-light justify-content-start bg-light">
+                            <div class="mx-1">
+                                <button class="btn btn-outline-primary " type="button" onclick="location.href='{{ url_for("page_project_new") }}'">New</button>
+                            </div>
+                        </nav>
+                    {%- endblock %}
+                </div>
+                <div class="container">
+                    <div class="table-responsive">
+                        <form  id="new-content-form" onsubmit="return false">
+                            {% block detail_table %}
 
-                        {% endblock %}
+                            {% endblock %}
 
-                        {%- if edit == True -%}
-                            <div id="success"
-                                 class="modal fade bd-example-modal-sm"
-                                 tabindex="-1"
-                                 role="dialog"
-                                 aria-labelledby="mySmallModalLabel"
-                                 aria-hidden="true">
-                                <div class="modal-dialog modal-sm" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h1 id="status_report_title">Success</h1>
-                                        </div>
-                                        <div class="modal-body">
-                                            <p id="changelog">Record Updated</p>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button"
-                                                    class="btn btn-primary"
-                                                    data-dismiss="modal"
-                                                    onclick="location.href='{{ view_details_path }}'">
-                                                Okay</button>
+                            {%- if edit == True -%}
+                                <div id="success"
+                                     class="modal fade bd-example-modal-sm"
+                                     tabindex="-1"
+                                     role="dialog"
+                                     aria-labelledby="mySmallModalLabel"
+                                     aria-hidden="true">
+                                    <div class="modal-dialog modal-sm" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h1 id="status_report_title">Success</h1>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p id="changelog">Record Updated</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button"
+                                                        class="btn btn-primary"
+                                                        data-dismiss="modal"
+                                                        onclick="location.href='{{ view_details_path }}'"
+                                                >Okay</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <button class="btn btn-primary" type="submit">Submit</button>
-                            <button class="btn btn-secondary" type="button" onclick="location.href='{{ view_details_path }}'">Cancel</button>
-                        {%- endif %}
-                    </form>
+                                <button class="btn btn-primary" type="submit">Submit</button>
+                                <button class="btn btn-secondary" type="button" onclick="location.href='{{ view_details_path }}'">Cancel</button>
+                            {%- endif %}
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<script>
-    function confirmUpdate(api_path, key) {
-        const inputElement = key + "Input";
-        editDataValue(
-            api_path,
-            key,
-            document.getElementById(inputElement).value,
-            function () {
-                location.reload()
-            },
-            function () {
-                alert("Failed to update " + key);
+    <script>
+        function confirmUpdate(api_path, key) {
+            const inputElement = key + "Input";
+            editDataValue(
+                api_path,
+                key,
+                document.getElementById(inputElement).value,
+                function () {
+                    location.reload()
+                },
+                function () {
+                    alert("Failed to update " + key);
 
-            }
-        );
-    }
-    let isEdit = {};
-
-    function cancelEdit(editId, original_text, editButtonId) {
-        document.getElementById(editId).value = original_text;
-        document.getElementById(editButtonId).innerText= "Edit"
-    }
-    function setEditModeOn(displayId, editId) {
-        document.getElementById(displayId).hidden = true;
-        document.getElementById(editId).hidden = false;
-
-
-    }
-    function setEditModeOff(displayId, editId) {
-        document.getElementById(displayId).hidden = false;
-        document.getElementById(editId).hidden = true;
-
-
-    }
-    function flipMode(displayItemId, editItemAreaId, editItemId, originalData, editButtonId){
-        if(isEdit[editItemId] === true){
-            setEditModeOff(displayItemId, editItemAreaId);
-            cancelEdit(editItemId, originalData, editButtonId);
-            document.getElementById(editButtonId).innerText= "Edit";
-            isEdit[editItemId] = false;
-
-        } else {
-            setEditModeOn(displayItemId, editItemAreaId);
-            document.getElementById(editButtonId).innerText= "Cancel";
-            isEdit[editItemId] = true;
+                }
+            );
         }
-    }
+        let isEdit = {};
 
-</script>
-<script src="{{ url_for('static', filename='js/editData.js') }}"></script>
-{% include "edit_note.html" %}
+        function cancelEdit(editId, original_text, editButtonId) {
+            document.getElementById(editId).value = original_text;
+            document.getElementById(editButtonId).innerText= "Edit"
+        }
+        function setEditModeOn(displayId, editId) {
+            document.getElementById(displayId).hidden = true;
+            document.getElementById(editId).hidden = false;
+
+
+        }
+        function setEditModeOff(displayId, editId) {
+            document.getElementById(displayId).hidden = false;
+            document.getElementById(editId).hidden = true;
+
+
+        }
+        function flipMode(displayItemId, editItemAreaId, editItemId, originalData, editButtonId){
+            if(isEdit[editItemId] === true){
+                setEditModeOff(displayItemId, editItemAreaId);
+                cancelEdit(editItemId, originalData, editButtonId);
+                document.getElementById(editButtonId).innerText= "Edit";
+                isEdit[editItemId] = false;
+
+            } else {
+                setEditModeOn(displayItemId, editItemAreaId);
+                document.getElementById(editButtonId).innerText= "Cancel";
+                isEdit[editItemId] = true;
+            }
+        }
+
+    </script>
+    <script src="{{ url_for('static', filename='js/editData.js') }}"></script>
+    {% include "edit_note.html" %}
 
 {% endblock %}
 
@@ -169,40 +169,4 @@
     }
 
     </script>
-
-{#    <script type="module">#}
-{#     import {notes} from "{{url_for('static', filename="js/api.js")}}"#}
-{#    {% block apiPath_assignment %}#}
-{##}
-{#    {% endblock %}#}
-{##}
-{#        $(document).ready(function () {#}
-{#            {%- for note_name, note_id in valid_note_types %}#}
-{#            $("#noteTypeSelect").append(new Option("{{ note_name }}", "{{note_id}}"));#}
-{#            {%- endfor %}#}
-{##}
-{#            $('#noteRemoveConfirm').on('show.bs.modal', function (event) {#}
-{#                setup_confirm_note_removal_modal(#}
-{#                    $(event.relatedTarget),#}
-{#                    $(this),#}
-{#                    $(event.relatedTarget).data("apiroute"),#}
-{#                    notes.removeNote#}
-{#                );#}
-{#            });#}
-{##}
-{#            $('#noteEditor').on('show.bs.modal', function (event) {#}
-{#                const button = $(event.relatedTarget);#}
-{#                const modal = $(this);#}
-{#                setup_modal_window(modal, button);#}
-{#                switch (button.data('dialogtype')) {#}
-{#                    case "edit":#}
-{#                        setup_edit(button, modal, notes.editNote);#}
-{#                        break;#}
-{#                    case "new":#}
-{#                        setup_new_note(button, modal, apiPath, notes.addNote);#}
-{#                        break;#}
-{#                }#}
-{#            });#}
-{#        })#}
-{#    </script>#}
 {% endblock %}

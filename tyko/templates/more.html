@@ -1,29 +1,29 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="card my-1">
+    <div class="card my-1">
         <div class="card-header">
             <h5 class="card-title">Entities</h5>
         </div>
-    <div class="card-body">
-        <ul>
-        {% for entity in entities|sort -%}
-            <li><a href="{{url_for(entity[1])}}">{{entity[0]}}</a></li>
-        {% endfor %}
-        </ul>
+        <div class="card-body">
+            <ul>
+                {% for entity in entities|sort -%}
+                    <li><a href="{{url_for(entity[1])}}">{{entity[0]}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
-</div>
     <div class="card my-1">
         <div class="card-header">
             <h5 class="card-title">Forms</h5>
         </div>
-    <div class="card-body">
+        <div class="card-body">
             <ul>
                 {% for form_page in all_forms|sort -%}
-                <li>
-                    <a href="{{url_for(form_page[1])}}">{{ form_page[0] }}</a>
-                </li>
+                    <li>
+                        <a href="{{url_for(form_page[1])}}">{{ form_page[0] }}</a>
+                    </li>
                 {% endfor %}
             </ul>
+        </div>
     </div>
-</div>
-{%  endblock %}
+{% endblock %}

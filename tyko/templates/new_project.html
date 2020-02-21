@@ -2,33 +2,33 @@
 
 
 {% block form %}
-        <form id="new-project-form" onsubmit="return submitNew('{{ api_path }}')">
-            <div class="form-group row">
-                <label for="title" class="col-sm-2 col-form-label">Title</label>
-                <div class="col-sm-10">
-                  <input type="string" class="form-control" id="title" name="title" placeholder="Title" required>
-                </div>
+    <form id="new-project-form" onsubmit="return submitNew('{{ api_path }}')">
+        <div class="form-group row">
+            <label for="title" class="col-sm-2 col-form-label">Title</label>
+            <div class="col-sm-10">
+                <input type="string" class="form-control" id="title" name="title" placeholder="Title" required>
             </div>
-            <div class="form-group row">
-                <label for="inputProjectCode" class="col-sm-2 col-form-label">Project Code</label>
-                <div class="col-sm-10">
-                  <input type="string" class="form-control" id="inputProjectCode" name="project_code" placeholder="Project Code">
-                </div>
+        </div>
+        <div class="form-group row">
+            <label for="inputProjectCode" class="col-sm-2 col-form-label">Project Code</label>
+            <div class="col-sm-10">
+                <input type="string" class="form-control" id="inputProjectCode" name="project_code" placeholder="Project Code">
             </div>
-            <div class="form-group row">
-                <label for="inputProjectStatus" class="col-sm-2 col-form-label">Project Status</label>
-                <div class="col-sm-10">
-                  <input type="string" class="form-control" id="inputProjectStatus" name="status" placeholder="Project Status">
-                </div>
+        </div>
+        <div class="form-group row">
+            <label for="inputProjectStatus" class="col-sm-2 col-form-label">Project Status</label>
+            <div class="col-sm-10">
+                <input type="string" class="form-control" id="inputProjectStatus" name="status" placeholder="Project Status">
             </div>
-            <div class="form-group row">
-                <label for="inputCurrentLocation" class="col-sm-2 col-form-label">Current Location</label>
-                <div class="col-sm-10">
-                  <input type="string" class="form-control" id="inputCurrentLocation" name="current_location" placeholder="Project Status">
-                </div>
+        </div>
+        <div class="form-group row">
+            <label for="inputCurrentLocation" class="col-sm-2 col-form-label">Current Location</label>
+            <div class="col-sm-10">
+                <input type="string" class="form-control" id="inputCurrentLocation" name="current_location" placeholder="Project Status">
             </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
 {% endblock %}
 {% block submitScript %}
     <script>

@@ -1,49 +1,48 @@
 {% macro add_field_row(field_name, field_key, field_value, editable, update_api_path, index) %}
 <tr>
-<td style="width: 16.66%" class="font-weight-bold">{{field_name}}</td>
-<td>
-    <div id="{{field_name}}Label">
-        {{field_value}}
-    </div>
-
-    <div id="{{field_name}}InputGroup" class="input-group" hidden>
-        {% if editable %}
-            <label for="Input{{ index }}"></label>
-            <input id="Input{{ index }}" type="text" class="form-control" value="{{field_value}}">
-            <div class="input-group-append">
-                <button id="{{field_name}}Confirm" class="btn btn-outline-secondary">Confirm</button>
-                <script type="module">
-                    import {requests} from "{{url_for('static', filename="js/request.js")}}"
-                    document.getElementById("{{field_name}}Confirm").onclick = function(){
-                        const apiRoute = "{{ update_api_path }}";
-                        const key = '{{field_key}}';
-                        const value = document.getElementById('Input{{ index }}').value;
-                        const data = {
-                            '{{field_key}}': value
-                        };
-                        requests.put(apiRoute,data).then(function (response) {
-                            location.reload();
-                        }).catch(function (response) {
-                            alert("Failed to update " + key);
-                        });
-                    };
-                    document.getElementById("Input{{ index }}").addEventListener('keypress', (e) => {
-                        if (e.key === "Enter") {
-                            document.getElementById("{{field_name}}Confirm").click();
-                        }
-                    });
-                </script>
-            </div>
-        {%- endif %}
+    <td style="width: 16.66%" class="font-weight-bold">{{field_name}}</td>
+    <td>
+        <div id="{{field_name}}Label">
+            {{field_value}}
         </div>
-    </div>
-</td>
-<td style="width: 5%">
-    {%- if editable %}
-        <button id="editButton{{index}}"
-                onclick="flipMode('{{field_name}}Label', '{{field_name}}InputGroup', 'Input{{ index }}', '{{- field_value -}}', 'editButton{{index}}' )"
-                class="btn btn-secondary float-right btn-sm">Edit</button>
-    {%- endif %}
-</td>
+
+        <div id="{{field_name}}InputGroup" class="input-group" hidden>
+            {% if editable %}
+                <label for="Input{{ index }}"></label>
+                <input id="Input{{ index }}" type="text" class="form-control" value="{{field_value}}">
+                <div class="input-group-append">
+                    <button id="{{field_name}}Confirm" class="btn btn-outline-secondary">Confirm</button>
+                    <script type="module">
+                        import {requests} from "{{url_for('static', filename="js/request.js")}}"
+                        document.getElementById("{{field_name}}Confirm").onclick = function(){
+                            const apiRoute = "{{ update_api_path }}";
+                            const key = '{{field_key}}';
+                            const value = document.getElementById('Input{{ index }}').value;
+                            const data = {
+                                '{{field_key}}': value
+                            };
+                            requests.put(apiRoute,data).then(function (response) {
+                                location.reload();
+                            }).catch(function (response) {
+                                alert("Failed to update " + key);
+                            });
+                        };
+                        document.getElementById("Input{{ index }}").addEventListener('keypress', (e) => {
+                            if (e.key === "Enter") {
+                                document.getElementById("{{field_name}}Confirm").click();
+                            }
+                        });
+                    </script>
+                </div>
+            {%- endif %}
+        </div>
+    </td>
+    <td style="width: 5%">
+        {%- if editable %}
+            <button id="editButton{{index}}"
+                    onclick="flipMode('{{field_name}}Label', '{{field_name}}InputGroup', 'Input{{ index }}', '{{- field_value -}}', 'editButton{{index}}' )"
+                    class="btn btn-secondary float-right btn-sm">Edit</button>
+        {%- endif %}
+    </td>
 </tr>
 {% endmacro %}

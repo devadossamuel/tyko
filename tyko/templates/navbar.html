@@ -4,27 +4,18 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
-            {%- if selected_menu_item == "Home" -%}
-            <li class="nav-item active">
-            {% else %}
-            <li class="nav-item">
-            {%-endif-%}
-            <a class="nav-link" href="{{url_for('page_index')}}">Home</a></li>
-
-            {%- if selected_menu_item == "About" -%}
-            <li class="nav-item active">
-            {% else %}
-            <li class="nav-item">
-            {%-endif-%}
-            <a class="nav-link" href="{{url_for('page_about')}}">About</a></li>
-
-            {%- if selected_menu_item == "Projects" -%}
-            <li class="nav-item active">
-            {% else %}
-            <li class="nav-item">
-            {%-endif-%}
-            <a class="nav-link" href="{{url_for('page_projects')}}">Projects</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{url_for('page_more')}}">More</a></li>
+            <li class="nav-item {{'active' if selected_menu_item == "Home"}}">
+                <a class="nav-link" href="{{url_for('page_index')}}">Home</a>
+            </li>
+            <li class="nav-item {{ 'active' if selected_menu_item == "About" }}">
+                <a class="nav-link" href="{{url_for('page_about')}}">About</a>
+            </li>
+            <li class="nav-item {{ 'active' if selected_menu_item == "Projects" }}">
+                <a class="nav-link" href="{{url_for('page_projects')}}">Projects</a>
+            </li>
+            <li class="nav-item {{ 'active' if selected_menu_item == "More" }}">
+                <a class="nav-link" href="{{url_for('page_more')}}">More</a>
+            </li>
         </ul>
     </div>
 </nav>

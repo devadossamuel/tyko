@@ -4,32 +4,31 @@
 {% endblock %}
 
 {% block tableDetails %}
-  <thead class="thead-light">
-    <tr>
-      <th data-field="name" data-formatter="itemFormatter" data-sortable="true">Name</th>
-      <th data-field="format.name" data-sortable="true" data-formatter="formatTitleCase">Format</th>
-    </tr>
-  </thead>
+    <thead class="thead-light">
+        <tr>
+            <th data-field="name" data-formatter="itemFormatter" data-sortable="true">Name</th>
+            <th data-field="format.name" data-sortable="true" data-formatter="formatTitleCase">Format</th>
+        </tr>
+    </thead>
 {% endblock %}
 
 {% block dataParsing %}
-var data = JSON.parse(this.responseText)[0].items;
+    var data = JSON.parse(this.responseText)[0].items;
 {% endblock %}
 {% block formatters %}
-<script>
-    function formatTitleCase(data) {
-        if(data == null){
-            return null
+    <script>
+        function formatTitleCase(data) {
+            if(data == null){
+                return null
+            }
+            const x = data.split(" ").map(function (word) {
+                return word.replace(word[0], word[0].toUpperCase());
+            });
+
+            return x.join(" ");
         }
-        const x = data.split(" ").map(function (word) {
-            return word.replace(word[0], word[0].toUpperCase());
-        });
-
-        return x.join(" ");
-    }
-    function itemFormatter(value, row) {
-        return '<a href="{{ url_for("page_item") }}/'+row.item_id +'">' + value + "</a>";
-    }
-
-</script>
+        function itemFormatter(value, row) {
+            return '<a href="{{ url_for("page_item") }}/'+row.item_id +'">' + value + "</a>";
+        }
+    </script>
 {% endblock %}

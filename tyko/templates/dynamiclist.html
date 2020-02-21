@@ -2,39 +2,39 @@
 
 {% block content %}
     <div class="container">
-    <h1 class="mt-5">
-    {% block entityTitle %}
-
-    {% endblock %}
-    </h1>
-    <div id="toolbar">
-        <div class="form-group">
-            {% block table_toolbar %}
+        <h1 class="mt-5">
+            {% block entityTitle %}
             {% endblock %}
+        </h1>
+        <div id="toolbar">
+            <div class="form-group">
+                {% block table_toolbar %}
+                {% endblock %}
+            </div>
         </div>
-    </div>
-    {% block table %}
-        <table id="table"
-           data-toolbar="#toolbar"
-           data-toggle="table"
-           data-virtual-scroll="true"
-           data-show-columns="false"
-           data-search="true"
-           data-pagination="true"
-           data-url="{{ api_path }}"
-           data-cache="false"
-           class="table-striped"
-           data-data-field="{{ row_table }}"
-    >
+        {% block table %}
+            <table id="table"
+                   data-toolbar="#toolbar"
+                   data-toggle="table"
+                   data-virtual-scroll="true"
+                   data-show-columns="false"
+                   data-search="true"
+                   data-pagination="true"
+                   data-url="{{ api_path }}"
+                   data-cache="false"
+                   class="table-striped"
+                   data-data-field="{{ row_table }}">
+
+                {% block tableDetails %}
+                {% endblock %}
+
+                {% block toolbarscripts %}
+                {% endblock %}
+
+                {% block formatters %}
+                {% endblock %}
+            </table>
         {% endblock %}
 
-    {% block tableDetails %}
-    {% endblock %}
-    {% block toolbarscripts %}
-    {% endblock %}
-
-    {% block formatters %}
-    {% endblock %}
-    </table>
     </div>
 {% endblock %}
