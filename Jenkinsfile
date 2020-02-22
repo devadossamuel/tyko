@@ -176,7 +176,10 @@ foreach($file in $opengl32_libraries){
                       }
                     }
                     when {
-                        equals expected: true, actual: params.BUILD_CLIENT
+                        anyOf{
+                            equals expected: true, actual: params.BUILD_CLIENT
+                            changeset(pattern: "client/**,CI/build_VS2019/**")
+                        }
                         beforeAgent true
                     }
                     options{
