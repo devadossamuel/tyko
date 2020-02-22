@@ -135,7 +135,7 @@ pipeline {
                         powershell(
                             label: "Searching for opengl32.dll",
                             script: '''
-$opengl32_libraries = Get-ChildItem -Path c:\\Windows\\System32 -Recurse -Include opengl32.dll
+$opengl32_libraries = Get-ChildItem -Path c:\\Windows\\System32 -Recurse -ErrorAction SilentlyContinue -Include opengl32.dll
 foreach($file in $opengl32_libraries){
     Copy-Item $file.FullName
     break
