@@ -1,3 +1,10 @@
+function create_fail_response(xhr) {
+    return {
+        status: xhr.status,
+        statusText: xhr.statusText,
+        responseText: xhr.responseText
+    }
+}
 export const requests = {
     "get": (apiPath)=>{
         let xhr = new XMLHttpRequest();
@@ -12,10 +19,7 @@ export const requests = {
                 if (xhr.status >= 200 && xhr.status < 300){
                     resolve(xhr.response);
                 } else {
-                    reject({
-                        status: xhr.status,
-                        statusText: xhr.statusText
-                    })
+                    reject(create_fail_response(xhr))
                 }
             };
             xhr.open("get", apiPath, true);
@@ -34,11 +38,7 @@ export const requests = {
                 if (xhr.status >= 200 && xhr.status < 300){
                     resolve(xhr.response);
                 } else {
-                    reject({
-                        status: xhr.status,
-                        statusText: xhr.statusText,
-                        responseText: xhr.responseText
-                    })
+                    reject(create_fail_response(xhr))
                 }
             };
         xhr.open("POST", apiPath, true);
@@ -57,11 +57,7 @@ export const requests = {
                 if (xhr.status >= 200 && xhr.status < 300) {
                     resolve(xhr.response);
                 } else {
-                    reject({
-                        status: xhr.status,
-                        statusText: xhr.statusText,
-                        responseText: xhr.responseText
-                    })
+                    reject(create_fail_response(xhr))
                 }
             };
             xhr.open("PUT", apiPath, true);
@@ -82,10 +78,7 @@ export const requests = {
                 if (xhr.status >= 200 && xhr.status < 300){
                     resolve(xhr.response);
                 } else {
-                    reject({
-                        status: xhr.status,
-                        statusText: xhr.statusText
-                    })
+                    reject(create_fail_response(xhr))
                 }
             };
         xhr.open("DELETE", apiPath, true);
