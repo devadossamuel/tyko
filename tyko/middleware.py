@@ -11,6 +11,7 @@ from flask import jsonify, make_response, abort, request, url_for
 
 from . import data_provider as dp
 from . import pbcore
+from .exceptions import DataError
 
 CACHE_HEADER = "private, max-age=0"
 
@@ -470,6 +471,20 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
         except KeyError as e:
             traceback.print_exc(file=sys.stderr)
             return make_response("Missing required data: {}".format(e), 400)
+
+    def remove_object(self, project_id, object_id):
+        try:
+            updated_project = self._data_connector.remove_object(
+                project_id=project_id, object_id=object_id)
+
+            return make_response(
+                jsonify({
+                    "project": updated_project
+                }),
+                202
+            )
+        except DataError as e:
+            return make_response(e.message, e.status_code)
 
 
 class ItemMiddlwareEntity(AbsMiddlwareEntity):

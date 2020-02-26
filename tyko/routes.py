@@ -50,8 +50,11 @@ class ProjectNotesAPI(views.MethodView):
 
 
 class ObjectAPI(views.MethodView):
-    def __init__(self, project_object: middleware.ObjectMiddlwareEntity):
-        self._project_object = project_object
+    def __init__(self, project: middleware.ProjectMiddlwareEntity) -> None:
+        self._project = project
+
+    def delete(self, project_id, object_id):
+        return self._project.remove_object(project_id, object_id)
 
 
 class ProjectObjectNotesAPI(views.MethodView):
@@ -214,12 +217,21 @@ class Routes:
                 project.add_note,
                 methods=["POST"]
             )
+
             # Project
             self.app.add_url_rule(
                 "/api/project/<int:project_id>/object",
                 "project_add_object",
                 project.add_object,
                 methods=["POST"]
+            )
+
+            self.app.add_url_rule(
+                "/api/project/<int:project_id>/object/<int:object_id>",
+                "project_remove_object",
+                view_func=ObjectAPI.as_view("project_objects",
+                                            project=project),
+                methods=["DELETE"]
             )
 
             self.app.add_url_rule(
