@@ -1,6 +1,7 @@
 {% extends "details_table.html" %}
 {% from "_macros.html" import notes_table_head, notes_table_row, notes_new_button_row, note_editor_events %}
 {% from "_details_macros.html" import add_field_row %} }}
+{% from "new_object.html" import object_new_button_row, new_object_modal %}
 {% block detail_table -%}
     <div class="card my-1">
         <div class="card-body">
@@ -26,18 +27,12 @@
                             <td><button class="float-right btn btn-danger btn-sm" disabled>Remove</button></td>
                         </tr>
                     {%- endfor %}
-                    <tr>
-                        <td></td>
-                        <td>
-                            <div class="btn-group float-right" role="group">
-                                <button class="btn btn-primary btn-sm" disabled>Add</button>
-                            </div>
-                        </td>
-                    </tr>
+                {{ object_new_button_row(api_path + "/object", "newObjectModal") }}
                 </tbody>
             </table>
         </div>
     </div>
+
     <div class="card">
         <h5 class="card-header">Notes</h5>
         <div class="card-body">
@@ -52,6 +47,7 @@
             </table>
         </div>
     </div>
+    {{ new_object_modal("newObjectModal", collections, api_path + "/object") }}
 {%- endblock -%}
 {% block scripts %}
     {{ super() }}

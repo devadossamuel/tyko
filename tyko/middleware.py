@@ -454,6 +454,9 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
     def add_object(self, project_id):
         data = request.get_json()
         try:
+            if 'collectionId' in data:
+                data['collection_id'] = int(data['collectionId'])
+
             new_object = self._data_connector.add_object(project_id, data=data)
             return jsonify(
                 {
@@ -464,6 +467,9 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
         except AttributeError:
             traceback.print_exc(file=sys.stderr)
             return make_response("Invalid data", 400)
+        except KeyError as e:
+            traceback.print_exc(file=sys.stderr)
+            return make_response("Missing required data: {}".format(e), 400)
 
 
 class ItemMiddlwareEntity(AbsMiddlwareEntity):

@@ -212,6 +212,9 @@ class ProjectFrontend(FrontendEditable):
         for note_type in self._data_connector.get_note_types():
             valid_note_types.append((note_type.name, note_type.id))
 
+        collections = data_provider.CollectionDataConnector(
+            self._data_connector.session_maker).get(serialize=True)
+
         return self.render_page(
             template="project_details.html",
             project=selected_project,
@@ -219,7 +222,8 @@ class ProjectFrontend(FrontendEditable):
             edit_link=edit_link,
             project_id=entity_id,
             valid_note_types=valid_note_types,
-            fields=fields
+            fields=fields,
+            collections=collections
             )
 
     def edit_details(self, entity_id):

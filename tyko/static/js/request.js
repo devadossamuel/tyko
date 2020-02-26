@@ -36,7 +36,8 @@ export const requests = {
                 } else {
                     reject({
                         status: xhr.status,
-                        statusText: xhr.statusText
+                        statusText: xhr.statusText,
+                        responseText: xhr.responseText
                     })
                 }
             };

@@ -57,3 +57,15 @@ export const notes = {
   "editNote": editNote,
   "removeNote": removeNote
 };
+
+
+function addObject(apiRoute, data) {
+  if(apiRoute === undefined){
+    throw("apiRoute is a required field")
+  }
+  return requests.post(apiRoute, data);
+}
+
+export const objects = {
+  "addObject": addObject
+};

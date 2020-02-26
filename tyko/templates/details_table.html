@@ -18,7 +18,6 @@
                 </div>
                 <div class="container">
                     <div class="table-responsive">
-                        <form  id="new-content-form" onsubmit="return false">
                             {% block detail_table %}
 
                             {% endblock %}
@@ -51,7 +50,6 @@
                                 <button class="btn btn-primary" type="submit">Submit</button>
                                 <button class="btn btn-secondary" type="button" onclick="location.href='{{ view_details_path }}'">Cancel</button>
                             {%- endif %}
-                        </form>
                     </div>
                 </div>
             </div>
