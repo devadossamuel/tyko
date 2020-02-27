@@ -23,7 +23,8 @@
                 <tbody>
                     {%- for child_object in project['objects'] %}
                         {{ child_object_row(
-                            url_for('page_projects')~"/"~project_id ~"/"~object~"/"~child_object['object_id'], child_object['name'],
+                            url_for('page_project_object_details', project_id=project_id, object_id=child_object.object_id),
+                            child_object['name'],
                             "confirmRemovalModal",
                             url_for('project_remove_object', project_id=project_id, object_id=child_object.object_id)
                             ) }}
