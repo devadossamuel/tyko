@@ -66,6 +66,14 @@ function addObject(apiRoute, data) {
   return requests.post(apiRoute, data);
 }
 
+function removeObject(apiRoute){
+  if(apiRoute === undefined){
+    throw("apiRoute is a required field")
+  }
+  return requests.delete(apiRoute)
+}
+
 export const objects = {
-  "addObject": addObject
+  "addObject": addObject,
+  "removeObject": removeObject
 };
