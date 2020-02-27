@@ -171,7 +171,7 @@ class Routes:
                           project_object.update,
                           methods=["PUT"]
                           ),
-                    Route("/api/object/<string:id>-pbcore.xml",
+                    Route("/api/object/<int:id>-pbcore.xml",
                           "object_pbcore",
                           lambda id: project_object.pbcore(id=id)
                           ),
