@@ -26,7 +26,7 @@
                             url_for('page_project_object_details', project_id=project_id, object_id=child_object.object_id),
                             child_object['name'],
                             "confirmRemovalModal",
-                            url_for('project_remove_object', project_id=project_id, object_id=child_object.object_id)
+                            url_for('project_object', project_id=project_id, object_id=child_object.object_id)
                             ) }}
                     {%- endfor %}
                     {{ object_new_button_row(api_path + "/object", "newObjectModal") }}

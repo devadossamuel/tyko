@@ -228,7 +228,7 @@ class Routes:
 
             self.app.add_url_rule(
                 "/api/project/<int:project_id>/object/<int:object_id>",
-                "project_remove_object",
+                "project_object",
                 view_func=ObjectAPI.as_view("project_objects",
                                             project=project),
                 methods=["DELETE"]
@@ -384,7 +384,7 @@ class Routes:
                     frontend.ProjectFrontend(self.mw.data_provider).list
                 ),
                 Route(
-                    "/project/<string:project_id>",
+                    "/project/<int:project_id>",
                     "page_project_details",
                     lambda project_id: frontend.ProjectFrontend(
                         self.mw.data_provider).display_details(project_id)
