@@ -6,6 +6,25 @@
     <pbcoreDescriptionDocument>
         <pbcoreIdentifier source="TYKO-OBJECT-ID">{{ object_id }}</pbcoreIdentifier>
         <pbcoreTitle titleType="Main">{{ name }}</pbcoreTitle>
+        {%- for object_note in notes %}
+        <pbcoreDescription descriptionType="{{- object_note['note_type'] if object_note['note_type']|length else "Note" -}} ">{{ object_note['text'] }}</pbcoreDescription>
+        {%- else %}
         <pbcoreDescription/>
+        {%- endfor %}
+        {% for part in parts -%}
+        <pbcorePart>
+            {% if part['medusa_uuid'] is not none -%}
+                <pbcoreIdentifier source="medusa_uuid">{{ part['medusa_uuid'] }}</pbcoreIdentifier>
+            {%- else -%}
+            <pbcoreIdentifier/>
+            {%- endif %}
+            <pbcoreTitle>{{ part['name'] }}</pbcoreTitle>
+            {%- for note in part['notes'] %}
+            <pbcoreDescription descriptionType="{{- note['note_type'] if note['note_type']|length else "Note" -}} ">{{ note['text'] }}</pbcoreDescription>
+            {%- else %}
+            <pbcoreDescription/>
+            {%- endfor %}
+        </pbcorePart>
+        {%- endfor %}
     </pbcoreDescriptionDocument>
 </pbcoreCollection>
