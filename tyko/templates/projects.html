@@ -14,18 +14,16 @@
     <thead class="thead-light">
         <tr>
             <th data-field="title"
-                data-formatter="projectFormatter"
+                data-formatter="formatter"
                 data-sortable="true">Title</th>
             <th data-field="status"
                 data-sortable="true">Status</th>
         </tr>
     </thead>
-{% endblock %}
-
-{% block formatters %}
     <script>
-        function projectFormatter(value, row) {
+        function formatter(value, row) {
             return '<a href="{{ url_for("page_projects") }}/'+row.project_id +'">' + value + "</a>";
         }
     </script>
 {% endblock %}
+

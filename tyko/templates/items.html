@@ -10,12 +10,6 @@
             <th data-field="format.name" data-sortable="true" data-formatter="formatTitleCase">Format</th>
         </tr>
     </thead>
-{% endblock %}
-
-{% block dataParsing %}
-    var data = JSON.parse(this.responseText)[0].items;
-{% endblock %}
-{% block formatters %}
     <script>
         function formatTitleCase(data) {
             if(data == null){
@@ -31,4 +25,8 @@
             return '<a href="{{ url_for("page_item") }}/'+row.item_id +'">' + value + "</a>";
         }
     </script>
+{% endblock %}
+
+{% block dataParsing %}
+    var data = JSON.parse(this.responseText)[0].items;
 {% endblock %}

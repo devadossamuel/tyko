@@ -10,40 +10,16 @@
                 data-sortable="true">Name</th>
         </tr>
     </thead>
-{% endblock %}
-{% block dataParsing %}
-    var data = JSON.parse(this.responseText)[0].objects;
-{% endblock %}
-
-{% block formatters %}
     <script>
         function objectFormatter(value, row) {
             return '<a href="{{ url_for("page_object") }}/'+row.object_id +'">' + value + "</a>";
         }
     </script>
 {% endblock %}
-{#{% extends "layout.html" %}#}
-{##}
-{#{% block content %}#}
-{#<div class="container">#}
-{#    <h1 class="mt-5">Objects</h1>#}
-{#    <table id="table"#}
-{#        data-toggle="table"#}
-{#        data-search="true"#}
-{#        data-show-columns="true"#}
-{#        class="table-striped">#}
-{#        <thead class="thead-light">#}
-{#            <th data-sortable="true">Name</th>#}
-{#            <th>Details</th>#}
-{#        </thead>#}
-{#        <tbody>#}
-{#            {% for object in objects %}#}
-{#                <tr>#}
-{#                    <td>{{object['name']}}</td>#}
-{#                    <td><a href="{{ url_for('page_object')}}/{{object['id'] }}">Details</a></td>#}
-{#                </tr>#}
-{#            {% endfor %}#}
-{#        </tbody>#}
-{#    </table>#}
-{#</div>#}
-{#{% endblock %}#}
+{% block dataParsing %}
+    var data = JSON.parse(this.responseText)[0].objects;
+{% endblock %}
+
+{% block formatters %}
+
+{% endblock %}
