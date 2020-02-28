@@ -61,5 +61,7 @@
 
 {% block scripts %}
     {{ super() }}
+    {% if "project_id" in object %}
     {{ note_editor_events(url_for('project_object', project_id=object['project_id'], object_id=object['object_id']), valid_note_types) }}
+    {% endif %}
 {% endblock %}
