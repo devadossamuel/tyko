@@ -116,7 +116,7 @@
     function setup_edit(button, modal, promise){
             const noteId = button.data('notetype');
             modal.find('#noteTypeSelect').val(noteId);
-            modal.find('#saveNoteButton').bind('click',
+            modal.find('#saveNoteButton').unbind('click').bind('click',
             function () {
                 const noteApiRoute = button.data('apiroute');
                 const noteTypeId = modal.find('#noteTypeSelect').val();
@@ -133,7 +133,7 @@
         }
 
     function setup_new_note(button, modal, apiPath, promise) {
-        modal.find('#saveNoteButton').bind('click',
+        modal.find('#saveNoteButton').unbind('click').bind('click',
         function (){
             const noteTypeId = modal.find('#noteTypeSelect').val();
             const noteText = modal.find('#message-text').val();
@@ -152,7 +152,7 @@
         modal.find('#message-text').val(button.data('text'));
     }
     function setup_confirm_note_removal_modal(button, modal, apiroute, promise){
-        modal.find('#confirmRemoveNoteButton').bind('click',
+        modal.find('#confirmRemoveNoteButton').unbind('click').bind('click',
             function () {
                 promise(apiroute)
                     .then(function () {
