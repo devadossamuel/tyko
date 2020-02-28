@@ -312,7 +312,7 @@ class Routes:
                             self.mw.data_provider).list()
                     ),
                     Route(
-                        "/object/<string:object_id>",
+                        "/object/<int:object_id>",
                         "page_object_details",
                         lambda object_id: frontend.ObjectFrontend(
                             self.mw.data_provider).display_details(object_id)
