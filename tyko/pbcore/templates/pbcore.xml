@@ -16,7 +16,7 @@
             {% if part['medusa_uuid'] is not none -%}
                 <pbcoreIdentifier source="medusa_uuid">{{ part['medusa_uuid'] }}</pbcoreIdentifier>
             {%- else -%}
-            <pbcoreIdentifier/>
+                <pbcoreIdentifier/>
             {%- endif %}
             <pbcoreTitle>{{ part['name'] }}</pbcoreTitle>
             {%- for note in part['notes'] %}
