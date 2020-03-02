@@ -101,6 +101,50 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
 
         return abort(404)
 
+    def add_item(self, project_id, object_id):
+
+        project_json = ProjectMiddlwareEntity(
+            self._data_provider).get_project_by_id(project_id).get_json()
+
+        current_project = project_json['project']
+
+        # make sure that the project has that object
+        for child_object in current_project['objects']:
+            if child_object['object_id'] == object_id:
+                break
+        else:
+            return make_response(
+                f"Project with id {project_id} does not have an object with an"
+                f" id of {object_id}",
+                404)
+        request_data = request.get_json()
+
+        try:
+            try:
+                new_item_data = {
+                    "name": request_data["name"],
+                    "format_id": request_data["format_id"],
+                    "file_name": request_data.get("file_name"),
+
+                }
+            except KeyError as e:
+                traceback.print_exc(file=sys.stderr)
+                return make_response(
+                    "missing required value {}".format(e), 400)
+
+            new_item = self._data_connector.add_item(
+                object_id=object_id,
+                data=new_item_data)
+
+            return jsonify(
+                {
+                    "item": new_item
+                }
+            )
+        except AttributeError:
+            traceback.print_exc(file=sys.stderr)
+            return make_response("Invalid data", 400)
+
     def pbcore(self, id):
         xml = pbcore.create_pbcore_from_object(
             object_id=id,
@@ -195,6 +239,18 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
 
         return jsonify(
             {"object": updated_object}
+        )
+
+    def remove_item(self, object_id, item_id):
+        updated_object = self._data_connector.remove_item(
+            object_id=object_id,
+            item_id=item_id
+        )
+        return make_response(
+            jsonify({
+                "object": updated_object
+            }),
+            202
         )
 
 
