@@ -3,7 +3,7 @@
 function submitNewEntity(apiRoot) {
     var formElement = document.querySelector("form");
     var x = new FormData(formElement);
-
+    const formJson = JSON.stringify(Object.fromEntries(x));
     var XHR = new XMLHttpRequest();
     XHR.addEventListener('load', function(event) {
         console.log("loaded");
@@ -19,9 +19,9 @@ function submitNewEntity(apiRoot) {
 
     XHR.addEventListener('error', function(event) {
         alert('Oops! Something goes wrong.');
-  })
-    ;
+  });
     XHR.open("POST", apiRoot);
+    XHR.setRequestHeader('Content-Type', 'application/json');
     console.log(" Sending post");
-    XHR.send(x)
+    XHR.send(formJson)
 }

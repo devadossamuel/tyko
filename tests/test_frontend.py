@@ -1,3 +1,4 @@
+import json
 import sys
 
 from pyexpat import ExpatError
@@ -28,11 +29,15 @@ def test_view_web_object_empty(app):
 
 def test_view_web_object(app):
     with app.test_client() as server:
-        server.post("/api/object/",
-                    data={
-                        "name": "my stupid object",
-                        }
-                    )
+        server.post(
+            "/api/object/",
+            data=json.dumps(
+                {
+                    "name": "my stupid object",
+                }
+            ),
+            content_type='application/json'
+        )
         resulting_webpage = server.get("/object/1")
         assert resulting_webpage.status_code == 200
         data = str(resulting_webpage.data, encoding="utf-8")
@@ -47,11 +52,16 @@ def test_view_web_object(app):
 def test_view_web_item(app):
     with app.test_client() as server:
         server.post("/api/item/",
-                    data={
-                        "name": "My dummy item",
-                        "file_name": "dummy.txt",
-                        "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4"
-                    }
+                    data=json.dumps(
+                        {
+                            "name": "My dummy item",
+                            "file_name": "dummy.txt",
+                            "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4",
+                            "format_id": 1
+                        }
+                    ),
+                    content_type='application/json'
+
                 )
         resulting_webpage = server.get("/item/1")
         assert resulting_webpage.status_code == 200
