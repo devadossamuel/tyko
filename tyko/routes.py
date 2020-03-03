@@ -82,6 +82,15 @@ class ObjectItemNotesAPI(views.MethodView):
         return self._item.remove_note(item_id, note_id)
 
 
+class ObjectItemAPI(views.MethodView):
+    def __init__(self, parent: middleware.ObjectMiddlwareEntity) -> None:
+        self._parent_object = parent
+
+    def delete(self, project_id, object_id, item_id):  # noqa: E501  pylint: disable=W0613,C0301
+        return self._parent_object.remove_item(object_id=object_id,
+                                               item_id=item_id)
+
+
 class Routes:
 
     def __init__(self, db_engine: DataProvider, app) -> None:
@@ -128,8 +137,8 @@ class Routes:
                     Route("/api/collection/", "add_collection",
                           collection.create,
                           methods=["POST"]),
-                    Route("/api/collection/<string:id>", "update_collection",
-                          lambda id: collection.update(id=id),
+                    Route("/api/collection/<int:id>", "update_collection",
+                          collection.update,
                           methods=["PUT"]),
                     Route("/api/collection/<string:id>", "delete_collection",
                           lambda id: collection.delete(id=id),
@@ -165,7 +174,7 @@ class Routes:
                           lambda serialize=True: project_object.get(serialize),
                           methods=["GET"]
                           ),
-                    Route("/api/object/<string:id>", "object_by_id",
+                    Route("/api/object/<int:id>", "object_by_id",
                           lambda id: project_object.get(id=id)),
                     Route("/api/object/<string:id>", "object_update",
                           project_object.update,
@@ -233,6 +242,13 @@ class Routes:
                                             project=project),
                 methods=["DELETE"]
             )
+            self.app.add_url_rule(
+                "/api/project/<int:project_id>/object/<int:object_id>/item",
+                "project_object_add_item",
+                lambda project_id, object_id: project_object.add_item(
+                    project_id=project_id, object_id=object_id),
+                methods=["POST"],
+            )
 
             self.app.add_url_rule(
                 "/api/project/<int:project_id>/notes/<int:note_id>",
@@ -266,6 +282,17 @@ class Routes:
                     "item_notes",
                     item=item),
                 methods=["PUT", "DELETE"]
+            )
+
+            self.app.add_url_rule(
+                "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>",  # noqa: E501 pylint: disable=C0301
+                view_func=ObjectItemAPI.as_view(
+                    "object_item",
+                    parent=project_object),
+                methods=[
+                    # "PUT",
+                    "DELETE"
+                ]
             )
 
             self.app.add_url_rule(

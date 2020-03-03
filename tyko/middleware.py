@@ -101,6 +101,50 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
 
         return abort(404)
 
+    def add_item(self, project_id, object_id):
+
+        project_json = ProjectMiddlwareEntity(
+            self._data_provider).get_project_by_id(project_id).get_json()
+
+        current_project = project_json['project']
+
+        # make sure that the project has that object
+        for child_object in current_project['objects']:
+            if child_object['object_id'] == object_id:
+                break
+        else:
+            return make_response(
+                f"Project with id {project_id} does not have an object with an"
+                f" id of {object_id}",
+                404)
+        request_data = request.get_json()
+
+        try:
+            try:
+                new_item_data = {
+                    "name": request_data["name"],
+                    "format_id": request_data["format_id"],
+                    "file_name": request_data.get("file_name"),
+
+                }
+            except KeyError as e:
+                traceback.print_exc(file=sys.stderr)
+                return make_response(
+                    "missing required value {}".format(e), 400)
+
+            new_item = self._data_connector.add_item(
+                object_id=object_id,
+                data=new_item_data)
+
+            return jsonify(
+                {
+                    "item": new_item
+                }
+            )
+        except AttributeError:
+            traceback.print_exc(file=sys.stderr)
+            return make_response("Invalid data", 400)
+
     def pbcore(self, id):
         xml = pbcore.create_pbcore_from_object(
             object_id=id,
@@ -141,8 +185,9 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
         )
 
     def create(self):
-        object_name = request.form["name"]
-        barcode = request.form.get('barcode')
+        data = request.get_json()
+        object_name = data["name"]
+        barcode = data.get('barcode')
         new_object_id = self._data_connector.create(
             name=object_name,
             barcode=barcode
@@ -197,6 +242,18 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
             {"object": updated_object}
         )
 
+    def remove_item(self, object_id, item_id):
+        updated_object = self._data_connector.remove_item(
+            object_id=object_id,
+            item_id=item_id
+        )
+        return make_response(
+            jsonify({
+                "object": updated_object
+            }),
+            202
+        )
+
 
 class CollectionMiddlwareEntity(AbsMiddlwareEntity):
 
@@ -248,13 +305,13 @@ class CollectionMiddlwareEntity(AbsMiddlwareEntity):
 
     def update(self, id):
         new_collection = dict()
+        data = request.get_json()
 
-        if "collection_name" in request.form:
-            new_collection["collection_name"] = \
-                request.form.get("collection_name")
+        if "collection_name" in data:
+            new_collection["collection_name"] = data["collection_name"]
 
-        if "department" in request.form:
-            new_collection["collection_name"] = request.form.get("department")
+        if "department" in data:
+            new_collection["collection_name"] = data["department"]
 
         updated_collection = \
             self._data_connector.update(
@@ -268,9 +325,10 @@ class CollectionMiddlwareEntity(AbsMiddlwareEntity):
         )
 
     def create(self):
-        collection_name = request.form["collection_name"]
-        department = request.form.get("department")
-        record_series = request.form.get("record_series")
+        data = request.get_json()
+        collection_name = data["collection_name"]
+        department = data.get("department")
+        record_series = data.get("record_series")
         new_collection_id = \
             self._data_connector.create(
                 collection_name=collection_name,
@@ -380,13 +438,12 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
         )
 
     def create(self):
-        project_code = request.form.get('project_code')
-        title = request.form.get('title')
-        if title is None:
-            return make_response("Missing required data", 400)
-        current_location = request.form.get('current_location')
-        status = request.form.get('status')
-        specs = request.form.get('specs')
+        data = request.get_json()
+        title = data['title']
+        project_code = data.get('project_code')
+        current_location = data.get('current_location')
+        status = data.get('status')
+        specs = data.get('specs')
         new_project_id = \
             self._data_connector.create(
                 title=title,
@@ -597,13 +654,16 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
             return make_response("Invalid data", 400)
 
     def create(self):
-        name = request.form.get('name')
-        file_name = request.form.get('file_name')
-        medusa_uuid = request.form.get("medusa_uuid")
+        data = request.get_json()
+        name = data['name']
+        format_id = data['format_id']
+        file_name = data.get('file_name')
+        medusa_uuid = data.get("medusa_uuid")
         new_item_id = self._data_connector.create(
             name=name,
             file_name=file_name,
-            medusa_uuid=medusa_uuid
+            medusa_uuid=medusa_uuid,
+            format_id=format_id
         )
 
         return jsonify(
@@ -714,7 +774,7 @@ class NotestMiddlwareEntity(AbsMiddlwareEntity):
 
     def update(self, id):
         new_object = dict()
-        json_request = request.json
+        json_request = request.get_json()
         for k, _ in json_request.items():
             if not self.field_can_edit(k):
                 return make_response("Cannot update field: {}".format(k), 400)
@@ -736,9 +796,9 @@ class NotestMiddlwareEntity(AbsMiddlwareEntity):
         )
 
     def create(self):
-        data = request.form
+        data = request.get_json()
         note_type = int(data['note_type_id'])
-        text = request.form.get('text')
+        text = data['text']
         new_note_id = self._data_connector.create(
             text=text, note_types_id=note_type
         )

@@ -70,12 +70,13 @@ class ProjectDataConnector(AbsDataProviderConnector):
             specs=specs
         )
         session = self.session_maker()
-
-        session.add(new_project)
-        session.commit()
-        new_project_id = new_project.id
-        session.close()
-        return new_project_id
+        try:
+            session.add(new_project)
+            session.commit()
+            new_project_id = new_project.id
+            return new_project_id
+        finally:
+            session.close()
 
     def include_note(self, project_id, note_type_id, note_text):
         new_project_data = None
@@ -505,6 +506,76 @@ class ObjectDataConnector(AbsDataProviderConnector):
                 return note
         raise ValueError("No matching note for object")
 
+    def add_item(self, object_id, data):
+        session = self.session_maker()
+        try:
+            matching_object = self._get_object(object_id, session)
+            item_connector = ItemDataConnector(self.session_maker)
+            new_item_id = item_connector.create(**data)
+            matching_object.items.append(item_connector.get(id=new_item_id))
+            session.commit()
+            return item_connector.get(id=new_item_id, serialize=True)
+        finally:
+            session.close()
+
+    def remove_item(self, object_id, item_id):
+        session = self.session_maker()
+        try:
+            matching_item = self._find_item(item_id, session)
+
+            matching_object = self._find_object(
+                object_id=object_id,
+                session=session
+            )
+
+            if matching_item not in matching_object.items:
+                raise DataError(
+                    message="Item with ID: {} is not a child of object with "
+                            "ID: {}".format(item_id, object_id)
+                )
+            matching_object.items.remove(matching_item)
+            session.commit()
+            return session.query(scheme.CollectionObject) \
+                .filter(scheme.CollectionObject.id == object_id) \
+                .one().serialize()
+
+        finally:
+            session.close()
+
+    @staticmethod
+    def _find_item(item_id, session) -> scheme.CollectionItem:
+        matching_items = \
+            session.query(scheme.CollectionItem).filter(
+                scheme.CollectionItem.id == item_id).all()
+
+        if len(matching_items) == 0:
+            raise DataError(
+                message="No items found with ID: {}".format(
+                    item_id))
+
+        if len(matching_items) > 1:
+            raise DataError(
+                message="Found multiple items with ID: {}".format(
+                    item_id))
+        return matching_items[0]
+
+    @staticmethod
+    def _find_object(object_id, session) -> scheme.CollectionObject:
+        matching_objects = \
+            session.query(scheme.CollectionObject).filter(
+                scheme.CollectionObject.id == object_id).all()
+
+        if len(matching_objects) == 0:
+            raise DataError(
+                message="No object found with ID: {}".format(
+                    object_id))
+
+        if len(matching_objects) > 1:
+            raise DataError(
+                message="Found multiple objects with ID: {}".format(
+                    object_id))
+        return matching_objects[0]
+
 
 class ItemDataConnector(AbsDataProviderConnector):
 
@@ -566,16 +637,21 @@ class ItemDataConnector(AbsDataProviderConnector):
             session.close()
 
     def create(self, *args, **kwargs):
+        session = self.session_maker()
         name = kwargs["name"]
+        format_id = kwargs["format_id"]
+        format_type = session.query(scheme.FormatTypes)\
+            .filter(scheme.FormatTypes.id == format_id).one()
+
         file_name = kwargs.get("file_name")
         medusa_uuid = kwargs.get("medusa_uuid")
         new_item = scheme.CollectionItem(
             name=name,
             file_name=file_name,
-            medusa_uuid=medusa_uuid
+            medusa_uuid=medusa_uuid,
+            format_type=format_type
         )
 
-        session = self.session_maker()
         session.add(new_item)
         session.commit()
         new_item_id = new_item.id

@@ -94,12 +94,15 @@ def test_api_routes(route):
 def test_create(test_app):
     resp = test_app.post(
         "/api/project/",
-        data={
-            "title": "dummy title",
-            "project_code": "sample project code",
-            "status": "inactive",
-            "specs": "asdfadsf"
-        }
+        data=json.dumps(
+            {
+                "title": "dummy title",
+                "project_code": "sample project code",
+                "status": "inactive",
+                "specs": "asdfadsf"
+            }
+        ),
+        content_type='application/json'
     )
     assert resp.status_code == 200
     tmp_data = json.loads(resp.data)
@@ -127,7 +130,8 @@ test_data_read = [
         "item", {
             "name": "my stupid new item",
             # "barcode": "8umb",
-            "file_name": "stupid.mov"
+            "file_name": "stupid.mov",
+            "format_id": 1
         }
     ),
     (
@@ -150,7 +154,9 @@ def test_create_and_read2(data_type, data_value):
         route ="/api/{}/".format(data_type)
         create_resp = server.post(
             route,
-            data=data_value)
+            data=json.dumps(data_value),
+            content_type='application/json'
+        )
 
         assert create_resp.status == "200 OK", "Failed to create a new entity with {}".format(route)
 
@@ -185,9 +191,13 @@ def test_get_object_pbcore():
     app.config["TESTING"] = True
     with app.test_client() as server:
         create_resp = server.post(
-            "/api/object/", data={
-                "name": "my stupid object"
-            }
+            "/api/object/",
+            data=json.dumps(
+                {
+                    "name": "my stupid object"
+                }
+            ),
+            content_type='application/json'
         )
 
         assert create_resp.status == "200 OK", "Failed to create a new object"

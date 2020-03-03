@@ -306,8 +306,10 @@ class CollectionItem(AVTables):
         }
         try:
             data["format"] = self.format_type.serialize()
+            data["format_id"] = self.format_type_id
         except AttributeError:
             data["format"] = None
+            data["format_id"] = None
 
         return data
 

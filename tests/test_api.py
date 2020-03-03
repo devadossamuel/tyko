@@ -1,6 +1,6 @@
 import json
 import pytest
-from flask import Flask
+from flask import Flask, url_for
 from flask_sqlalchemy import SQLAlchemy
 import tyko
 import tyko.database
@@ -21,9 +21,13 @@ def test_project_update(app):
     with app.test_client() as server:
         post_resp = server.post(
             "/api/project/",
-            data={
-                "title": "my dumb project",
-            }
+            data=json.dumps(
+                {
+                    "title": "my dumb project",
+                }
+            ),
+            content_type='application/json'
+
         )
         assert post_resp.status_code == 200
 
@@ -44,14 +48,19 @@ def test_project_update(app):
 def test_item_update(app):
 
     with app.test_client() as server:
+
         post_resp = server.post(
             "/api/item/",
-            data={
-                "name": "My dummy item",
-                "file_name": "dummy.txt",
-                "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4"
+            data=json.dumps(
+                {
+                    "name": "My dummy item",
+                    "file_name": "dummy.txt",
+                    "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4",
+                    "format_id": 2,
                 }
-            )
+            ),
+            content_type='application/json'
+        )
         assert post_resp.status_code == 200
 
         new_item_record_url = json.loads(post_resp.data)["url"]
@@ -82,12 +91,16 @@ def test_item_delete(app):
     with app.test_client() as server:
         post_resp = server.post(
             "/api/item/",
-            data={
-                "name": "My dummy item",
-                "file_name": "dummy.txt",
-                "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4"
+            data=json.dumps(
+                {
+                    "name": "My dummy item",
+                    "file_name": "dummy.txt",
+                    "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4",
+                    "format_id": 1
                 }
-            )
+            ),
+            content_type='application/json'
+        )
         assert post_resp.status_code == 200
 
         new_item_record_url = json.loads(post_resp.data)["url"]
@@ -104,10 +117,13 @@ def test_object_update(app):
     with app.test_client() as server:
         post_resp = server.post(
             "/api/object/",
-            data={
-                "name": "My dummy object",
-                "barcode": "12345",
+            data=json.dumps(
+                {
+                    "name": "My dummy object",
+                    "barcode": "12345",
                 }
+            ),
+            content_type='application/json'
             )
         assert post_resp.status_code == 200
 
@@ -141,11 +157,14 @@ def test_object_delete(app):
     with app.test_client() as server:
         post_resp = server.post(
             "/api/object/",
-            data={
-                "name": "My dummy object",
-                "barcode": "12345",
+            data=json.dumps(
+                {
+                    "name": "My dummy object",
+                    "barcode": "12345",
                 }
-            )
+            ),
+            content_type='application/json'
+        )
         assert post_resp.status_code == 200
 
         new_record_url = json.loads(post_resp.data)["url"]
@@ -162,11 +181,14 @@ def test_note_create(app):
     with app.test_client() as server:
         post_resp = server.post(
             "/api/notes/",
-            data={
-                "note_type_id": "3",
-                "text": "MY dumb note",
-                },
-            )
+            data=json.dumps(
+                {
+                    "note_type_id": "3",
+                    "text": "MY dumb note",
+                }
+            ),
+            content_type='application/json'
+        )
         assert post_resp.status_code == 200
         new_record_id = json.loads(post_resp.data)["id"]
 
@@ -184,10 +206,13 @@ def test_note_create_and_delete(app):
     with app.test_client() as server:
         post_resp = server.post(
             "/api/notes/",
-            data={
-                "note_type_id": "3",
-                "text": "MY dumb note",
-                },
+            data=json.dumps(
+                {
+                    "note_type_id": "3",
+                    "text": "MY dumb note",
+                }
+            ),
+            content_type='application/json'
             )
         assert post_resp.status_code == 200
         new_record_url = json.loads(post_resp.data)["url"]
@@ -209,11 +234,14 @@ def test_note_update(app):
     with app.test_client() as server:
         post_resp = server.post(
             "/api/notes/",
-            data={
-                "note_type_id": "3",
-                "text": "MY dumb note",
+            data=json.dumps(
+                {
+                    "note_type_id": "3",
+                    "text": "MY dumb note",
                 }
-            )
+            ),
+            content_type='application/json'
+        )
         assert post_resp.status_code == 200
         new_record_url = json.loads(post_resp.data)["url"]
 
@@ -240,9 +268,12 @@ def test_create_new_project_note(app):
 
         project_post_resp = server.post(
             "/api/project/",
-            data={
-                "title": "my dumb project",
-            }
+            data=json.dumps(
+                {
+                    "title": "my dumb project",
+                }
+            ),
+            content_type='application/json'
         )
 
         assert project_post_resp.status_code == 200
@@ -273,11 +304,14 @@ def test_collection_update(app):
     with app.test_client() as server:
         post_resp = server.post(
             "/api/collection/",
-            data={
-                "collection_name": "My dummy collection",
-                "department": "preservation",
+            data=json.dumps(
+                {
+                    "collection_name": "My dummy collection",
+                    "department": "preservation",
                 }
-            )
+            ),
+            content_type='application/json'
+        )
         assert post_resp.status_code == 200
 
         new_record_url = json.loads(post_resp.data)["url"]
@@ -291,9 +325,12 @@ def test_collection_update(app):
 
         put_resp = server.put(
             new_record_url,
-            data={
-                "collection_name": "My changed dummy collection"
-            }
+            data=json.dumps(
+                {
+                    "collection_name": "My changed dummy collection"
+                }
+            ),
+            content_type='application/json'
         )
 
         assert put_resp.status_code == 200
@@ -315,11 +352,15 @@ def test_collection_delete(app):
     with app.test_client() as server:
         post_resp = server.post(
             "/api/collection/",
-            data={
-                "collection_name": "My dummy collection",
-                "department": "preservation",
+            data=json.dumps(
+                {
+                    "collection_name": "My dummy collection",
+                    "department": "preservation",
                 }
-            )
+            ),
+            content_type='application/json'
+        )
+
         assert post_resp.status_code == 200
 
         new_record_url = json.loads(post_resp.data)["url"]
@@ -341,11 +382,12 @@ def server_with_project():
     with testing_app.test_client() as server:
         assert server.post(
             "/api/project/",
-            data={
-                "title": "my dumb project",
-            },
-            # FIXME: fix project api creation needs json
-            # content_type='application/json'
+            data=json.dumps(
+                {
+                    "title": "my dumb project",
+                },
+            ),
+            content_type='application/json'
         ).status_code == 200
         yield server
 
@@ -356,10 +398,12 @@ def test_add_object_to_project(server_with_project):
 
     post_new_object_project_resp = server_with_project.post(
         new_object_api_url,
-        data=json.dumps({
-            "name": "My dummy object",
-            "barcode": "12345",
-        }),
+        data=json.dumps(
+            {
+                "name": "My dummy object",
+                "barcode": "12345",
+            }
+        ),
         content_type='application/json'
     )
 
@@ -372,8 +416,7 @@ def test_add_object_to_project(server_with_project):
     data = json.loads(project_resp.data)['project']
     assert len(data['objects']) == 1
     assert data['objects'][0]['barcode'] == "12345"
-#
-#
+
 
 def test_add_and_delete_object_to_project(server_with_project):
     project_api_url = "/api/project/1"
@@ -402,3 +445,111 @@ def test_add_and_delete_object_to_project(server_with_project):
 
     delete_resp = server_with_project.delete(new_object_api_url)
     assert delete_resp.status_code == 202
+
+
+@pytest.fixture()
+def server_with_object():
+    testing_app = Flask(__name__, template_folder="../tyko/templates")
+    db = SQLAlchemy(testing_app)
+    tyko.create_app(testing_app)
+    tyko.database.init_database(db.engine)
+    testing_app.config["TESTING"] = True
+    with testing_app.test_client() as server:
+        new_collection_response = server.post(
+            "/api/collection/",
+            data=json.dumps(
+                {
+                    "collection_name": "My dummy collection",
+                    "department": "preservation",
+                }
+            ),
+            content_type='application/json'
+        )
+
+        assert new_collection_response.status_code == 200
+        new_collection_id = json.loads(new_collection_response.data)['id']
+
+        new_project_response = server.post(
+            "/api/project/",
+            data=json.dumps(
+                {
+                    "title": "my dumb project",
+                }
+            ),
+            content_type='application/json'
+        )
+        assert new_project_response.status_code == 200
+        new_project_id = json.loads(new_project_response.data)['id']
+        new_object_url = url_for("project_add_object", project_id=new_project_id)
+
+        post_new_object_project_resp = server.post(
+            new_object_url,
+            data=json.dumps({
+                "name": "My dummy object",
+                "barcode": "12345",
+                "collectionId": new_collection_id
+            }),
+            content_type='application/json'
+        )
+        assert post_new_object_project_resp.status_code == 200
+        yield server
+
+
+def test_add_and_delete_item_to_object(server_with_object):
+
+    formats = dict()
+    for format_type in server_with_object.get(url_for("formats")).get_json():
+        formats[format_type['name']] = format_type['format_types_id']
+
+    test_project_url = url_for("projects")
+    test_project = \
+        json.loads(server_with_object.get(test_project_url).data)['projects'][0]
+
+    test_object = test_project['objects'][0]
+
+    new_object_item_url = url_for("project_object_add_item",
+                                  project_id=test_project['project_id'],
+                                  object_id=test_object['object_id']
+                                  )
+
+    post_response = server_with_object.post(
+        new_object_item_url,
+        data=json.dumps(
+            {
+                "name": "My dummy item",
+                "file_name": "dummy.wav",
+                "format_id": formats['audio']
+            }
+        ),
+        content_type='application/json')
+
+    assert post_response.status_code == 200, f"Failed reason {post_response.data}"
+
+    new_item = json.loads(post_response.data)['item']
+    assert new_item
+    assert new_item['name'] == "My dummy item"
+    assert new_item['file_name'] == "dummy.wav"
+    assert new_item['format']['name'] == "audio"
+
+    object_url = url_for(
+        "object_by_id",
+        id=test_object['object_id']
+    )
+
+    object_get_resp = server_with_object.get(object_url)
+    object_data = json.loads(object_get_resp.data)['object']
+    assert len(object_data['items']) == 1
+    assert object_data['items'][0]['name'] == "My dummy item"
+
+    item_api_url = url_for("object_item",
+                           project_id=test_project['project_id'],
+                           object_id=test_object['object_id'],
+                           item_id=new_item['item_id']
+                           )
+
+    delete_response = server_with_object.delete(item_api_url)
+    assert delete_response.status_code == 202
+
+    items_after_deleted = \
+        json.loads(server_with_object.get(object_url).data)['object']['items']
+    assert len(items_after_deleted) == 0
