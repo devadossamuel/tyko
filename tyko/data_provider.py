@@ -639,7 +639,7 @@ class ItemDataConnector(AbsDataProviderConnector):
     def create(self, *args, **kwargs):
         session = self.session_maker()
         name = kwargs["name"]
-        format_id = kwargs["format_id"]
+        format_id = int(kwargs["format_id"])
         format_type = session.query(scheme.FormatTypes)\
             .filter(scheme.FormatTypes.id == format_id).one()
 

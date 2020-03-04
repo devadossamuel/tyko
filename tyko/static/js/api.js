@@ -77,3 +77,14 @@ export const objects = {
   "addObject": addObject,
   "removeObject": removeObject
 };
+
+function addItem(apiRoute, data) {
+  if(apiRoute === undefined){
+    throw("apiRoute is a required field")
+  }
+  return requests.post(apiRoute, data);
+}
+
+export const items = {
+  "addItem": addItem
+};
