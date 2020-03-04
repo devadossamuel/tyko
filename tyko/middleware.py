@@ -150,9 +150,9 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
         xml = pbcore.create_pbcore_from_object(
             object_id=id,
             data_provider=self._data_provider)
-        return xml
-        # self._data_provider
-        # return jsonify({})
+        response = make_response(xml, 200)
+        response.headers["Content-type"] = "text/xml"
+        return response
 
     def delete(self, id):
         if self._data_connector.delete(id):
