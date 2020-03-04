@@ -1,3 +1,5 @@
+import json
+
 import pytest
 import flask
 import sqlalchemy
@@ -46,12 +48,58 @@ def test_pbcore_valid_id(tmpdir):
     tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     with app.test_client() as server:
-        my_db = data_provider.DataProvider(db.engine)
-        my_mw = data_provider.ObjectDataConnector(my_db.db_session_maker)
-        new_object_id = my_mw.create(name="my object")
-        assert new_object_id == 1
+        sample_collection = server.post(
+            "/api/collection/",
+            data=json.dumps(
+                {
+                    "collection_name": "My dummy collection",
+                    "department": "preservation",
+                }
+            ),
+            content_type='application/json'
+        ).get_json()
 
-        pbcore_data = pbcore.create_pbcore_from_object(object_id=new_object_id, data_provider=my_db)
+        sample_project = server.post(
+            "/api/project/",
+            data=json.dumps(
+                {
+                    "title": "my dumb project",
+                }
+            ),
+            content_type='application/json'
+        ).get_json()
 
-        doc = etree.fromstring(bytes(pbcore_data, encoding="utf-8"))
-        assert PBCORE_SCHEMA.validate(doc) is True, "Invalid Pbcore data.: {}".format(PBCORE_SCHEMA.error_log.filter_from_errors()[0])
+        sample_object = server.post(
+            flask.url_for("project_add_object", project_id=sample_project['id']),
+            data=json.dumps(
+                {
+                    "name": "My dummy object",
+                    "collectionId": sample_collection['id']
+                }
+            ),
+            content_type='application/json'
+        ).get_json()['object']
+
+        sample_item = server.post(
+            flask.url_for(
+                "project_object_add_item",
+                project_id=sample_project['id'],
+                object_id=sample_object['object_id']
+            ),
+            data=json.dumps(
+                {
+                    "name": "My dummy item",
+                    "format_id": 1
+                }
+            ),
+            content_type='application/json'
+        ).get_json()
+
+
+
+        pbcore_xml = server.get(
+            flask.url_for("object_pbcore", id=sample_object['object_id'])
+        ).get_data()
+        doc = etree.fromstring(pbcore_xml)
+        print(str(etree.tostring(doc, pretty_print=True), encoding="utf-8"))
+        assert PBCORE_SCHEMA.validate(doc) is True, PBCORE_SCHEMA.error_log.filter_from_errors().last_error.message

@@ -14,10 +14,7 @@ def create_pbcore_from_object(object_id: int,
     resulting_object = connector.get(object_id, serialize=True)
 
     xml = template.render(
-        name=resulting_object['name'],
-        object_id=resulting_object['object_id'],
-        parts=resulting_object['items'],
-        notes=resulting_object['notes']
+        obj=resulting_object
     )
 
     return xml

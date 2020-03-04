@@ -1,30 +1,44 @@
+{%- macro pbcorePart(part) %}
+    <pbcorePart>
+        {% if part['medusa_uuid'] is not none -%}
+        <pbcoreIdentifier source="medusa_uuid">{{ part['medusa_uuid'] }}</pbcoreIdentifier>
+        {% else -%}
+        <pbcoreIdentifier source=""/>
+        {%- endif %}
+        <pbcoreTitle>{{ part['name'] }}</pbcoreTitle>
+        {%- for note in part['notes'] %}
+        <pbcoreDescription descriptionType="{{- note['note_type'] if note['note_type']|length else "Note" -}} ">{{ note['text'] }}</pbcoreDescription>
+        {%- else %}
+        <pbcoreDescription/>
+    {%- endfor %}
+    </pbcorePart>
+{% endmacro -%}
 <?xml version="1.0" encoding="UTF-8"?>
 <pbcoreCollection xmlns="http://www.pbcore.org/PBCore/PBCoreNamespace.html"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                   xsi:schemaLocation="http://www.pbcore.org/PBCore/PBCoreNamespace.html
                   https://raw.githubusercontent.com/WGBH/PBCore_2.1/master/pbcore-2.1.xsd">
     <pbcoreDescriptionDocument>
-        <pbcoreIdentifier source="TYKO-OBJECT-ID">{{ object_id }}</pbcoreIdentifier>
-        <pbcoreTitle titleType="Main">{{ name }}</pbcoreTitle>
-        {%- for object_note in notes %}
+        {#- ========= pbcoreIdentifiers ========= #}
+        <pbcoreIdentifier source="TYKO-OBJECT-ID">{{ obj['object_id'] }}</pbcoreIdentifier>
+
+        {%- if obj['barcode'] is not none -%}
+            <pbcoreIdentifier source="BARCODE">{{ obj['barcode'] }}</pbcoreIdentifier>
+        {% endif -%}
+
+        {#- ============ pbcoreTitle ============ #}
+        <pbcoreTitle titleType="Main">{{ obj['name'] }}</pbcoreTitle>
+        {% if obj['project'] is not none -%}
+        <pbcoreTitle titleType="Project Title">{{ obj.project['title'] }}</pbcoreTitle>
+        {% endif -%}
+        {#- ===================================== #}
+        {%- for object_note in obj['notes'] %}
         <pbcoreDescription descriptionType="{{- object_note['note_type'] if object_note['note_type']|length else "Note" -}} ">{{ object_note['text'] }}</pbcoreDescription>
-        {%- else %}
+        {% else -%}
         <pbcoreDescription/>
-        {%- endfor %}
-        {% for part in parts -%}
-        <pbcorePart>
-            {% if part['medusa_uuid'] is not none -%}
-                <pbcoreIdentifier source="medusa_uuid">{{ part['medusa_uuid'] }}</pbcoreIdentifier>
-            {%- else -%}
-                <pbcoreIdentifier/>
-            {%- endif %}
-            <pbcoreTitle>{{ part['name'] }}</pbcoreTitle>
-            {%- for note in part['notes'] %}
-            <pbcoreDescription descriptionType="{{- note['note_type'] if note['note_type']|length else "Note" -}} ">{{ note['text'] }}</pbcoreDescription>
-            {%- else %}
-            <pbcoreDescription/>
-            {%- endfor %}
-        </pbcorePart>
-        {%- endfor %}
+        {% endfor -%}
+        {%- for part in obj['items'] %}
+        {{ pbcorePart(part) }}
+        {% endfor %}
     </pbcoreDescriptionDocument>
 </pbcoreCollection>
