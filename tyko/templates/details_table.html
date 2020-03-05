@@ -1,9 +1,13 @@
 {% extends "layout.html" %}
 {% from "_macros.html" import note_editor_events %}
+{% from "_details_macros.html" import breadcrumbs_widget %}
 {%- block content -%}
     <div class="container-fluid">
+        {{breadcrumbs_widget(breadcrumbs)}}
         {%- block table_title %}
-            <h1 class="mt-5"> {{- itemType }} Details</h1>
+            <div class="container-fluid">
+                <h2 class="mt-1"> {{- itemType }} Details</h2>
+            </div>
         {% endblock -%}
         <div class="row onePadding">
             <div class="col-md-12 col-sm-12">
