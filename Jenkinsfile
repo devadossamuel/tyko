@@ -630,6 +630,8 @@ foreach($file in $opengl32_libraries){
                                     label: "Running Sonar Scanner",
                                     script: "sonar-scanner \
 -Dproject.settings=${WORKSPACE}/sonar-project.properties \
+-Dsonar.projectKey=tyko \
+-Dsonar.host.url=https://sonarqube.library.illinois.edu \
 -Dsonar.projectBaseDir=${WORKSPACE} \
 -Dsonar.python.coverage.reportPaths=reports/coverage.xml \
 -Dsonar.python.xunit.reportPath=reports/pytest/junit-${env.NODE_NAME}-pytest.xml \
