@@ -166,7 +166,8 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
         json_request = request.json
         for k, _ in json_request.items():
             if not self.field_can_edit(k):
-                return make_response("Cannot update object field: {}".format(k), 400)
+                return make_response(
+                    "Cannot update object field: {}".format(k), 400)
 
         if "name" in request.json:
             new_object["name"] = request.json.get("name")
@@ -412,7 +413,8 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
         json_request = request.json
         for k, _ in json_request.items():
             if not self.field_can_edit(k):
-                return make_response("Cannot update project field: {}".format(k), 400)
+                return make_response(
+                    "Cannot update project field: {}".format(k), 400)
 
         if "project_code" in request.json:
             new_project["project_code"] = request.json.get("project_code")
@@ -608,7 +610,8 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
         json_request = request.json
         for k, _ in json_request.items():
             if not self.field_can_edit(k):
-                return make_response("Cannot update item field: {}".format(k), 400)
+                return make_response(
+                    "Cannot update item field: {}".format(k), 400)
 
         for field in self.WRITABLE_FIELDS:
             if field == "obj_sequence":
@@ -778,7 +781,8 @@ class NotestMiddlwareEntity(AbsMiddlwareEntity):
         json_request = request.get_json()
         for k, _ in json_request.items():
             if not self.field_can_edit(k):
-                return make_response("Cannot update note field: {}".format(k), 400)
+                return make_response(
+                    "Cannot update note field: {}".format(k), 400)
 
         if "text" in json_request:
             new_object["text"] = json_request.get("text")

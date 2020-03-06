@@ -1,5 +1,6 @@
 # pylint: disable=redefined-builtin, invalid-name
 import abc
+from abc import ABC
 
 import sqlalchemy
 from sqlalchemy import orm
@@ -30,7 +31,28 @@ class AbsDataProviderConnector(metaclass=abc.ABCMeta):
         """Delete an existing entity"""
 
 
-class ProjectDataConnector(AbsDataProviderConnector):
+class AbsNotesConnector(AbsDataProviderConnector, ABC):  # noqa: E501 pylint: disable=abstract-method
+    @staticmethod
+    def get_note_type(session, note_type_id):
+        note_types = session.query(scheme.NoteTypes) \
+            .filter(scheme.NoteTypes.id == note_type_id) \
+            .all()
+
+        if len(note_types) == 0:
+            raise ValueError("Not a valid note_type")
+        return note_types[0]
+
+    @classmethod
+    def new_note(cls, session, text: str, note_type_id: int):
+        new_note = scheme.Note(
+            text=text,
+            note_type=cls.get_note_type(session, note_type_id)
+        )
+        session.add(new_note)
+        return new_note
+
+
+class ProjectDataConnector(AbsNotesConnector):
 
     def get(self, id=None, serialize=False):
         session = self.session_maker()
@@ -82,29 +104,11 @@ class ProjectDataConnector(AbsDataProviderConnector):
         new_project_data = None
         session = self.session_maker()
         try:
-            projects = session.query(scheme.Project) \
-                .filter(scheme.Project.id == project_id) \
-                .all()
-            if len(projects) == 0:
-                raise ValueError("Not a valid project")
+            project = self._get_project(session, project_id)
 
-            project = projects[0]
+            project.notes.append(
+                self.new_note(session, note_text, note_type_id))
 
-            note_types = session.query(scheme.NoteTypes) \
-                .filter(scheme.NoteTypes.id == note_type_id) \
-                .all()
-
-            if len(note_types) == 0:
-                raise ValueError("Not a valid note_type")
-
-            note_type = note_types[0]
-
-            new_note = scheme.Note(
-                text=note_text,
-                note_type=note_type
-            )
-            session.add(new_note)
-            project.notes.append(new_note)
             session.commit()
             new_project = \
                 session.query(scheme.Project).filter(
@@ -118,13 +122,8 @@ class ProjectDataConnector(AbsDataProviderConnector):
     def update_note(self, project_id, note_id, changed_data):
         session = self.session_maker()
         try:
-            projects = session.query(scheme.Project) \
-                .filter(scheme.Project.id == project_id) \
-                .all()
-            if len(projects) == 0:
-                raise ValueError("Not a valid project")
 
-            project = projects[0]
+            project = self._get_project(session, project_id)
 
             note = self._find_note(project, note_id)
             if "text" in changed_data:
@@ -235,13 +234,8 @@ class ProjectDataConnector(AbsDataProviderConnector):
     def add_object(self, project_id, data):
         session = self.session_maker()
         try:
-            projects = session.query(scheme.Project) \
-                .filter(scheme.Project.id == project_id) \
-                .all()
-            if len(projects) == 0:
-                raise ValueError("Not a valid project")
 
-            project = projects[0]
+            project = self._get_project(session, project_id)
 
             object_connector = ObjectDataConnector(self.session_maker)
             new_object_id = object_connector.create(**data)
@@ -290,7 +284,7 @@ class ProjectDataConnector(AbsDataProviderConnector):
         return projects[0]
 
 
-class ObjectDataConnector(AbsDataProviderConnector):
+class ObjectDataConnector(AbsNotesConnector):
 
     def get(self, id=None, serialize=False):
         session = self.session_maker()
@@ -396,21 +390,9 @@ class ObjectDataConnector(AbsDataProviderConnector):
         try:
             collection_object = self._get_object(object_id, session=session)
 
-            note_types = session.query(scheme.NoteTypes) \
-                .filter(scheme.NoteTypes.id == note_type_id) \
-                .all()
-
-            if len(note_types) == 0:
-                raise ValueError("Not a valid note_type")
-
-            note_type = note_types[0]
-
-            new_note = scheme.Note(
-                text=note_text,
-                note_type=note_type
+            collection_object.notes.append(
+                self.new_note(session, note_text, note_type_id)
             )
-            session.add(new_note)
-            collection_object.notes.append(new_note)
             session.commit()
 
             new_object = session.query(scheme.CollectionObject) \
@@ -578,7 +560,7 @@ class ObjectDataConnector(AbsDataProviderConnector):
         return matching_objects[0]
 
 
-class ItemDataConnector(AbsDataProviderConnector):
+class ItemDataConnector(AbsNotesConnector):
 
     def get(self, id=None, serialize=False):
         session = self.session_maker()
@@ -611,21 +593,9 @@ class ItemDataConnector(AbsDataProviderConnector):
         try:
             collection_item = self._get_item(item_id, session=session)
 
-            note_types = session.query(scheme.NoteTypes) \
-                .filter(scheme.NoteTypes.id == note_type_id) \
-                .all()
-
-            if len(note_types) == 0:
-                raise ValueError("Not a valid note_type")
-
-            note_type = note_types[0]
-
-            new_note = scheme.Note(
-                text=note_text,
-                note_type=note_type
+            collection_item.notes.append(
+                self.new_note(session, note_text, note_type_id)
             )
-            session.add(new_note)
-            collection_item.notes.append(new_note)
             session.commit()
 
             new_item = session.query(scheme.CollectionItem) \
