@@ -7,21 +7,22 @@
             <div class="col-md-12 col-sm-12">
                 <div class="table-responsive">
                     <table class="table table-striped">
+                        <caption hidden>Collection Details</caption>
                         <thead class="thead-light">
                             <tr>
-                                <th style="width: 16.66%">Name</th>
+                                <th scope="col" style="width: 16.66%">Name</th>
                                 <td>{{collection['collection_name']}}</td>
                             </tr>
                             <tr>
-                                <th>Department</th>
+                                <th scope="col">Department</th>
                                 <td>{{collection['department']}}</td>
                             </tr>
                             <tr>
-                                <th>Contact</th>
+                                <th scope="col">Contact</th>
                                 <td><a href="mailto:{{collection['contact']['email_address']}}"> {{collection['contact']['first_name']}} {{collection['contact']['last_name']}}</a></td>
                             </tr>
                             <tr>
-                                <th>Record Series</th>
+                                <th scope="col">Record Series</th>
                                 <td>{{collection['record_series']}}</td>
                             </tr>
                         </thead>
