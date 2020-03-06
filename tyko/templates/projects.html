@@ -1,3 +1,4 @@
+
 {% extends "dynamiclist.html" %}
 {% block entityTitle %}
     Projects
@@ -13,10 +14,12 @@
 {% block tableDetails %}
     <thead class="thead-light">
         <tr>
-            <th data-field="title"
+            <th scope="col"
+                data-field="title"
                 data-formatter="formatter"
                 data-sortable="true">Title</th>
-            <th data-field="status"
+            <th scope="col"
+                data-field="status"
                 data-sortable="true">Status</th>
         </tr>
     </thead>
