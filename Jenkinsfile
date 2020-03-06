@@ -623,6 +623,7 @@ foreach($file in $opengl32_libraries){
                         unstash "BANDIT_REPORT"
                         unstash "PYTEST_COVERAGE_DATA"
                         unstash "JEST_REPORT"
+                        sh "sed 'Nd' sonar-project.properties"
                         script{
                             def props = readProperties interpolate: true, file: 'tyko.dist-info/METADATA'
                             withSonarQubeEnv('sonarqube.library.illinois.edu') {
@@ -635,7 +636,6 @@ foreach($file in $opengl32_libraries){
 -Dsonar.projectBaseDir=${WORKSPACE} \
 -Dsonar.python.coverage.reportPaths=reports/coverage.xml \
 -Dsonar.projectVersion=${props.Version} \
--Dsonar.organization=\"\" \
 -Dsonar.python.bandit.reportPaths=${WORKSPACE}/reports/bandit-report.json \
 -Dsonar.links.ci=${env.JOB_URL} \
 -Dsonar.buildString=${env.BUILD_TAG} \
