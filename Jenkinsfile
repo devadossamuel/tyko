@@ -330,11 +330,11 @@ foreach($file in $opengl32_libraries){
                               }
                             }
                             steps{
-                                sh "mkdir -p reports/pytest"
+                                sh "mkdir -p reports"
                                 catchError(buildResult: 'UNSTABLE', message: 'Did not pass all pytest tests', stageResult: 'UNSTABLE') {
                                     sh(
                                         label: "Run PyTest",
-                                        script: "coverage run --parallel-mode --branch --source=tyko,tests -m pytest --junitxml=reports/pytest/junit-${env.NODE_NAME}-pytest.xml --junit-prefix=${env.NODE_NAME}-pytest"
+                                        script: "coverage run --parallel-mode --branch --source=tyko,tests -m pytest --junitxml=reports/test-report.xml"
                                     )
                                 }
                             }
@@ -343,8 +343,8 @@ foreach($file in $opengl32_libraries){
 
                                     junit "reports/pytest/junit-*.xml"
                                     sh "coverage combine"
-                                    sh "coverage xml -o reports/coverage.xml"
-                                    stash includes: ".coverage.*,reports/pytest/junit-*.xml,reports/coverage.xml", name: 'PYTEST_COVERAGE_DATA'
+                                    sh "coverage xml -o coverage-reports/pythoncoverage-pytest..xml"
+                                    stash includes: ".coverage.*,reports/pytest/junit-*.xml,coverage-reports/pythoncoverage-pytest..xml", name: 'PYTEST_COVERAGE_DATA'
 
                                     publishCoverage(
                                         adapters: [
@@ -634,7 +634,6 @@ foreach($file in $opengl32_libraries){
 -Dsonar.host.url=https://sonarqube.library.illinois.edu \
 -Dsonar.projectBaseDir=${WORKSPACE} \
 -Dsonar.python.coverage.reportPaths=reports/coverage.xml \
--Dsonar.python.xunit.reportPath=reports/pytest/junit-${env.NODE_NAME}-pytest.xml \
 -Dsonar.projectVersion=${props.Version} \
 -Dsonar.python.bandit.reportPaths=${WORKSPACE}/reports/bandit-report.json \
 -Dsonar.links.ci=${env.JOB_URL} \
