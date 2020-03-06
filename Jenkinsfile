@@ -348,7 +348,7 @@ foreach($file in $opengl32_libraries){
 
                                     publishCoverage(
                                         adapters: [
-                                                coberturaAdapter('reports/coverage.xml')
+                                                coberturaAdapter('coverage-reports/pythoncoverage-pytest.xml')
                                                 ],
                                         sourceFileResolver: sourceFiles('STORE_ALL_BUILD')
                                         )
