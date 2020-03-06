@@ -634,7 +634,7 @@ foreach($file in $opengl32_libraries){
 -Dsonar.projectKey=tyko \
 -Dsonar.host.url=https://sonarqube.library.illinois.edu \
 -Dsonar.projectBaseDir=${WORKSPACE} \
--Dsonar.python.coverage.reportPaths=reports/coverage.xml \
+-Dsonar.python.coverage.reportPaths=coverage-reports/pythoncoverage-pytest.xml \
 -Dsonar.projectVersion=${props.Version} \
 -Dsonar.python.bandit.reportPaths=${WORKSPACE}/reports/bandit-report.json \
 -Dsonar.links.ci=${env.JOB_URL} \
