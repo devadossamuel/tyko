@@ -338,8 +338,10 @@ def test_create_new_project_note(app):
         )
 
         assert project_post_resp.status_code == 200
-        new_project_url = json.loads(project_post_resp.data)["url"]
+        new_project_data = json.loads(project_post_resp.data)
+        new_project_url = new_project_data["url"]
         new_note_url = f"{new_project_url}/notes"
+
         note_post_resp = server.post(
             new_note_url,
             data=json.dumps({
@@ -356,8 +358,34 @@ def test_create_new_project_note(app):
         updated_project = \
             json.loads(project_get_resp.data)['project']
         project_notes = updated_project['notes']
+
         assert len(project_notes) == 1
         assert project_notes[0]['text'] == "MY dumb note"
+
+        note_update_resp = server.put(
+            url_for(
+                "project_notes",
+                project_id=new_project_data['id'],
+                note_id=1
+            ),
+            data=json.dumps(
+                {
+                    "text": "MY dumb note changed",
+                    "note_type_id": "1",
+                }
+            ),
+            content_type='application/json'
+        )
+        assert note_update_resp.status_code == 200
+
+        get_updated_note_resp = server.get(
+            url_for("note_by_id", id=project_notes[0]['note_id'])
+        )
+        assert get_updated_note_resp.status_code == 200
+        updated_note = get_updated_note_resp.get_json()['note']
+
+        assert updated_note['text'] == "MY dumb note changed"
+        assert updated_note["note_type_id"] == 1
 
 
 def test_collection_update(app):
