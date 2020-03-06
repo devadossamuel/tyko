@@ -324,6 +324,33 @@ def test_note_update(app):
         assert created_collection["note_type_id"] == 3
 
 
+def test_create_new_project_note_with_invalid_type(app):
+    with app.test_client() as server:
+
+        project_post_resp = server.post(
+            "/api/project/",
+            data=json.dumps(
+                {
+                    "title": "my dumb project",
+                }
+            ),
+            content_type='application/json'
+        )
+
+        new_project_data = json.loads(project_post_resp.data)
+        new_project_id = new_project_data["id"]
+
+        note_post_resp = server.post(
+            url_for("project_add_note", project_id=new_project_id),
+            data=json.dumps({
+                "note_type_id": "-3",
+                "text": "MY dumb note",
+            }
+            ),
+            content_type='application/json'
+        )
+        assert note_post_resp.status_code == 400
+
 def test_create_new_project_note(app):
     with app.test_client() as server:
 

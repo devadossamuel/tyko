@@ -508,6 +508,10 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
                     "project": updated_project
                 }
             )
+        except ValueError:
+            traceback.print_exc(file=sys.stderr)
+            return make_response("Invalid contents", 400)
+
         except AttributeError:
             traceback.print_exc(file=sys.stderr)
             return make_response("Invalid note data", 400)
