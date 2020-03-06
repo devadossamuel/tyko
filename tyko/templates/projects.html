@@ -1,32 +1,37 @@
-
-{% extends "dynamiclist.html" %}
-{% block entityTitle %}
-    Projects
-{% endblock %}
-
-{% block table_toolbar %}
-    <button id="add"
+{% extends "layout.html" %}
+{% from "_macros.html" import list_header, list_table, list_table_toolbar%}
+{% block content %}
+    {{ list_header("Projects") }}
+    {% call list_table_toolbar() %}
+        <button id="add"
             type="button"
             onclick="window.location.href='{{url_for("page_project_new")}}'"
             class="btn btn-primary">Create</button>
-{% endblock %}
+    {% endcall %}
+    {{
+        list_table(
+            api_path,
+            "projects",
+            table_columns=[
+                    {
+                        "field": "title",
+                        "display_text": "Title",
+                        "formatter": "formatter",
+                        "sortable":"true"
+                    },
+                    {
+                        "field": "status",
+                        "display_text": "Status",
+                        "sortable":"true"
 
-{% block tableDetails %}
-    <thead class="thead-light">
-        <tr>
-            <th scope="col"
-                data-field="title"
-                data-formatter="formatter"
-                data-sortable="true">Title</th>
-            <th scope="col"
-                data-field="status"
-                data-sortable="true">Status</th>
-        </tr>
-    </thead>
-    <script>
-        function formatter(value, row) {
-            return '<a href="{{ url_for("page_projects") }}/'+row.project_id +'">' + value + "</a>";
-        }
-    </script>
-{% endblock %}
+                    },
 
+                ]
+            )
+    }}
+<script>
+    function formatter(value, row) {
+        return '<a href="{{ url_for("page_projects") }}/'+row.project_id +'">' + value + "</a>";
+    }
+</script>
+{% endblock %}

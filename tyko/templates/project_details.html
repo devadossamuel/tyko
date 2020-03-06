@@ -1,18 +1,15 @@
 {% extends "details_table.html" %}
-{% from "_macros.html" import notes_table_head, notes_table_row, notes_new_button_row, note_editor_events %}
+{% from "_macros.html" import notes_table_row, note_editor_events, notes_table, metadata_table %}
 {% from "_details_macros.html" import confirm_remove_entity_modal, add_field_row, child_entity_row, remove_modal_event_scripts %}
 {% from "_object_macros.html" import object_new_button_row, new_object_modal%}
 {% block detail_table -%}
     <div class="card my-1">
         <div class="card-body">
-            <table class="table">
-                <caption hidden>metadata</caption>
-                <tbody>
-                    {%- for field in fields %}
-                        {{ add_field_row(field.name, field.key, (project.get(field.key) or ""), field.editable, api_path, loop.index) }}
-                    {%- endfor %}
-                </tbody>
-            </table>
+            {%  call metadata_table() %}
+                {%- for field in fields %}
+                    {{ add_field_row(field.name, field.key, (project.get(field.key) or ""), field.editable, api_path, loop.index) }}
+                {%- endfor %}
+            {% endcall %}
         </div>
     </div>
     <div class="card my-1">
@@ -22,6 +19,10 @@
         <div class="card-body">
             <table class="table">
                 <caption hidden>Objects</caption>
+                <thead>
+                    <th scope="col" hidden>Object</th>
+                    <th scope="col" hidden>Remove</th>
+                </thead>
                 <tbody>
                     {%- for child_object in project['objects'] %}
                         {{ child_entity_row(
@@ -42,16 +43,9 @@
     <div class="card">
         <h5 class="card-header">Notes</h5>
         <div class="card-body">
-            <table class="table">
-                <caption hidden>Notes</caption>
-                {{ notes_table_head(project['notes']) }}
-                <tbody>
-                    {%- for note in project['notes'] %}
-                        {{ notes_table_row(note, api_path + "/notes/" ~ note['note_id'] ) }}
-                    {% endfor -%}
-                    {{ notes_new_button_row(api_path) }}
-                </tbody>
-            </table>
+            {% call(note) notes_table(project['notes'], api_path) %}
+                {{ notes_table_row(note, url_for('project_notes', project_id=project_id, note_id=note['note_id'])) }}
+            {% endcall %}
         </div>
     </div>
 {%- endblock -%}

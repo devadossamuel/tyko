@@ -304,7 +304,8 @@ class ObjectDataConnector(AbsDataProviderConnector):
                         message="Unable to find object: {}".format(id))
             else:
                 all_collection_object = \
-                    session.query(scheme.CollectionObject).all()
+                    session.query(scheme.CollectionObject).filter(
+                        scheme.CollectionObject.project is not None).all()
         except sqlalchemy.exc.DatabaseError as e:
             raise DataError(message="Unable to find object: {}".format(e))
 

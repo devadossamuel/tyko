@@ -3,7 +3,9 @@
 {% from "_details_macros.html" import breadcrumbs_widget %}
 {%- block content -%}
     <div class="container-fluid">
-        {{breadcrumbs_widget(breadcrumbs)}}
+        {% if show_bread_crumb %}
+            {{breadcrumbs_widget(breadcrumbs)}}
+        {% endif %}
         {%- block table_title %}
             <div class="container-fluid">
                 <h2 class="mt-1"> {{- itemType }} Details</h2>

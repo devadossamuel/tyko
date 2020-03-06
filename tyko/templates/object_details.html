@@ -1,5 +1,5 @@
 {% extends "details_table.html" %}
-{% from "_macros.html" import notes_table_head, notes_table_row, notes_new_button_row, note_editor_events %}
+{% from "_macros.html" import notes_table_row, note_editor_events, notes_table, metadata_table%}
 {% from "_details_macros.html" import add_field_row, confirm_remove_entity_modal, child_entity_row, remove_modal_event_scripts %}
 {% from "_item_macros.html" import item_new_button_row, new_item_modal %}
 
@@ -11,14 +11,11 @@
     </nav>
     <div class="card my-1">
         <div class="card-body">
-            <table class="table">
-                <caption hidden>Metadata</caption>
-                <tbody>
-                    {%- for field in fields -%}
-                        {{ add_field_row(field.name, field.key, (object.get(field.key) or ""), field.editable, api_path, loop.index) }}
-                    {% endfor %}
-                </tbody>
-            </table>
+            {% call metadata_table() %}
+                {%- for field in fields %}
+                    {{ add_field_row(field.name, field.key, (object.get(field.key) or ""), field.editable, api_path, loop.index) }}
+                {%- endfor %}
+            {% endcall %}
         </div>
     </div>
     <div class="card my-1">
@@ -28,6 +25,10 @@
         <div class="card-body">
             <table class="table">
                 <caption hidden>Items</caption>
+                <thead>
+                    <th scope="col" hidden>Items</th>
+                    <th scope="col" hidden>Remove</th>
+                </thead>
                 {% if "project_id" in object %}
                     <tbody>
                         {% for item in object['items'] %}
@@ -56,16 +57,9 @@
     <div class="card">
         <h5 class="card-header">Notes</h5>
         <div class="card-body">
-            <table class="table">
-                <caption hidden>notes</caption>
-                {{ notes_table_head(object['notes']) }}
-                <tbody>
-                    {%- for note in object['notes'] -%}
-                        {{ notes_table_row(note, url_for("object_notes", project_id=object['project_id'], object_id=object['object_id'], note_id=note['note_id']) ) }}
-                    {%- endfor -%}
-                    {{ notes_new_button_row(api_path) }}
-                </tbody>
-            </table>
+            {% call(note) notes_table(object['notes'], api_path) %}
+                {{notes_table_row(note, url_for("object_notes", project_id=object['project_id'], object_id=object['object_id'], note_id=note['note_id']) )}}
+            {% endcall %}
         </div>
     </div>
 {% endblock %}

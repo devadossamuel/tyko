@@ -342,13 +342,8 @@ class Routes:
                         "/object/<int:object_id>",
                         "page_object_details",
                         lambda object_id: frontend.ObjectFrontend(
-                            self.mw.data_provider).display_details(object_id)
-                    ),
-                    Route(
-                        "/object/<string:object_id>/edit",
-                        "page_object_edit",
-                        lambda object_id: frontend.ObjectFrontend(
-                            self.mw.data_provider).edit_details(object_id)
+                            self.mw.data_provider).display_details(
+                                object_id, show_bread_crumb=False)
                     ),
                 ]),
             EntityPage(
@@ -365,7 +360,8 @@ class Routes:
                         "/item/<string:item_id>",
                         "page_item_details",
                         lambda item_id: frontend.ItemFrontend(
-                            self.mw.data_provider).display_details(item_id)
+                            self.mw.data_provider).display_details(
+                                item_id, show_bread_crumb=False)
                     ),
                 ]),
             EntityPage(
@@ -414,13 +410,16 @@ class Routes:
                     "/project/<int:project_id>",
                     "page_project_details",
                     lambda project_id: frontend.ProjectFrontend(
-                        self.mw.data_provider).display_details(project_id)
+                        self.mw.data_provider).display_details(
+                            project_id,
+                            show_bread_crumb=True)
                 ),
                 Route(
                     "/project/<int:project_id>/object/<int:object_id>",
                     "page_project_object_details",
                     lambda project_id, object_id: frontend.ObjectFrontend(
-                        self.mw.data_provider).display_details(object_id)
+                        self.mw.data_provider).display_details(
+                            object_id, show_bread_crumb=True)
                 ),
                 Route(
                     "/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>",  # noqa: E501 pylint: disable=C0301
@@ -430,13 +429,8 @@ class Routes:
                         self.mw.data_provider).display_details(
                             item_id,
                             project_id=project_id,
-                            object_id=object_id)
-                ),
-                Route(
-                    "/project/<string:project_id>/edit",
-                    "page_project_edit",
-                    lambda project_id: frontend.ProjectFrontend(
-                        self.mw.data_provider).edit_details(project_id)
+                            object_id=object_id,
+                            show_bread_crumb=True)
                 ),
                 Route(
                     "/project/create/",

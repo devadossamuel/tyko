@@ -1,26 +1,24 @@
-{% extends "dynamiclist.html" %}
-{% block entityTitle %}
-    Objects
-{% endblock %}
-{% block tableDetails %}
-    <thead class="thead-light">
-        <tr>
-            <th scope="col"
-                data-field="name"
-                data-formatter="objectFormatter"
-                data-sortable="true">Name</th>
-        </tr>
-    </thead>
+{% extends "layout.html" %}
+{% from "_macros.html" import list_header, list_table, list_table_toolbar%}
+{% block content %}
+    {{ list_header("Objects") }}
+    {{
+        list_table(
+            api_path,
+            "objects",
+            table_columns=[
+                    {
+                        "field": "name",
+                        "display_text": "Name",
+                        "formatter": "objectFormatter",
+                        "sortable":"true"
+                    },
+                ]
+        )
+    }}
     <script>
         function objectFormatter(value, row) {
             return '<a href="{{ url_for("page_object") }}/'+row.object_id +'">' + value + "</a>";
         }
     </script>
-{% endblock %}
-{% block dataParsing %}
-    var data = JSON.parse(this.responseText)[0].objects;
-{% endblock %}
-
-{% block formatters %}
-
 {% endblock %}

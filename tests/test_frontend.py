@@ -39,27 +39,71 @@ def test_view_web_object(app):
             ),
             content_type='application/json'
         ).get_json()['id']
+
+        collection_id = server.post(
+           url_for("add_collection"),
+            data=json.dumps(
+                {
+                    "collection_name": "my dumb collection",
+                }
+            ),
+            content_type='application/json'
+        ).get_json()['id']
+
         object_id = server.post(
             url_for("project_add_object", project_id=project_id),
             data=json.dumps(
                 {
                     "name": "my stupid object",
+                    "collection_id": collection_id
                 }
             ),
             content_type='application/json'
         ).get_json()['object']['object_id']
         # page_project_object_details
-        resulting_webpage = server.get(
+        resulting_webpage_from_project_object = server.get(
             url_for(
                 "page_project_object_details",
                 project_id=project_id,
                 object_id=object_id
             )
         )
-        assert resulting_webpage.status_code == 200
+        assert resulting_webpage_from_project_object.status_code == 200
         data = str(
-            resulting_webpage.data, encoding="utf-8")
+            resulting_webpage_from_project_object.data, encoding="utf-8")
         assert "my stupid object" in data
+
+        resulting_webpage_from_on_own = server.get(
+            url_for(
+                "page_object_details",
+                object_id=object_id
+            )
+        )
+        assert resulting_webpage_from_on_own.status_code == 200
+
+
+def test_view_web_project_details(app):
+    with app.test_client() as server:
+        project_id = server.post(
+            "/api/project/",
+            data=json.dumps(
+                {
+                    "title": "my dumb project",
+                }
+            ),
+            content_type='application/json'
+        ).get_json()['id']
+        project_page_resp = server.get(
+            url_for("page_project_details", project_id=project_id)
+        )
+        assert project_page_resp.status_code == 200
+
+
+def test_view_web_more(app):
+    with app.test_client() as server:
+
+        more_page_resp = server.get("/more")
+        assert more_page_resp.status_code == 200
 
 
 def test_view_web_item(app):
@@ -113,6 +157,14 @@ def test_view_web_item(app):
         data = str(resulting_webpage.data, encoding="utf-8")
         assert "My dummy item" in data
 
+        resulting_webpage_from_on_own = server.get(
+            url_for(
+                "page_item_details",
+                item_id=new_item_data['item_id']
+            )
+        )
+        assert resulting_webpage_from_on_own.status_code == 200
+
 
 @pytest.fixture()
 def breadcrumb_builder_with_project():
@@ -144,3 +196,13 @@ def test_breadcrumb_builder_del(breadcrumb_builder_with_project):
     assert len(breadcrumb_builder_with_project) == 1
     del breadcrumb_builder_with_project["Project"]
     assert len(breadcrumb_builder_with_project) == 0
+
+
+def test_breadcrumb_builder_build_throws_on_false_level(breadcrumb_builder_with_project):
+    with pytest.raises(ValueError):
+        result = breadcrumb_builder_with_project.build("invalid")
+
+
+def test_breadcrumb_builder_set_throws_on_bad_level(breadcrumb_builder_with_project):
+    with pytest.raises(ValueError):
+        result = breadcrumb_builder_with_project["invalid"] = "spam"

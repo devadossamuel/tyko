@@ -1,82 +1,3 @@
-{% macro notes_table(notes, api_route, notetype) %}
-<table class="table">
-    <caption>Notes</caption>
-    {% if notes|length > 0 %}
-        <thead>
-            <tr>
-                <th scope="col">Type</th>
-                <th class="col-sm-3" id="noteMessageColumnHeader">Message</th>
-                <th scope="col"></th>
-                <th scope="col"></th>
-            </tr>
-        </thead>
-    {% endif %}
-    <tbody>
-        {%- for note in notes -%}
-            <tr>
-                <td >{{ note['note_type'] }}</td>
-                <td>{{ note['text'] }}</td>
-                <td>
-                    <button
-                        class="btn btn-secondary btn-sm"
-                        data-toggle="modal"
-                        data-target="#noteEditor"
-                        data-title="Edit Note"
-                        data-dialogtype="edit"
-                        data-text="{{ note['text'] }}"
-                        data-notetype="{{ note['note_type_id'] }}"
-                        data-apiroute="{{ api_route }}">
-                        Edit
-                    </button>
-                </td>
-                <td>
-                    <button
-                        class="btn btn-secondary btn-danger btn-sm"
-                        data-toggle="modal"
-                        data-target="#noteRemoveConfirm"
-                        data-title="Remove Note"
-                        data-text="{{ note['text'] }}"
-                        data-apiroute="{{ api_route }}">
-                        Remove
-                    </button>
-                </td>
-            </tr>~
-        {%- endfor -%}
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>
-                <div class="btn-group float-right" role="group">
-                    <button
-                        class="btn btn-primary btn-sm"
-                        data-toggle="modal"
-                        data-target="#noteEditor"
-                        data-title="Create New Note"
-                        data-dialogtype="new"
-                        data-source="{{ api_path }}"
-                        data-notetype="{{ notetype }}">Add</button>
-                </div>
-            </td>
-        </tr>
-    </tbody>
-</table>
-{% endmacro %}
-
-
-{% macro notes_table_head(notes) %}
-{% if notes|length > 0 %}
-    <thead>
-        <tr>
-            <th scope="col">Type</th>
-            <th class="col-sm-3" id="noteMessageColumnHeader">Message</th>
-            <th scope="col"></th>
-            <th scope="col"></th>
-        </tr>
-    </thead>
-{% endif %}
-{% endmacro %}
-
 {% macro notes_table_row(note, note_api_route) %}
 <tr>
     <td >{{ note['note_type'] }}</td>
@@ -161,3 +82,86 @@
     })
 </script>
 {% endmacro %}
+
+{% macro metadata_table() %}
+<table class="table">
+    <caption hidden>Metadata</caption>
+    <thead>
+        <tr hidden>
+            <th scope="col">Type</th>
+            <th scope="col">Content</th>
+            <th scope="col">Edit</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{ caller() }}
+    </tbody>
+</table>
+{% endmacro %}
+
+{% macro notes_table(notes, api_path) %}
+<table class="table">
+    <caption hidden>Notes</caption>
+    {% if notes|length > 0 %}
+    <thead>
+        <tr>
+            <th scope="col">Type</th>
+            <th class="col-sm-3" id="noteMessageColumnHeader">Message</th>
+            <th scope="col">Edit</th>
+            <th scope="col">Remove</th>
+        </tr>
+    </thead>
+    {% endif %}
+    <tbody>
+    {%- for note in notes -%}
+        {{ caller(note) }}
+    {% endfor %}
+    {{notes_new_button_row(api_path)}}
+    </tbody>
+
+</table>
+{% endmacro %}
+
+{% macro list_header(title) %}
+    <h1 class="mt-5">{{ title }}</h1>
+{% endmacro %}
+
+{% macro list_table(api_path, row_table, table_columns) %}
+    <table id="table"
+           data-toolbar="#toolbar"
+           data-toggle="table"
+           data-virtual-scroll="true"
+           data-show-columns="false"
+           data-search="true"
+           data-pagination="true"
+           data-url="{{ api_path }}"
+           data-cache="false"
+           class="table-striped"
+           data-data-field="{{ row_table }}">
+    <caption hidden>{{row_table}}</caption>
+    <thead class="thead-light">
+        <tr>
+            {% for table_column in table_columns %}
+                <th scope="col"
+                    data-field="{{table_column.field}}"
+                    {{ 'data-formatter=\"'|safe ~ table_column.formatter ~ '"'|safe if "formatter" in table_column }}
+                    data-sortable="{{table_column.sortable}}"
+
+                >{{table_column.display_text}}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    </table>
+{% endmacro %}
+
+
+
+{% macro list_table_toolbar() %}
+<div id="toolbar">
+    <div class="form-group">
+        {{ caller() }}
+    </div>
+</div>
+{% endmacro %}
+
+

@@ -95,14 +95,6 @@ class AbsFrontend(metaclass=abc.ABCMeta):
         new_context.update(context)
         new_context["selected_menu_item"] = current_item
 
-        def filter_valid_entities_only(entity) -> bool:
-            if entity[0] not in entity_menu:
-                return False
-            return True
-
-        new_context["entities"] = filter(filter_valid_entities_only,
-                                         FrontendEntity.all_entities())
-
         form_list = set()
 
         for entity_name in entity_menu:
@@ -193,17 +185,19 @@ class FrontendEntity(AbsFrontend):
     @property
     @abc.abstractmethod
     def entity_title(self) -> str:
-        pass
+        """Title of the entity as it's meant to be displayed to the user"""
 
     @property
     @abc.abstractmethod
     def entity_rule(self) -> str:
-        pass
+        """The Rule use to look up webpage that displays the details of the
+        entity
+        """
 
     @property
     @abc.abstractmethod
     def entity_list_page_name(self) -> str:
-        pass
+        """The Rule to website that display a list of the given entity"""
 
     @classmethod
     def all_entities(cls):
@@ -250,7 +244,6 @@ class ProjectFrontend(ProjectComponentDetailFrontend):
     def list(self):
         return self.render_page(template="projects.html",
                                 api_path="api/project",
-                                row_table="projects"
                                 )
 
     @property
@@ -301,22 +294,10 @@ class ProjectFrontend(ProjectComponentDetailFrontend):
                     project_id=entity_id
                 )
             ),
+            show_bread_crumb=True,
             collections=data_provider.CollectionDataConnector(
                 self._data_connector.session_maker).get(serialize=True)
             )
-
-    def edit_details(self, entity_id):
-        selected_project = self._data_connector.get(
-            serialize=True, id=entity_id)[0]
-
-        api_path = f"{url_for('.page_index')}api/project/{entity_id}"
-        view_details_path = f"{url_for('page_projects')}/{entity_id}"
-
-        return self.render_page(template="project_details.html",
-                                project=selected_project,
-                                api_path=api_path,
-                                view_details_path=view_details_path,
-                                edit=True)
 
     def create(self):
         return self.render_page(template="new_project.html",
@@ -368,17 +349,19 @@ class ItemFrontend(ProjectComponentDetailFrontend):
         for f in fields:
             if f.source_key is not None:
                 selected_item[f.key] = f.source_key()
-
-        breadcrumbs = self.build_breadcrumbs(
-            active_level="Item",
-            project_url=url_for(
-                "page_project_details",
-                project_id=kwargs["project_id"]),
-            item_url="",
-            object_url=url_for(
-                "page_object_details",
-                object_id=kwargs['object_id'])
-        )
+        if "show_bread_crumb" in kwargs and kwargs['show_bread_crumb'] is True:
+            breadcrumbs = self.build_breadcrumbs(
+                active_level="Item",
+                project_url=url_for("page_project_details",
+                                    project_id=kwargs["project_id"]
+                                    ) if "project_id" in kwargs else None,
+                item_url="",
+                object_url=url_for("page_project_object_details",
+                                   project_id=kwargs["project_id"],
+                                   object_id=selected_item['parent_object_id'])
+            )
+        else:
+            breadcrumbs = None
 
         valid_note_types = []
         for note_type in self._data_connector.get_note_types():
@@ -388,9 +371,10 @@ class ItemFrontend(ProjectComponentDetailFrontend):
             template="item_details.html",
             project_id=kwargs.get("project_id"),
             valid_note_types=valid_note_types,
-            object_id=kwargs.get("object_id"),
+            object_id=selected_item['parent_object_id'],
             fields=fields,
             breadcrumbs=breadcrumbs,
+            show_bread_crumb=kwargs.get('show_bread_crumb'),
             api_path=api_path,
             item=selected_item)
 
@@ -426,19 +410,6 @@ class ObjectFrontend(ProjectComponentDetailFrontend):
                                 title="New Object",
                                 on_success_redirect_base="/object/",
                                 )
-
-    def edit_details(self, entity_id):
-        selected_object = self._data_connector.get(
-            serialize=True, id=entity_id)[0]
-        edit_link = f"{url_for('page_object')}/{entity_id}/edit"
-        api_path = f"{url_for('.page_index')}api/object/{entity_id}"
-        view_details_path = f"{url_for('page_object')}/{entity_id}"
-        return self.render_page(template="object_details.html",
-                                object=selected_object,
-                                api_path=api_path,
-                                view_details_path=view_details_path,
-                                edit_link=edit_link,
-                                edit=True)
 
     @property
     def entity_title(self) -> str:
@@ -498,14 +469,8 @@ class ObjectFrontend(ProjectComponentDetailFrontend):
             selected_object['project_name'] = project_name
             selected_object['project_id'] = project_id
 
-        return self.render_page(
-            template="object_details.html",
-            edit=False,
-            fields=fields,
-            formats=self._data_provider.get_formats(serialize=True),
-            api_path=url_for('object_by_id', id=entity_id),
-            valid_note_types=valid_note_types,
-            breadcrumbs=self.build_breadcrumbs(
+        if "show_bread_crumb" in kwargs and kwargs["show_bread_crumb"] is True:
+            breadcrumbs = self.build_breadcrumbs(
                 "Object",
                 project_url=url_for(
                     "page_project_details",
@@ -516,7 +481,18 @@ class ObjectFrontend(ProjectComponentDetailFrontend):
                     project_id=project['project_id'],
                     object_id=selected_object['object_id']
                 )
-            ),
+            )
+        else:
+            breadcrumbs = None
+        return self.render_page(
+            template="object_details.html",
+            edit=False,
+            fields=fields,
+            formats=self._data_provider.get_formats(serialize=True),
+            api_path=url_for('object_by_id', id=entity_id),
+            valid_note_types=valid_note_types,
+            breadcrumbs=breadcrumbs,
+            show_bread_crumb=kwargs.get("show_bread_crumb"),
             object=selected_object)
 
     def render_page(self, template="object_details.html", **context):
