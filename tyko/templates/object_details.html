@@ -12,6 +12,7 @@
     <div class="card my-1">
         <div class="card-body">
             <table class="table">
+                <caption hidden>Metadata</caption>
                 <tbody>
                     {%- for field in fields -%}
                         {{ add_field_row(field.name, field.key, (object.get(field.key) or ""), field.editable, api_path, loop.index) }}
@@ -26,6 +27,7 @@
         </div>
         <div class="card-body">
             <table class="table">
+                <caption hidden>Items</caption>
                 {% if "project_id" in object %}
                     <tbody>
                         {% for item in object['items'] %}
@@ -55,6 +57,7 @@
         <h5 class="card-header">Notes</h5>
         <div class="card-body">
             <table class="table">
+                <caption hidden>notes</caption>
                 {{ notes_table_head(object['notes']) }}
                 <tbody>
                     {%- for note in object['notes'] -%}

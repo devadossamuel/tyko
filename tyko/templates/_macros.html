@@ -1,10 +1,11 @@
 {% macro notes_table(notes, api_route, notetype) %}
 <table class="table">
+    <caption>Notes</caption>
     {% if notes|length > 0 %}
         <thead>
             <tr>
                 <th scope="col">Type</th>
-                <th class="col-sm-3">Message</th>
+                <th class="col-sm-3" id="noteMessageColumnHeader">Message</th>
                 <th scope="col"></th>
                 <th scope="col"></th>
             </tr>
@@ -68,7 +69,7 @@
     <thead>
         <tr>
             <th scope="col">Type</th>
-            <th class="col-sm-3">Message</th>
+            <th class="col-sm-3" id="noteMessageColumnHeader">Message</th>
             <th scope="col"></th>
             <th scope="col"></th>
         </tr>
