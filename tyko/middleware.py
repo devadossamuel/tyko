@@ -144,7 +144,7 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
             )
         except AttributeError:
             traceback.print_exc(file=sys.stderr)
-            return make_response("Invalid data", 400)
+            return make_response("Invalid item data", 400)
 
     def pbcore(self, id):
         xml = pbcore.create_pbcore_from_object(
@@ -166,7 +166,7 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
         json_request = request.json
         for k, _ in json_request.items():
             if not self.field_can_edit(k):
-                return make_response("Cannot update field: {}".format(k), 400)
+                return make_response("Cannot update object field: {}".format(k), 400)
 
         if "name" in request.json:
             new_object["name"] = request.json.get("name")
@@ -215,7 +215,7 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
             )
         except AttributeError:
             traceback.print_exc(file=sys.stderr)
-            return make_response("Invalid data", 400)
+            return make_response("Invalid note data", 400)
 
     def remove_note(self, object_id, note_id):
         updated_object = self._data_connector.remove_note(
@@ -412,7 +412,7 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
         json_request = request.json
         for k, _ in json_request.items():
             if not self.field_can_edit(k):
-                return make_response("Cannot update field: {}".format(k), 400)
+                return make_response("Cannot update project field: {}".format(k), 400)
 
         if "project_code" in request.json:
             new_project["project_code"] = request.json.get("project_code")
@@ -508,7 +508,7 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
             )
         except AttributeError:
             traceback.print_exc(file=sys.stderr)
-            return make_response("Invalid data", 400)
+            return make_response("Invalid note data", 400)
 
     def add_object(self, project_id):
         data = request.get_json()
@@ -577,7 +577,7 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
                 hashlib.sha256(bytes(json_data, encoding="utf-8")).hexdigest()
 
             response.headers["ETag"] = str(hash_value)
-            response.headers["Cache-Control"] = "private, max-age=0"
+            response.headers["Cache-Control"] = CACHE_HEADER
             return response
 
         result = items
@@ -608,7 +608,7 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
         json_request = request.json
         for k, _ in json_request.items():
             if not self.field_can_edit(k):
-                return make_response("Cannot update field: {}".format(k), 400)
+                return make_response("Cannot update item field: {}".format(k), 400)
 
         for field in self.WRITABLE_FIELDS:
             if field == "obj_sequence":
@@ -778,7 +778,7 @@ class NotestMiddlwareEntity(AbsMiddlwareEntity):
         json_request = request.get_json()
         for k, _ in json_request.items():
             if not self.field_can_edit(k):
-                return make_response("Cannot update field: {}".format(k), 400)
+                return make_response("Cannot update note field: {}".format(k), 400)
 
         if "text" in json_request:
             new_object["text"] = json_request.get("text")
