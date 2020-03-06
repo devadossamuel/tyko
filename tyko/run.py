@@ -22,8 +22,6 @@ def create_app(app=None):
     engine = database.get_engine()
     data_provider = DataProvider(engine)
     app_routes = Routes(data_provider, app)
-    # if init_db:
-    #     init_database(data_provider.db_engine)
 
     app_routes.init_api_routes()
     app_routes.init_website_routes()
