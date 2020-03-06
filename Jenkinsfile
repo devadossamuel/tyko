@@ -635,6 +635,7 @@ foreach($file in $opengl32_libraries){
 -Dsonar.projectBaseDir=${WORKSPACE} \
 -Dsonar.python.coverage.reportPaths=reports/coverage.xml \
 -Dsonar.projectVersion=${props.Version} \
+-Dsonar.organization=\"\" \
 -Dsonar.python.bandit.reportPaths=${WORKSPACE}/reports/bandit-report.json \
 -Dsonar.links.ci=${env.JOB_URL} \
 -Dsonar.buildString=${env.BUILD_TAG} \
