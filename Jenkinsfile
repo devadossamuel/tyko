@@ -623,7 +623,7 @@ foreach($file in $opengl32_libraries){
                         unstash "BANDIT_REPORT"
                         unstash "PYTEST_COVERAGE_DATA"
                         unstash "JEST_REPORT"
-                        sh "sed 'Nd' sonar-project.properties"
+                        sh "sed \'Nd\' sonar-project.properties"
                         script{
                             def props = readProperties interpolate: true, file: 'tyko.dist-info/METADATA'
                             withSonarQubeEnv('sonarqube.library.illinois.edu') {
