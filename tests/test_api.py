@@ -112,6 +112,67 @@ def test_item_delete(app):
         assert delete_resp.status_code == 204
 
 
+def test_object_add_note(app):
+    with app.test_client() as server:
+        project_id = server.post(
+            "/api/project/",
+            data=json.dumps(
+                {
+                    "title": "my dumb project",
+                }
+            ),
+            content_type='application/json'
+        ).get_json()["id"]
+
+        new_object_id = server.post(
+            url_for("project_add_object", project_id=project_id),
+            data=json.dumps(
+                {
+                    "name": "My dummy object",
+                    "barcode": "12345",
+                }
+            ),
+            content_type='application/json'
+        ).get_json()['object']["object_id"]
+
+        new_object_note_resp = server.post(
+            url_for("project_object_add_note",
+                    project_id=project_id,
+                    object_id=new_object_id),
+            data=json.dumps(
+                {
+                    "note_type_id": "3",
+                    "text": "MY dumb note",
+                }
+            ),
+            content_type='application/json'
+        )
+        assert new_object_note_resp.status_code == 200
+        new_note_data =new_object_note_resp.get_json()
+
+        object_notes = server.get(
+            url_for("object_by_id", id=new_object_id)
+        ).get_json()['object']['notes']
+        assert len(object_notes) == 1
+
+        new_note_id = object_notes[0]['note_id']
+
+        delete_resp =server.delete(
+            url_for("object_notes",
+                    project_id=project_id,
+                    object_id=new_object_id,
+                    note_id=new_note_id
+                    )
+        )
+        assert delete_resp.status_code == 202
+
+        notes_after_deleting = server.get(
+            url_for("object_by_id", id=new_object_id)
+        ).get_json()['object']['notes']
+
+        assert len(notes_after_deleting) == 0
+
+
 def test_object_update(app):
 
     with app.test_client() as server:
