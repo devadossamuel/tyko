@@ -8,10 +8,12 @@
         <file>EditingDialog.qml</file>
         <file>ConfigDialog.qml</file>
         <file>ProjectsPage.qml</file>
+        <file>ProjectView.qml</file>
     </qresource>
     <qresource prefix="/js">
         <file alias="request.js">../tyko/static/js/request.js</file>
         <file alias="api.js">../tyko/static/js/api.js</file>
         <file>resource.js</file>
+        <file>tyko.js</file>
     </qresource>
 </RCC>

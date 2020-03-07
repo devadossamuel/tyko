@@ -8,7 +8,7 @@ function create_fail_response(xhr) {
 export const requests = {
     "get": (apiPath)=>{
         let xhr = new XMLHttpRequest();
-        xhr.withCredentials = false;
+            xhr.withCredentials = false;
 
         return new Promise(((resolve, reject) => {
             xhr.onreadystatechange = function () {

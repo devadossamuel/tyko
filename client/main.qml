@@ -6,16 +6,20 @@ import QtQuick.Layouts 1.3
 
 ApplicationWindow {
     id: mainWindow
-    visible: true
+    visible: false
     width: 640
     height: 480
     property int dataRefreshRate: 4000
     property url sourceURL
+    onSourceURLChanged: {
+        projectView.getData(sourceURL)
+    }
+
 //    Settings{
 //        property alias sourceURL: mainWindow.sourceURL
 //    }
     SystemPalette { id: appPalette; colorGroup: SystemPalette.Active }
-    title: "Current :" + mainWindow.sourceURL
+    title: "Current: " + mainWindow.sourceURL
 
     ConfigDialog{
         id: setttingsDialog
@@ -23,6 +27,16 @@ ApplicationWindow {
         onAccepted:{
             mainWindow.sourceURL = sourceURL
         }
+        onActionChosen:{
+            if(sourceURL == ""){
+                Qt.quit()
+            } else{
+                mainWindow.visible = true
+            }
+
+
+        }
+
     }
 
     Action{
@@ -64,15 +78,27 @@ ApplicationWindow {
     StackLayout{
         anchors.fill: parent
         currentIndex: bar.currentIndex
-        //ProjectsPage{
-        //    sourceURL: mainWindow.sourceURL
-        //}
-        Rectangle{
-            color: "light blue"
-            Label{
-                text: "Do something here"
+        onCurrentIndexChanged: {
+
+            if(currentIndex == 0){
+                projectView.getData(sourceURL)
             }
         }
+
+        ProjectView{
+            id: projectView
+
+        }
+
+//        ProjectsPage{
+//            sourceURL: mainWindow.sourceURL
+//        }
+////        Rectangle{
+////            color: "light blue"
+////            Label{
+////                text: "`something here"
+////            }
+////        }
     }
     footer:ToolBar{
         RowLayout{
