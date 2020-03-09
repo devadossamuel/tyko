@@ -33,13 +33,16 @@
     "addFileAttribute": "true",
     "includeConsoleOutput": true
   },
+
   "jest": {
     "testResultsProcessor": "jest-sonar-reporter",
     "coverageReporters": [
       "text",
       "cobertura",
       "lcov"
-    ]
+    ],
+    "verbose": true,
+    "moduleFileExtensions": ["js", "json", "jsx", "node", "mjs"]
   },
   "jestSonar": {
     "reportPath": "reports"
