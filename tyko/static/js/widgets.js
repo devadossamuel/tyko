@@ -7,6 +7,7 @@ export class MetadataWidget {
             "fieldText": fieldText,
             "fieldName": fieldName
         };
+        this.editButtonId = `${fieldName}EditButton`;
         this._state = new ViewWidget(this);
         this._state.draw(this.element, this._data)
     }
@@ -97,6 +98,8 @@ class ViewWidget extends Widgets{
     newEditButton() {
         let newButton = document.createElement("button");
         newButton.setAttribute("class", "btn btn-secondary float-right");
+        newButton.setAttribute("id", this._parent.editButtonId);
+
         newButton.innerHTML = "Edit";
         let self = this._parent;
         newButton.onclick = function () {
@@ -107,15 +110,18 @@ class ViewWidget extends Widgets{
 
 }
 
+
 class EditWidget extends Widgets{
 
     constructor(parentClass) {
         super(parentClass);
         this._type = "edit";
+        this._click_events = []
     }
 
-    newRoot(){
+    newRoot(rootId){
         let newRoot =  document.createElement("div");
+        newRoot.setAttribute("id", rootId);
         newRoot.setAttribute("class", "input-group");
         return newRoot;
     }
@@ -141,26 +147,44 @@ class EditWidget extends Widgets{
 
     draw(element, data){
         element.innerHTML = "";
-        let newRoot = this.newRoot();
+        const rootId = `editArea${data['fieldName']}`;
+        let newRoot = this.newRoot(rootId);
 
         const inputId = `input${data['fieldName']}`;
         newRoot.appendChild(this._newInputLabel(inputId));
-        const inputElement =this._newInput(inputId, data['fieldText']);
+        const inputElement = this._newInput(inputId, data['fieldText']);
         newRoot.appendChild(inputElement);
 
         const confirmButtonID = `${data['fieldName']}ConfirmButton`;
         newRoot.appendChild(this._newConfirmationButton(confirmButtonID, inputElement) );
 
         element.appendChild(newRoot);
+        this.setupEventListeners(element.id);
+    }
+    setupEventListeners(rootId){
+
+        const onOffFocusEvent = function (e){
+            if (document.getElementById(rootId).contains(e.target)  || e.target.id === this._parent.editButtonId) {
+                return;
+            }
+            this.clickedOffFocus();
+            window.removeEventListener("click", onOffFocusEvent);
+
+        }.bind(this);
+
+        window.addEventListener("click", onOffFocusEvent);
     }
 
+    clickedOffFocus(){
+        this.cancel(this._parent)
+    }
 
     accept(parent, data){
-        parent._onEdited(data)
+        parent._onEdited(data);
     }
 
     cancel(parent){
-        parent.swap();
+        parent.viewOnlyMode();
     }
     _newConfirmationButton(confirmButtonId, inputElement) {
         let confirmationButtons = this.buttonGroup();
