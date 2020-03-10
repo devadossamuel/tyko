@@ -96,7 +96,7 @@ class ViewWidget extends Widgets{
 
     newEditButton() {
         let newButton = document.createElement("button");
-        newButton.setAttribute("class", "btn btn-secondary float-right btn-sm");
+        newButton.setAttribute("class", "btn btn-secondary float-right");
         newButton.innerHTML = "Edit";
         let self = this._parent;
         newButton.onclick = function () {
