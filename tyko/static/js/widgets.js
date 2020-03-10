@@ -1,5 +1,4 @@
-export class MetadataWidget {
-
+class absMetadataWidget {
     constructor(element, fieldName, fieldText) {
         this.element = element;
 
@@ -7,33 +6,34 @@ export class MetadataWidget {
             "fieldText": fieldText,
             "fieldName": fieldName
         };
+        this.options = [];
         this.editButtonId = `${fieldName}EditButton`;
-        this._state = new ViewWidget(this);
-        this._state.draw(this.element, this._data)
+    }
+    stateName() {
+        return this._state._type;
     }
     swap(){
         this._state.swap();
-        this._state.draw(this.element, this._data);
+        this.draw();
     }
-
-    stateName() {
-        return this._state._type;
+    draw(){
+        this._state.draw(this.element, this._data)
     }
     set onEdited(value){
         this._onEdited = value;
     }
-
-    editMode(){
-        this._state = new EditWidget(this);
-        this._state.draw(this.element, this._data);
+    get onEdited(){
+        if (this._onEdited == null){
+            throw `${this.constructor.name}.onEdited(data) not set`
+        }
+        return this._onEdited;
     }
-    viewOnlyMode(){
-        this._state = new ViewWidget(this);
-        this._state.draw(this.element, this._data);
+    get state(){
+        return this._state._type;
     }
 }
 
-class Widgets{
+class WidgetState{
     constructor(parentClass) {
         this._parent = parentClass;
     }
@@ -48,7 +48,7 @@ class Widgets{
         return contentContainer
 
     }
-    buttonGroup() {
+    confirmChangesGroup() {
         let confirmationButtons = document.createElement("div");
         confirmationButtons.setAttribute("class", "input-group-append");
         return confirmationButtons;
@@ -63,17 +63,106 @@ class Widgets{
         return newColumnSection;
     }
 }
+class WidgetEditState extends WidgetState{
+    constructor(parentClass) {
+        super(parentClass);
+        this._type = "edit";
+    }
+    accept(parent, data){
+        parent.onEdited(data);
+        parent.viewOnlyMode();
+    }
+    cancel(parent){
+        parent.viewOnlyMode();
+    }
+    setupEventListeners(rootId){
 
-class ViewWidget extends Widgets{
+        const onOffFocusEvent = function (e){
+            if (document.getElementById(rootId).contains(e.target)  || e.target.id === this._parent.editButtonId) {
+                return;
+            }
+            this.clickedOffFocus();
+            window.removeEventListener("click", onOffFocusEvent);
+
+        }.bind(this);
+
+        window.addEventListener("click", onOffFocusEvent);
+    }
+
+    clickedOffFocus(){
+        this.cancel(this._parent)
+    }
+    newRoot(rootId){
+        let newRoot =  document.createElement("div");
+        newRoot.setAttribute("id", rootId);
+        newRoot.setAttribute("class", "input-group");
+        return newRoot;
+    }
+    newInputLabel(id){
+        let newLabel = document.createElement("label");
+        newLabel.setAttribute("for", id);
+        return newLabel
+    }
+    newInput(id, text, type){
+        let newInputElement = document.createElement("input");
+        newInputElement.setAttribute("id", id);
+        newInputElement.setAttribute("value", text);
+        newInputElement.setAttribute("type", type);
+        newInputElement.setAttribute("class", "form-control");
+        return newInputElement;
+    }
+
+    confirmChangesGroup() {
+        let confirmationButtons = document.createElement("div");
+        confirmationButtons.setAttribute("class", "input-group-append");
+        return confirmationButtons;
+    }
+
+    newConfirmationButton(confirmButtonId, inputElement) {
+        let confirmationButtons = this.confirmChangesGroup();
+
+        const parent = this._parent;
+
+        let confirmButton = document.createElement("button");
+        confirmButton.innerText = "Confirm";
+        confirmButton.setAttribute("class", "btn btn-outline-secondary");
+        confirmButton.setAttribute("id", confirmButtonId);
+
+        const accept = this.accept;
+        confirmButton.onclick = function(){
+          accept(parent, inputElement.value)
+        };
+
+        confirmationButtons.appendChild(confirmButton);
+
+        let cancelButton = document.createElement("button");
+        cancelButton.innerText = "Cancel";
+        cancelButton.setAttribute("class", "btn btn-outline-secondary");
+
+        const cancel = this.cancel;
+        cancelButton.onclick = function(){
+            cancel(parent);
+
+        };
+
+        confirmationButtons.appendChild(cancelButton);
+
+        return confirmationButtons;
+    }
+}
+class ViewWidget extends WidgetState{
     constructor(parentClass) {
         super(parentClass);
         this._type = "view";
+        this.editWidget = null;
     }
     swap(){
-        this._parent._state = new EditWidget(this._parent)
+        if(this.editWidget != null){
+            this._parent._state = new this.editWidget(this._parent)
+        } else {
+            throw "No edit has no valid state ";
+        }
     }
-
-
 
     draw(element, data){
         element.innerHTML = "";
@@ -109,40 +198,56 @@ class ViewWidget extends Widgets{
     }
 
 }
-
-
-class EditWidget extends Widgets{
-
+class SelectEditWidget extends WidgetEditState {
     constructor(parentClass) {
         super(parentClass);
-        this._type = "edit";
-        this._click_events = []
-    }
-
-    newRoot(rootId){
-        let newRoot =  document.createElement("div");
-        newRoot.setAttribute("id", rootId);
-        newRoot.setAttribute("class", "input-group");
-        return newRoot;
+        this.options = [];
     }
     swap(){
         this._parent._state = new ViewWidget(this._parent);
     }
+    draw(element, data){
+        element.innerHTML = "";
+        const rootId = `editArea${data['fieldName']}`;
+        let newRoot = this.newRoot(rootId);
+        const inputId = `input${data['fieldName']}`;
+        newRoot.appendChild(this.newInputLabel(inputId));
 
+        let inputElement = this._newSelect(this._parent.options, data['fieldText'], data['fieldName']);
 
-    _newInputLabel(id){
-        let newLabel = document.createElement("label");
-        newLabel.setAttribute("for", id);
-        return newLabel
-
+        newRoot.appendChild(inputElement);
+        const confirmButtonID = `${data['fieldName']}ConfirmButton`;
+        newRoot.appendChild(this.newConfirmationButton(confirmButtonID, inputElement) );
+        element.appendChild(newRoot);
+        this.setupEventListeners(element.id);
     }
-    _newInput(id, text){
-        let newInput = document.createElement("input");
-        newInput.setAttribute("id", id);
-        newInput.setAttribute("value", text);
-        newInput.setAttribute("type", "text");
-        newInput.setAttribute("class", "form-control");
-        return newInput;
+
+    _newSelect(options, selected, fieldName) {
+        const selectionId = `${fieldName}Select`;
+        let inputElement = document.createElement("select");
+        inputElement.setAttribute("id", selectionId);
+        inputElement.setAttribute("class", "form-control");
+        options.forEach(option =>{
+            let optionElement = document.createElement("option");
+            optionElement.innerText = option;
+            if( option === selected){
+                optionElement.setAttribute("selected", "");
+            }
+            inputElement.appendChild(optionElement)
+        });
+        return inputElement;
+    }
+}
+
+class TextEditWidget extends WidgetEditState{
+
+    constructor(parentClass) {
+        super(parentClass);
+    }
+
+
+    swap(){
+        this._parent._state = new ViewWidget(this._parent);
     }
 
     draw(element, data){
@@ -151,72 +256,91 @@ class EditWidget extends Widgets{
         let newRoot = this.newRoot(rootId);
 
         const inputId = `input${data['fieldName']}`;
-        newRoot.appendChild(this._newInputLabel(inputId));
-        const inputElement = this._newInput(inputId, data['fieldText']);
+        newRoot.appendChild(this.newInputLabel(inputId));
+        const inputElement = this.newInput(inputId, data['fieldText'], "text");
         newRoot.appendChild(inputElement);
 
         const confirmButtonID = `${data['fieldName']}ConfirmButton`;
-        newRoot.appendChild(this._newConfirmationButton(confirmButtonID, inputElement) );
+        newRoot.appendChild(this.newConfirmationButton(confirmButtonID, inputElement) );
 
         element.appendChild(newRoot);
         this.setupEventListeners(element.id);
     }
-    setupEventListeners(rootId){
+}
 
-        const onOffFocusEvent = function (e){
-            if (document.getElementById(rootId).contains(e.target)  || e.target.id === this._parent.editButtonId) {
-                return;
+class SelectEditorPartFactory{
+    constructor(type, rootElement) {
+
+        if (type === "viewState") {
+            return () => {
+                let viewWidget = new ViewWidget(rootElement);
+                viewWidget.editWidget = SelectEditWidget;
+                rootElement._state = viewWidget;
+                rootElement._state.draw(rootElement.element, rootElement._data);
             }
-            this.clickedOffFocus();
-            window.removeEventListener("click", onOffFocusEvent);
+        }
+        if (type === "editState") {
+            return () => {
+                rootElement._state = new SelectEditWidget(rootElement);
+                rootElement._state.draw(rootElement.element, rootElement._data);
+            }
+        }
 
-        }.bind(this);
-
-        window.addEventListener("click", onOffFocusEvent);
     }
+}
+class TextEditorPartFactory{
+    constructor(type, rootElement) {
 
-    clickedOffFocus(){
-        this.cancel(this._parent)
+        if (type === "viewState"){
+            return ()=>{
+                let viewWidget = new ViewWidget(rootElement);
+                viewWidget.editWidget = TextEditWidget;
+                rootElement._state = viewWidget;
+                rootElement._state.draw(rootElement.element, rootElement._data);
+            }
+        }
+        if (type === "editState"){
+            return ()=>{
+                rootElement._state = new TextEditWidget(rootElement);
+                rootElement._state.draw(rootElement.element, rootElement._data);
+            }
+        }
     }
+}
 
-    accept(parent, data){
-        parent._onEdited(data);
-    }
-
-    cancel(parent){
-        parent.viewOnlyMode();
-    }
-    _newConfirmationButton(confirmButtonId, inputElement) {
-        let confirmationButtons = this.buttonGroup();
-
-        const parent = this._parent;
-
-        let confirmButton = document.createElement("button");
-        confirmButton.innerText = "Confirm";
-        confirmButton.setAttribute("class", "btn btn-outline-secondary");
-        confirmButton.setAttribute("id", confirmButtonId);
-
-        const accept = this.accept;
-        confirmButton.onclick = function(){
-          accept(parent, inputElement.value)
+class Factory {
+    constructor() {
+        this.widgetTypes = {
+            "textEditor": (rootElement, fieldName, displayText) => {
+                let baseWidget = new absMetadataWidget(rootElement, fieldName, displayText);
+                baseWidget["inputType"] = "text";
+                baseWidget['editMode'] = new TextEditorPartFactory("editState", baseWidget);
+                baseWidget['viewOnlyMode'] = new TextEditorPartFactory("viewState", baseWidget);
+                return baseWidget;
+            },
+            "selectEditor": (rootElement, fieldName, displayText) => {
+                let baseWidget = new absMetadataWidget(rootElement, fieldName, displayText);
+                baseWidget["inputType"] = "select";
+                baseWidget['viewOnlyMode'] = new SelectEditorPartFactory("viewState", baseWidget);
+                baseWidget['editMode'] = new SelectEditorPartFactory("editState", baseWidget);
+                return baseWidget
+            }
         };
-
-        confirmationButtons.appendChild(confirmButton);
-
-        let cancelButton = document.createElement("button");
-        cancelButton.innerText = "Cancel";
-        cancelButton.setAttribute("class", "btn btn-outline-secondary");
-
-        const cancel = this.cancel;
-        cancelButton.onclick = function(){
-            cancel(parent);
-
-        };
-
-        confirmationButtons.appendChild(cancelButton);
-
-        return confirmationButtons;
     }
+    createWidget(type, rootElement, fieldName, displayText){
+        if( !(type in this.widgetTypes) ){
+            throw `${type} is not valid type`;
+        }
 
+        let widgetFactory =this.widgetTypes[type];
+        let widget = widgetFactory(rootElement, fieldName, displayText);
 
+        widget.viewOnlyMode();
+        return widget
+    }
+}
+
+export function getWidget(type, rootElement, fieldName, displayText) {
+    var factory = new Factory();
+    return factory.createWidget(type, rootElement, fieldName, displayText);
 }

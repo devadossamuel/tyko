@@ -1,6 +1,6 @@
 {% extends "details_table.html" %}
 {% from "_macros.html" import notes_table_row, note_editor_events, notes_table, metadata_table %}
-{% from "_details_macros.html" import confirm_remove_entity_modal, add_field_row, child_entity_row, remove_modal_event_scripts, metadata_text_edit_widget %}
+{% from "_details_macros.html" import confirm_remove_entity_modal, add_field_row, child_entity_row, remove_modal_event_scripts, metadata_text_edit_widget, metadata_select_edit_widget %}
 {% from "_object_macros.html" import object_new_button_row, new_object_modal%}
 {% block detail_table -%}
     <div class="card my-1">
@@ -8,7 +8,7 @@
             {%  call metadata_table() %}
                 <tr>{{ metadata_text_edit_widget("Title", project['title'], "title", api_path) }}</tr>
                 <tr>{{ metadata_text_edit_widget("Project Code", project['project_code'], "project_code", api_path) }}</tr>
-                <tr>{{ metadata_text_edit_widget("Status", project['status'], "status", api_path) }}</tr>
+                <tr>{{ metadata_select_edit_widget("Status", project['status'], ["In progress", "Complete", "No work done"], field_key="status", update_api_path=api_path) }}</tr>
                 <tr>{{ metadata_text_edit_widget("Current Location", project['current_location'], 'current_location', api_path) }}</tr>
             {% endcall %}
         </div>
