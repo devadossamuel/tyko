@@ -5,6 +5,16 @@ function create_fail_response(xhr) {
         responseText: xhr.responseText
     }
 }
+
+
+function handle_results(xhr, resolve, reject) {
+    if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(xhr.response);
+    } else {
+        reject(create_fail_response(xhr))
+    }
+}
+
 export const requests = {
     "get": (apiPath)=>{
         let xhr = new XMLHttpRequest();
@@ -14,12 +24,6 @@ export const requests = {
             xhr.onreadystatechange = function () {
                 if (xhr.readyState !== 4) {
                     return;
-                }
-
-                if (xhr.status >= 200 && xhr.status < 300){
-                    resolve(xhr.response);
-                } else {
-                    reject(create_fail_response(xhr))
                 }
             };
             xhr.open("get", apiPath, true);
@@ -34,12 +38,7 @@ export const requests = {
                 if (xhr.readyState !== 4) {
                     return;
                 }
-
-                if (xhr.status >= 200 && xhr.status < 300){
-                    resolve(xhr.response);
-                } else {
-                    reject(create_fail_response(xhr))
-                }
+                handle_results(xhr, resolve, reject);
             };
         xhr.open("POST", apiPath, true);
         xhr.setRequestHeader('Content-Type', 'application/json');
@@ -54,11 +53,7 @@ export const requests = {
                 if (xhr.readyState !== 4) {
                     return;
                 }
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    resolve(xhr.response);
-                } else {
-                    reject(create_fail_response(xhr))
-                }
+                handle_results(xhr, resolve, reject);
             };
             xhr.open("PUT", apiPath, true);
             xhr.setRequestHeader('Content-Type', 'application/json');
