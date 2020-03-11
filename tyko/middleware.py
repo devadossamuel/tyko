@@ -313,7 +313,7 @@ class CollectionMiddlwareEntity(AbsMiddlwareEntity):
             new_collection["collection_name"] = data["collection_name"]
 
         if "department" in data:
-            new_collection["collection_name"] = data["department"]
+            new_collection["department"] = data["department"]
 
         updated_collection = \
             self._data_connector.update(
