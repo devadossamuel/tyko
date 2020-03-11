@@ -1,36 +1,21 @@
 {% extends "create_entity.html" %}
-
+{% import "_form_macros.html" as form_macros %}
 
 {% block form %}
     <form id="new-project-form" onsubmit="return submitNew('{{ api_path }}')">
-        <div class="form-group row">
-            <label for="title" class="col-sm-2 col-form-label">Title</label>
-            <div class="col-sm-10">
-                <input type="string" class="form-control" id="title" name="title" placeholder="Title" required>
-            </div>
-        </div>
-        <div class="form-group row">
-            <label for="inputProjectCode" class="col-sm-2 col-form-label">Project Code</label>
-            <div class="col-sm-10">
-                <input type="string" class="form-control" id="inputProjectCode" name="project_code" placeholder="Project Code">
-            </div>
-        </div>
-        <div class="form-group row">
-            <label for="inputProjectStatus" class="col-sm-2 col-form-label">Project Status</label>
-            <div class="col-sm-10">
-                <select id="inputProjectStatus" name="status" class="form-control">
-                    <option value="In progress">In progress</option>
-                    <option value="Complete">Complete</option>
-                    <option value="No work done">No work done</option>
-                </select>
-            </div>
-        </div>
-        <div class="form-group row">
-            <label for="inputCurrentLocation" class="col-sm-2 col-form-label">Current Location</label>
-            <div class="col-sm-10">
-                <input type="string" class="form-control" id="inputCurrentLocation" name="current_location" placeholder="Project Status">
-            </div>
-        </div>
+    {{ form_macros.form_text_field("titleInput", "Title", "title", required=True) }}
+    {{ form_macros.form_text_field("projectCodeInput", "Project Code", "project_code") }}
+    {{ form_macros.form_select_field("projectStatusInput",
+                                     "Project Status",
+                                     "status",
+                                     options=[
+                                            {"value": "In progress","text": "In progress"},
+                                            {"value": "Complete", "text": "Complete"},
+                                            {"value": "No work done", "text": "No work done"},
+                                        ],
+                                     required=True ) }}
+
+    {{ form_macros.form_text_field("currentLocationInput", "Current Location", "current_location") }}
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 {% endblock %}

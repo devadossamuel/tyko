@@ -88,3 +88,8 @@ function addItem(apiRoute, data) {
 export const items = {
   "addItem": addItem
 };
+
+
+export const collections = {
+  "new": requests.post
+};

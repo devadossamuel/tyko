@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+{% import "_form_macros.html" as form_macros %}
+
+{% block content %}
+    <div class="container-fluid">
+        <form id="new-collection-form">
+            {{ form_macros.form_header("New Collection") }}
+            {{ form_macros.form_text_field("nameInput", "Collection Name", "collection_name", required=True) }}
+            {{ form_macros.form_text_field("departmentInput", "Department", "department") }}
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <script type="module">
+                import {collections} from "{{ url_for('static', filename='js/api.js') }}"
+                $(document).ready(()=>{
+                    console.log("ready now");
+                    $("#new-collection-form").unbind("submit").bind("submit",
+                        function(e){
+                            e.preventDefault();
+                            const formData = $(this).serializeArray();
+                            console.log(formData);
+                            let data = {};
+                            for (let i=0; i < formData.length; i++){
+                                data[formData[i].name] = formData[i].value;
+                            }
+                            console.log(data);
+                            collections.new("{{ url_for('add_collection') }}", data)
+                                .then((result)=>{
+                                    window.location.href = JSON.parse(result)["frontend_url"];
+                                }).catch((response)=>{
+                                    alert("Creating a new collection failed");
+                            });
+                        }
+                    )
+                })
+            </script>
+        </form>
+    </div>
+{% endblock %}

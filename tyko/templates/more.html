@@ -18,11 +18,9 @@
         </div>
         <div class="card-body">
             <ul>
-                {% for form_page in all_forms|sort -%}
-                    <li>
-                        <a href="{{url_for(form_page[1])}}">{{ form_page[0] }}</a>
-                    </li>
-                {% endfor %}
+                <li>
+                    <a href="{{ url_for('form_new_collection') }}">New Collection</a>
+                </li>
             </ul>
         </div>
     </div>

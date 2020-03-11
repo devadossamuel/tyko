@@ -6,7 +6,6 @@ from flask import jsonify, render_template, views
 
 from . import middleware
 from .data_provider import DataProvider
-from .frontend import all_forms as front_forms
 from . import frontend
 from . import entities
 
@@ -33,7 +32,6 @@ class EntityPage:
 
 
 _all_entities = set()
-all_forms = set()
 
 
 class ProjectNotesAPI(views.MethodView):
@@ -307,11 +305,14 @@ class Routes:
         about_page = frontend.AboutPage()
         index_page = frontend.IndexPage()
         more_page = frontend.MoreMenuPage()
+        new_collection_page = frontend.NewCollectionForm()
 
         static_web_routes = [
             Route("/", "page_index", index_page.render_page),
             Route("/about", "page_about", about_page.render_page),
             Route("/more", "page_more", more_page.render_page),
+            Route("/collection/new", "form_new_collection",
+                  new_collection_page.render_page),
             ]
 
         simple_pages = []
@@ -456,11 +457,6 @@ class Routes:
 
                     self.app.add_url_rule(rule.rule, rule.method,
                                           rule.viewFunction)
-            for form_page in front_forms:
-                all_forms.add((form_page.form_title, form_page.form_page_name))
-                self.app.add_url_rule(form_page.form_page_rule,
-                                      form_page.form_page_name,
-                                      form_page.create)
 
 
 def page_formats(middleware_source):
@@ -469,8 +465,7 @@ def page_formats(middleware_source):
         "formats.html",
         selected_menu_item="formats",
         formats=formats,
-        entities=_all_entities,
-        all_forms=all_forms
+        entities=_all_entities
     )
 
 

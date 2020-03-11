@@ -10,7 +10,6 @@ from dataclasses import dataclass
 from flask import make_response, render_template, url_for
 
 from . import data_provider
-from .decorators import authenticate
 
 
 @dataclass
@@ -95,8 +94,6 @@ class AbsFrontend(metaclass=abc.ABCMeta):
         new_context.update(context)
         new_context["selected_menu_item"] = current_item
 
-        form_list = set()
-
         for entity_name in entity_menu:
             if current_item == entity_name:
                 new_context["is_entity"] = True
@@ -104,10 +101,6 @@ class AbsFrontend(metaclass=abc.ABCMeta):
         else:
             new_context["is_entity"] = False
 
-        for form in all_forms:
-            form_list.add((form.form_title, form.form_page_name))
-
-        new_context["all_forms"] = sorted(form_list, key=lambda x: [0])
         return new_context
 
     @abc.abstractmethod
@@ -140,7 +133,7 @@ class MoreMenuPage(AbsFrontend):
             ("Collections", "page_collections"),
         ]
         forms: List[Tuple[str, str]] = [
-            ("New Collection", "page_new_collection"),
+            # ("New Collection", "page_new_collection"),
             ("New Item", "page_new_item"),
             ("New Object", "page_new_object"),
             ]
@@ -174,7 +167,7 @@ class FrontendEntity(AbsFrontend):
         return make_response(
             "{}.list not implemented".format(self.__class__.__name__), 404)
 
-    def render_page(self, template="newentity.html", **context):
+    def render_page(self, template, **context):
         new_context = self.build_header_context(
             current_item=self.entity_title,
             context=context
@@ -537,151 +530,7 @@ class CollectiontFrontend(FrontendEntity):
         return "page_collections"
 
 
-class NewEntityForm(AbsFrontend):
-    _forms: Set[Tuple[str, str]] = set()
-    @classmethod
-    def all_forms(cls):
-        return sorted(cls._forms)
+class NewCollectionForm(AbsFrontend):
 
-    @property
-    @abc.abstractmethod
-    def form_title(self) -> str:
-        pass
-
-    @property
-    @abc.abstractmethod
-    def form_page_name(self) -> str:
-        pass
-
-    @property
-    @abc.abstractmethod
-    def form_page_rule(self) -> str:
-        pass
-
-    def __init__(self):
-        NewEntityForm._forms.add(
-            (self.form_title, self.form_page_name)
-        )
-
-    @authenticate
-    def render_page(self, template="newentity.html", **context):
-        new_context = self.build_header_context(
-            current_item=self.form_title,
-            context=context
-        )
-        return render_template(template, **new_context)
-
-    @abc.abstractmethod
-    def create(self):
-        pass
-
-
-class NewProjectForm(NewEntityForm):
-
-    @property
-    def form_title(self) -> str:
-        return "New Project"
-
-    @property
-    def form_page_name(self) -> str:
-        return "page_new_project"
-
-    def create(self):
-        return self.render_page(
-            form_title="New Project",
-            api_location="api/project/",
-            form_fields=[
-                FormField("text", "title", "Project Title", True),
-                FormField("text", "project_code", "Project Code", False),
-                FormField("text", "status", "Project Status", False),
-                FormField("text", "current_location", "Current Location",
-                          False),
-                FormField("text", "specs", "Specs", False),
-            ],
-        )
-
-    @property
-    def form_page_rule(self) -> str:
-        return "/newproject"
-
-
-class NewCollectionForm(NewEntityForm):
-
-    @property
-    def form_title(self) -> str:
-        return "New Collection"
-
-    @property
-    def form_page_name(self) -> str:
-        return "page_new_collection"
-
-    @property
-    def form_page_rule(self) -> str:
-        return "/newcollection"
-
-    def create(self):
-        return self.render_page(
-            form_title="New Collection",
-            api_location="api/collection/",
-            form_fields=[
-                FormField("text", "collection_name", "Name", True),
-                FormField("text", "department", "Department", True),
-            ]
-        )
-
-
-class NewItemForm(NewEntityForm):
-
-    @property
-    def form_title(self) -> str:
-        return "New Item"
-
-    @property
-    def form_page_name(self) -> str:
-        return "page_new_item"
-
-    @property
-    def form_page_rule(self) -> str:
-        return "/newitem"
-
-    def create(self):
-        return self.render_page(
-            form_title="New Item",
-            api_location="api/item/",
-            form_fields=[
-                FormField("text", "name", "Name", True),
-                FormField("text", "file_name", "File name", False),
-            ]
-        )
-
-
-class NewObjectForm(NewEntityForm):
-
-    @property
-    def form_title(self) -> str:
-        return "New Object"
-
-    @property
-    def form_page_name(self) -> str:
-        return "page_new_object"
-
-    @property
-    def form_page_rule(self) -> str:
-        return "/newobject"
-
-    def create(self):
-        return self.render_page(
-            form_title="New Object",
-            api_location="api/object/",
-            form_fields=[
-                FormField("text", "name", "Name", True),
-                FormField("text", "barcode", "Barcode", False),
-            ]
-        )
-
-
-all_forms = {
-    NewCollectionForm(),
-    NewItemForm(),
-    NewObjectForm()
-}
+    def render_page(self, template="form_new_collection.html", **context):
+        return render_template(template)
