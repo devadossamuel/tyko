@@ -222,6 +222,7 @@ def test_object_update(app):
             new_object_record_url,
             data=json.dumps({
                 "name": "changed_dummy object",
+                "barcode": "54321",
                 "collection_id": collection_two_id
             }),
             content_type='application/json'
@@ -232,7 +233,7 @@ def test_object_update(app):
         put_resp_data = json.loads(put_resp.data)
         put_item = put_resp_data["object"]
         assert put_item["name"] == "changed_dummy object"
-        assert put_item["barcode"] == "12345"
+        assert put_item["barcode"] == "54321"
 
         get_resp = server.get(new_object_record_url)
         assert get_resp.status_code == 200
@@ -240,7 +241,7 @@ def test_object_update(app):
         edited_data = json.loads(get_resp.data)
         get_object = edited_data["object"]
         assert get_object["name"] == "changed_dummy object"
-        assert get_object["barcode"] == "12345"
+        assert get_object["barcode"] == "54321"
         assert get_object['collection']["collection_id"] == collection_two_id
 
 
