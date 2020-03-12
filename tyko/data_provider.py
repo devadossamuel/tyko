@@ -364,6 +364,12 @@ class ObjectDataConnector(AbsNotesConnector):
 
                     collection_object.collection = collection
 
+                if 'originals_rec_date' in changed_data:
+                    # TODO Make into a python date format
+                    collection_object.originals_rec_date = changed_data['originals_rec_date']
+
+                # TODO: handle Originals Returned Date
+
                 session.add(collection_object)
                 session.commit()
 

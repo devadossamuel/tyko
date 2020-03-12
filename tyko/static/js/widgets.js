@@ -198,6 +198,34 @@ class ViewWidget extends WidgetState{
     }
 
 }
+class SelectDateWidget extends WidgetEditState {
+    draw(element, data){
+        element.innerHTML = "";
+        const rootId = `editArea${data['fieldName']}`;
+        let newRoot = this.newRoot(rootId);
+        console.log("data['fieldText'], = " + data['fieldText']);
+        let new_date_picker = this._new_date_picker(data['fieldText']);
+        newRoot.appendChild(new_date_picker);
+
+
+        const confirmButtonID = `${data['fieldName']}ConfirmButton`;
+        newRoot.appendChild(this.newConfirmationButton(confirmButtonID, new_date_picker) );
+        element.appendChild(newRoot);
+        this.setupEventListeners(element.id);
+    }
+    _new_date_picker(value){
+
+        let datePicker = document.createElement("input");
+        datePicker.setAttribute("class", "form-control");
+        datePicker.setAttribute("value", value);
+        $(datePicker).datepicker({
+                    uiLibrary: 'bootstrap4',
+                    format: 'yyyy-mm-dd'
+                });
+
+        return datePicker;
+    }
+}
 class SelectEditWidget extends WidgetEditState {
     constructor(parentClass) {
         super(parentClass);
@@ -268,7 +296,19 @@ class TextEditWidget extends WidgetEditState{
         this.setupEventListeners(element.id);
     }
 }
+class DatePickerPartFactory {
+    constructor(type, rootElement) {
 
+        if (type === "viewState") {
+            return () => {
+                let viewWidget = new ViewWidget(rootElement);
+                viewWidget.editWidget = SelectDateWidget;
+                rootElement._state = viewWidget;
+                rootElement._state.draw(rootElement.element, rootElement._data);
+            }
+        }
+    }
+}
 class SelectEditorPartFactory{
     constructor(type, rootElement) {
 
@@ -325,6 +365,11 @@ class Factory {
                 baseWidget['viewOnlyMode'] = new SelectEditorPartFactory("viewState", baseWidget);
                 baseWidget['editMode'] = new SelectEditorPartFactory("editState", baseWidget);
                 return baseWidget
+            },
+            "datePicker": (rootElement, fieldName, displayText) => {
+                let baseWidget = new absMetadataWidget(rootElement, fieldName, displayText);
+                baseWidget['viewOnlyMode'] = new DatePickerPartFactory("viewState", baseWidget);
+                return baseWidget;
             }
         };
     }
@@ -342,6 +387,6 @@ class Factory {
 }
 
 export function getWidget(type, rootElement, fieldName, displayText) {
-    var factory = new Factory();
+    const factory = new Factory();
     return factory.createWidget(type, rootElement, fieldName, displayText);
 }

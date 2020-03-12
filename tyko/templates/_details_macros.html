@@ -265,6 +265,35 @@ function remove(apiPath) {
     {% endcall %}
 {% endmacro %}
 
+{% macro metadata_date_edit_widget(field_name, field_value, field_key=None, update_api_path=None) %}
+    {% call metadata_widget(field_name, field_value) %}
+
+        {% if field_key and  update_api_path %}
+        <script type="module">
+            import {getWidget} from "{{url_for('static', filename="js/widgets.js")}}";
+            import {requests} from "{{url_for('static', filename="js/request.js")}}"
+            let dateWidget = getWidget(
+                "datePicker",
+                document.getElementById("{{field_name}}Data"),
+                "{{ field_name }}",
+                "{{ field_value }}",
+            );
+            dateWidget.onEdited = function (data) {
+                const newData= {
+                    "{{ field_key }}": data
+                };
+                requests.put("{{update_api_path}}", newData).then(()=>{
+                    location.reload();
+                }).catch((response)=>{
+                    alert("Failed. Reason: " + response.statusText);
+                });
+                dateWidget.viewOnlyMode();
+            };
+            {% endif %}
+        </script>
+    {% endcall %}
+{% endmacro %}
+
 {% macro metadata_text_edit_widget(field_name, field_value, field_key=None, update_api_path=None) %}
     {% call metadata_widget(field_name, field_value) %}
         {% if update_api_path and field_key%}

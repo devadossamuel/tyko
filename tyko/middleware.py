@@ -64,7 +64,8 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
     WRITABLE_FIELDS = [
         "name",
         "barcode",
-        "collection_id"
+        "collection_id",
+        'originals_rec_date'
     ]
 
     def __init__(self, data_provider: dp.DataProvider) -> None:
@@ -177,6 +178,9 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
 
         if "collection_id" in json_request:
             new_object['collection_id'] = json_request['collection_id']
+
+        if "originals_rec_date" in json_request:
+            new_object['originals_rec_date'] = json_request['originals_rec_date']
 
         updated_object = \
             self._data_connector.update(
