@@ -10,3 +10,4 @@ node_modules
 coverage
 venv
 __pycache__/
+CI/build_VS2019/Dockerfile

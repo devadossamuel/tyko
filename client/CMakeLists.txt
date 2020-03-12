@@ -35,7 +35,6 @@ project(avdatabaseEditor LANGUAGES CXX)
 #        PostCurl
 #    )
 
-
 add_executable(avdatabaseEditor
         "main.cpp"
         "qml.qrc"

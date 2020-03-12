@@ -84,67 +84,11 @@ pipeline {
     }
     parameters {
         booleanParam(name: "FRESH_WORKSPACE", defaultValue: false, description: "Purge workspace before staring and checking out source")
-        booleanParam(name: "BUILD_CLIENT", defaultValue: false, description: "Build Client program")
+        booleanParam(name: "BUILD_CLIENT", defaultValue: true, description: "Build Client program")
         booleanParam(name: "TEST_RUN_TOX", defaultValue: false, description: "Run Tox Tests")
         booleanParam(name: "DEPLOY_SERVER", defaultValue: false, description: "Deploy server software to server")
     }
     stages {
-//        stage('Configure Environment') {
-//            environment{
-//                PATH = "${tool 'CPython-3.7'};$PATH"
-//            }
-//            options{
-//                timeout(5)
-//            }
-//            stages{
-//                stage("Purge All Existing Data in Workspace"){
-//                    when{
-//                        anyOf{
-//                            equals expected: true, actual: params.FRESH_WORKSPACE
-//                            triggeredBy "TimerTriggerCause"
-//                        }
-//                    }
-//                    steps{
-//                        deleteDir()
-//                        dir("scm"){
-//                            checkout scm
-//                        }
-//                    }
-//                }
-//            }
-//            post{
-//                failure {
-//                    deleteDir()
-//                }
-//                success{
-//                    echo "Configured ${env.PKG_NAME}, version ${env.PKG_VERSION}, for testing."
-//                }
-//            }
-//        }
-        stage("Getting build required files"){
-            when {
-                equals expected: true, actual: params.BUILD_CLIENT
-                beforeAgent true
-            }
-            agent{
-                label "Windows&&opengl32"
-            }
-            steps{
-                script{
-                    if(!fileExists('opengl32.dll')){
-                        powershell(
-                            label: "Searching for opengl32.dll",
-                            script: '''
-$opengl32_libraries = Get-ChildItem -Path c:\\Windows\\System32 -Recurse -ErrorAction SilentlyContinue -Include opengl32.dll
-foreach($file in $opengl32_libraries){
-    Copy-Item $file.FullName
-    break
-}''')
-                    }
-                }
-                stash includes: 'opengl32.dll', name: 'OPENGL'
-            }
-        }
         stage("Building"){
             failFast true
             parallel{
@@ -178,7 +122,7 @@ foreach($file in $opengl32_libraries){
                     when {
                         anyOf{
                             equals expected: true, actual: params.BUILD_CLIENT
-                            changeset(pattern: "client/**,CI/build_VS2019/**")
+                            changeset(pattern: "client/**,CI/build_VS2019/**,conanfile.py")
                         }
                         beforeAgent true
                     }
@@ -212,9 +156,6 @@ foreach($file in $opengl32_libraries){
                         }
                         stage("Package Client"){
                             steps{
-                                unstash "OPENGL"
-                                // ONLY DO THIS IN A DOCKER CONTAINER!!
-                                powershell "Move-Item -Path OPENGL32.dll -Destination c:\\Windows\\System32\\OPENGL32.dll"
                                 dir("build"){
                                     bat(script: "cpack -G WIX;ZIP;NSIS --verbose")
                                 }
