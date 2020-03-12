@@ -315,6 +315,9 @@ class CollectionMiddlwareEntity(AbsMiddlwareEntity):
         if "department" in data:
             new_collection["department"] = data["department"]
 
+        if "record_series" in data:
+            new_collection["record_series"] = data["record_series"]
+
         updated_collection = \
             self._data_connector.update(
                 id, changed_data=new_collection)

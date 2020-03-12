@@ -820,6 +820,9 @@ class CollectionDataConnector(AbsDataProviderConnector):
             if "department" in changed_data:
                 collection.department = changed_data["department"]
 
+            if "record_series" in changed_data:
+                collection.record_series = changed_data["record_series"]
+
             session = self.session_maker()
 
             session.add(collection)

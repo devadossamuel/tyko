@@ -10,7 +10,7 @@
                 <tr>
                     {{metadata_text_edit_widget("Contact", '<a href="mailto:{}"> {} {}</a>'.format(collection['contact']['email_address'], collection['contact']['first_name'], collection['contact']['last_name'])|safe if collection.contact)}}
                 </tr>
-                <tr>{{metadata_text_edit_widget("Record Series", collection['record_series'])}}</tr>
+                <tr>{{metadata_text_edit_widget("Record Series", collection['record_series'], 'record_series', api_path)}}</tr>
             {% endcall %}
         </div>
     </div>
