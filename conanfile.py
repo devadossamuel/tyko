@@ -25,10 +25,15 @@ class TykoConan(ConanFile):
     }
 
     def build(self):
+
         cmake = CMake(self)
         cmake_toolchain_file = os.path.join(self.build_folder, "conan_paths.cmake")
         assert os.path.exists(cmake_toolchain_file)
         cmake.definitions["CMAKE_TOOLCHAIN_FILE"] = cmake_toolchain_file
+        if cmake.is_multi_configuration is True:
+            cmake.definitions[f"CMAKE_RUNTIME_OUTPUT_DIRECTORY_{cmake.build_type.upper()}"] = self.build_folder
+        else:
+            cmake.definitions[f"CMAKE_RUNTIME_OUTPUT_DIRECTORY"] = self.build_folder
         cmake.configure()
         cmake.build()
 
