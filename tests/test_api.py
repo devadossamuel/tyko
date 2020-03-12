@@ -455,6 +455,7 @@ def test_collection_update(app):
                 {
                     "collection_name": "My dummy collection",
                     "department": "preservation",
+                    "record_series": "one"
                 }
             ),
             content_type='application/json'
@@ -474,7 +475,8 @@ def test_collection_update(app):
             new_record_url,
             data=json.dumps(
                 {
-                    "collection_name": "My changed dummy collection"
+                    "collection_name": "My changed dummy collection",
+                    "record_series": "two"
                 }
             ),
             content_type='application/json'
@@ -485,6 +487,7 @@ def test_collection_update(app):
         put_item = put_resp_data["collection"]
         assert put_item["collection_name"] == "My changed dummy collection"
         assert put_item["department"] == "preservation"
+        assert put_item["record_series"] == "two"
 
         get_resp = server.get(new_record_url)
         assert get_resp.status_code == 200
