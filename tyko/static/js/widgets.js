@@ -229,8 +229,9 @@ class SelectEditWidget extends WidgetEditState {
         inputElement.setAttribute("class", "form-control");
         options.forEach(option =>{
             let optionElement = document.createElement("option");
-            optionElement.innerText = option;
-            if( option === selected){
+            optionElement.innerText = option.text;
+            optionElement.setAttribute("value", option.value);
+            if( option.text === selected){
                 optionElement.setAttribute("selected", "");
             }
             inputElement.appendChild(optionElement)

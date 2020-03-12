@@ -64,7 +64,7 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
     WRITABLE_FIELDS = [
         "name",
         "barcode",
-        "format_id"
+        "collection_id"
     ]
 
     def __init__(self, data_provider: dp.DataProvider) -> None:
@@ -170,10 +170,13 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
                     "Cannot update object field: {}".format(k), 400)
 
         if "name" in request.json:
-            new_object["name"] = request.json.get("name")
+            new_object["name"] = json_request.get("name")
 
-        if "barcode" in request.json:
-            new_object["barcode"] = request.json.get("barcode")
+        if "barcode" in json_request:
+            new_object["barcode"] = json_request.get("barcode")
+
+        if "collection_id" in json_request:
+            new_object['collection_id'] = json_request['collection_id']
 
         updated_object = \
             self._data_connector.update(

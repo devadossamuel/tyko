@@ -198,7 +198,42 @@ function remove(apiPath) {
     </td>
 {% endmacro %}
 
-{% macro metadata_select_edit_widget(field_name, field_value, options, field_key=None, update_api_path=None) %}
+{% macro metadata_select_dynamic_edit_widget(field_name, field_value, callback_name, field_key=None, update_api_path=None) %}
+    {% set callback_function = caller() %}
+    {% call metadata_widget(field_name, field_value) %}
+        {% if update_api_path and field_key %}
+
+            <script type="module">
+                import {getWidget} from "{{url_for('static', filename="js/widgets.js")}}"
+                import {requests} from "{{url_for('static', filename="js/request.js")}}"
+
+                {{ callback_function }}
+
+            let selectionEditor = getWidget("selectEditor",
+                document.getElementById("{{field_name}}Data"),
+                "{{ field_name }}",
+                "{{ field_value }}",
+            );
+                {{ callback_name }}(selectionEditor.options);
+
+                selectionEditor.onEdited = function (data) {
+                    const newData= {
+                        "{{ field_key }}": data
+                    };
+                    requests.put("{{update_api_path}}", newData).then(()=>{
+                        location.reload();
+                    }).catch((response)=>{
+                        alert("Failed. Reason: " + response.statusText);
+                    });
+                    selectionEditor.viewOnlyMode();
+                }
+
+            </script>
+        {% endif %}
+    {% endcall %}
+{% endmacro %}
+
+{% macro metadata_select_edit_widget(field_name, field_value, options=[], field_key=None, update_api_path=None) %}
     {% call metadata_widget(field_name, field_value) %}
         {% if update_api_path and field_key%}
             <script type="module">
@@ -211,7 +246,7 @@ function remove(apiPath) {
                 "{{ field_value }}",
             );
                 {% for option in options %}
-                    selectionEditor.options.push("{{option}}");
+                    selectionEditor.options.push({{option|safe}});
                 {% endfor %}
                 selectionEditor.onEdited = function (data) {
                     const newData= {

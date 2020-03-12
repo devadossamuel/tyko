@@ -344,25 +344,36 @@ class ObjectDataConnector(AbsNotesConnector):
         return object_id
 
     def update(self, id, changed_data):
-        updated_object = None
         collection_object = self.get(id, serialize=False)
 
-        if collection_object:
-            if "name" in changed_data:
-                collection_object.name = changed_data['name']
-            if "barcode" in changed_data:
-                collection_object.barcode = changed_data['barcode']
+        session = self.session_maker()
+        try:
+            if collection_object:
 
-            session = self.session_maker()
-            session.add(collection_object)
-            session.commit()
+                if "name" in changed_data:
+                    collection_object.name = changed_data['name']
+
+                if "barcode" in changed_data:
+                    collection_object.barcode = changed_data['barcode']
+
+                if "collection_id" in changed_data:
+                    collection = session.query(scheme.Collection)\
+                        .filter(scheme.Collection.id ==
+                                changed_data['collection_id'])\
+                        .one()
+
+                    collection_object.collection = collection
+
+                session.add(collection_object)
+                session.commit()
+
+                updated_object = session.query(scheme.CollectionObject)\
+                    .filter(scheme.CollectionObject.id == id)\
+                    .one()
+                return updated_object.serialize()
+
+        finally:
             session.close()
-
-            updated_object = session.query(scheme.CollectionObject)\
-                .filter(scheme.CollectionObject.id == id)\
-                .one()
-
-        return updated_object.serialize()
 
     def delete(self, id):
         if id:
