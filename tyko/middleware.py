@@ -170,10 +170,10 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
                     "Cannot update object field: {}".format(k), 400)
 
         if "name" in request.json:
-            new_object["name"] = json_request.get("name")
+            new_object["name"] = json_request["name"]
 
         if "barcode" in json_request:
-            new_object["barcode"] = json_request.get("barcode")
+            new_object["barcode"] = json_request['barcode']
 
         if "collection_id" in json_request:
             new_object['collection_id'] = json_request['collection_id']
