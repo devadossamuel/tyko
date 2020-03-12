@@ -176,12 +176,40 @@ def test_object_add_note(app):
 def test_object_update(app):
 
     with app.test_client() as server:
+
+        collection_one_id = json.loads(server.post(
+            "/api/collection/",
+            data=json.dumps(
+                {
+                    "collection_name": "dumb collection",
+                    "department": "dumb department",
+                    "record_series": "dumb record series",
+                }
+            ),
+            content_type='application/json'
+        ).data)["id"]
+
+        collection_two_id = json.loads(server.post(
+            "/api/collection/",
+            data=json.dumps(
+                {
+                    "collection_name": "dumb other collection",
+                    "department": "dumb other department",
+                    "record_series": "dumb other record series",
+                }
+            ),
+            content_type='application/json'
+        ).data)["id"]
+
+
+        # assert new_collection_resp.status_code == 200
         post_resp = server.post(
             "/api/object/",
             data=json.dumps(
                 {
                     "name": "My dummy object",
                     "barcode": "12345",
+                    "collection_id": collection_one_id
                 }
             ),
             content_type='application/json'
@@ -193,7 +221,8 @@ def test_object_update(app):
         put_resp = server.put(
             new_object_record_url,
             data=json.dumps({
-                "name": "changed_dummy object"
+                "name": "changed_dummy object",
+                "collection_id": collection_two_id
             }),
             content_type='application/json'
 
@@ -212,6 +241,7 @@ def test_object_update(app):
         get_object = edited_data["object"]
         assert get_object["name"] == "changed_dummy object"
         assert get_object["barcode"] == "12345"
+        assert get_object['collection']["collection_id"] == collection_two_id
 
 
 def test_object_delete(app):

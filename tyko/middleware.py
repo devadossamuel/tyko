@@ -193,9 +193,11 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
         data = request.get_json()
         object_name = data["name"]
         barcode = data.get('barcode')
+        collection_id = data.get('collection_id')
         new_object_id = self._data_connector.create(
             name=object_name,
-            barcode=barcode
+            barcode=barcode,
+            collection_id=collection_id
         )
         return jsonify({
             "id": new_object_id,

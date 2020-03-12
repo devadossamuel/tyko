@@ -329,7 +329,7 @@ class ObjectDataConnector(AbsNotesConnector):
         if barcode is not None:
             new_object.barcode = barcode
         session = self.session_maker()
-        if "collection_id" in kwargs:
+        if "collection_id" in kwargs and kwargs['collection_id'] is not None:
             collection = session.query(scheme.Collection).filter(
                 scheme.Collection.id == kwargs['collection_id']).one()
 
