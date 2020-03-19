@@ -1,0 +1,15 @@
+name: audit
+
+on: [push, pull_request]
+
+jobs:
+  nodejs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: install dependencies
+      run: npm ci
+    - name: npm audit action
+      uses: oke-py/npm-audit-action@v1.2.0
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
