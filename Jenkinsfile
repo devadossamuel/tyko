@@ -421,6 +421,23 @@ pipeline {
                                 }
                             }
                         }
+                        stage("Audit npm") {
+                            agent {
+                              dockerfile {
+                                filename 'CI/npm_audit/Dockerfile'
+                                label "linux && docker"
+                                additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                              }
+                            }
+                            steps{
+                                catchError(buildResult: 'SUCCESS', message: 'Bandit found issues', stageResult: 'UNSTABLE') {
+                                    sh(
+                                        label: "Running npm audit",
+                                        script: "npm audit"
+                                    )
+                                }
+                            }
+                        }
                         stage("Run Flake8 Static Analysis") {
                             agent {
                               dockerfile {
