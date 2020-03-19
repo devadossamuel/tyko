@@ -95,7 +95,7 @@ pipeline {
                 stage("Building Server"){
                     agent {
                       dockerfile {
-                        filename 'CI/server_testing/Dockerfile'
+                        filename 'CI/jenkins/dockerfiles/server_testing/Dockerfile'
                         label "linux && docker"
                       }
                     }
@@ -115,7 +115,7 @@ pipeline {
                 stage("Build Client Software"){
                     agent {
                       dockerfile {
-                        filename 'CI/build_VS2019/Dockerfile'
+                        filename 'CI/jenkins/dockerfiles/build_VS2019/Dockerfile'
                         label "windows && docker"
                       }
                     }
@@ -266,7 +266,7 @@ pipeline {
                         stage("PyTest"){
                             agent {
                               dockerfile {
-                                filename 'CI/server_testing/Dockerfile'
+                                filename 'CI/jenkins/dockerfiles/server_testing/Dockerfile'
                                 label "linux && docker"
                               }
                             }
@@ -310,7 +310,7 @@ pipeline {
                             }
                             agent {
                               dockerfile {
-                                filename 'CI/server_testing/Dockerfile'
+                                filename 'CI/jenkins/dockerfiles/server_testing/Dockerfile'
                                 label "linux && docker"
                               }
                             }
@@ -350,7 +350,7 @@ pipeline {
                         stage("Run MyPy Static Analysis") {
                             agent {
                               dockerfile {
-                                filename 'CI/server_testing/Dockerfile'
+                                filename 'CI/jenkins/dockerfiles/server_testing/Dockerfile'
                                 label "linux && docker"
                               }
                             }
@@ -385,7 +385,7 @@ pipeline {
                         stage("Run Bandit Static Analysis") {
                             agent {
                               dockerfile {
-                                filename 'CI/server_testing/Dockerfile'
+                                filename 'CI/jenkins/dockerfiles/server_testing/Dockerfile'
                                 label "linux && docker"
                               }
                             }
@@ -424,7 +424,7 @@ pipeline {
                         stage("Audit npm") {
                             agent {
                               dockerfile {
-                                filename 'CI/npm_audit/Dockerfile'
+                                filename 'CI/jenkins/dockerfiles/npm_audit/Dockerfile'
                                 label "linux && docker"
                                 additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                               }
@@ -441,7 +441,7 @@ pipeline {
                         stage("Run Flake8 Static Analysis") {
                             agent {
                               dockerfile {
-                                filename 'CI/server_testing/Dockerfile'
+                                filename 'CI/jenkins/dockerfiles/server_testing/Dockerfile'
                                 label "linux && docker"
                               }
                             }
@@ -474,7 +474,7 @@ pipeline {
                         stage("Run Pylint Static Analysis") {
                             agent {
                               dockerfile {
-                                filename 'CI/server_testing/Dockerfile'
+                                filename 'CI/jenkins/dockerfiles/server_testing/Dockerfile'
                                 label "linux && docker"
                               }
                             }
@@ -516,7 +516,7 @@ pipeline {
                         stage("Testing Javascript with Jest"){
                             agent {
                                 dockerfile {
-                                    filename 'CI/testing_javascript/Dockerfile'
+                                    filename 'CI/jenkins/dockerfiles/testing_javascript/Dockerfile'
                                     label "linux && docker"
                                     additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                                 }
@@ -565,7 +565,7 @@ pipeline {
                 stage("Run SonarQube Analysis"){
                     agent{
                         dockerfile {
-                            filename 'CI/sonarqube/scanner/Dockerfile'
+                            filename 'CI/jenkins/dockerfiles/sonarqube/scanner/Dockerfile'
                             label "linux && docker"
                             additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
                             }
@@ -654,7 +654,7 @@ pipeline {
                 stage("Creating Python Packages"){
                     agent {
                       dockerfile {
-                        filename 'CI/server_testing/Dockerfile'
+                        filename 'CI/jenkins/dockerfiles/server_testing/Dockerfile'
                         label "linux && docker"
                       }
                     }
