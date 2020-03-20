@@ -20,21 +20,6 @@ class AbsMiddlwareEntity(metaclass=abc.ABCMeta):
     WRITABLE_FIELDS: List[str] = []
 
     @classmethod
-    def validate_writable_fields(cls, original_method):
-        def validate(org_cls, json_request, *args, **kwargs):
-            invalid_names_found = []
-            for k in json_request.keys():
-                if k not in org_cls.WRITABLE_FIELDS:
-                    invalid_names_found.append(k)
-            if invalid_names_found:
-                raise ValueError(
-                    f"Invalid field(s) {', '.join(invalid_names_found)}")
-
-            return original_method(org_cls, json_request, *args, **kwargs)
-
-        return validate
-
-    @classmethod
     def field_can_edit(cls, field) -> bool:
         return field in cls.WRITABLE_FIELDS
 
