@@ -209,7 +209,9 @@ def test_object_update(app):
                 {
                     "name": "My dummy object",
                     "barcode": "12345",
-                    "collection_id": collection_one_id
+                    "collection_id": collection_one_id,
+                    "originals_rec_date": "2010-2-4",
+                    "originals_return_date": "2012-2-4"
                 }
             ),
             content_type='application/json'
@@ -223,7 +225,9 @@ def test_object_update(app):
             data=json.dumps({
                 "name": "changed_dummy object",
                 "barcode": "54321",
-                "collection_id": collection_two_id
+                "collection_id": collection_two_id,
+                "originals_rec_date": "2010-01-04",
+                "originals_return_date": "2012-05-04"
             }),
             content_type='application/json'
 
@@ -241,7 +245,9 @@ def test_object_update(app):
         edited_data = json.loads(get_resp.data)
         get_object = edited_data["object"]
         assert get_object["name"] == "changed_dummy object"
-        assert get_object["barcode"] == "54321"
+        assert get_object["name"] == "changed_dummy object"
+        assert get_object["originals_rec_date"] == "2010-01-04"
+        assert get_object["originals_return_date"] == "2012-05-04"
         assert get_object['collection']["collection_id"] == collection_two_id
 
 
@@ -552,6 +558,7 @@ def test_add_object_to_project(server_with_project):
             {
                 "name": "My dummy object",
                 "barcode": "12345",
+                "originals_rec_date": "2010-2-4"
             }
         ),
         content_type='application/json'

@@ -199,7 +199,7 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
     @classmethod
     def create_changed_data(cls, json_request) -> Dict[str, Any]:
         new_object = super().create_changed_data(json_request)
-        if "name" in request.json:
+        if "name" in json_request:
             new_object["name"] = json_request["name"]
         if "barcode" in json_request:
             new_object["barcode"] = json_request['barcode']
