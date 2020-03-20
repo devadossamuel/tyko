@@ -5,7 +5,7 @@ import hashlib
 import json
 import sys
 import traceback
-from typing import List
+from typing import List, Dict, Any
 
 from flask import jsonify, make_response, abort, request, url_for
 
@@ -18,6 +18,19 @@ CACHE_HEADER = "private, max-age=0"
 
 class AbsMiddlwareEntity(metaclass=abc.ABCMeta):
     WRITABLE_FIELDS: List[str] = []
+
+    @classmethod
+    def validate_writable_fields(cls, original_method):
+        def validate(org_cls, json_request, *args, **kwargs):
+            invalid_names_found = []
+            for k in json_request.keys():
+                if k not in org_cls.WRITABLE_FIELDS:
+                    invalid_names_found.append(k)
+            if invalid_names_found:
+                raise ValueError(f"Invalid field(s) {', '.join(invalid_names_found)}")
+            return original_method(org_cls, json_request, *args, **kwargs)
+
+        return validate
 
     @classmethod
     def field_can_edit(cls, field) -> bool:
@@ -42,6 +55,20 @@ class AbsMiddlwareEntity(metaclass=abc.ABCMeta):
     def create(self):
         """_C_RUD update"""
 
+    @classmethod
+    def create_changed_data(cls, json_request) -> Dict[str, Any]:
+        invalid_names_found = []
+        for k in json_request.keys():
+            if k not in cls.WRITABLE_FIELDS:
+                invalid_names_found.append(k)
+
+        if invalid_names_found:
+            raise ValueError(
+                f"Invalid field(s) {', '.join(invalid_names_found)}. "
+                f"only {', '.join(cls.WRITABLE_FIELDS)} can be modified."
+            )
+
+        return dict()
 
 class Middleware:
     def __init__(self, data_provider: dp.DataProvider) -> None:
@@ -65,7 +92,8 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
         "name",
         "barcode",
         "collection_id",
-        'originals_rec_date'
+        'originals_rec_date',
+        'originals_return_date'
     ]
 
     def __init__(self, data_provider: dp.DataProvider) -> None:
@@ -162,25 +190,12 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
         return make_response("", 404)
 
     def update(self, id):
-        new_object = dict()
-
         json_request = request.json
-        for k, _ in json_request.items():
-            if not self.field_can_edit(k):
-                return make_response(
-                    "Cannot update object field: {}".format(k), 400)
-
-        if "name" in request.json:
-            new_object["name"] = json_request["name"]
-
-        if "barcode" in json_request:
-            new_object["barcode"] = json_request['barcode']
-
-        if "collection_id" in json_request:
-            new_object['collection_id'] = json_request['collection_id']
-
-        if "originals_rec_date" in json_request:
-            new_object['originals_rec_date'] = json_request['originals_rec_date']
+        try:
+            new_object = self.create_changed_data(json_request)
+        except ValueError as reason:
+            return make_response(
+                "Cannot update object field: {}".format(reason), 400)
 
         updated_object = \
             self._data_connector.update(
@@ -192,6 +207,23 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
         return jsonify(
             {"object": updated_object}
         )
+
+    @classmethod
+    def create_changed_data(cls, json_request) -> Dict[str, Any]:
+        new_object = super().create_changed_data(json_request)
+        if "name" in request.json:
+            new_object["name"] = json_request["name"]
+        if "barcode" in json_request:
+            new_object["barcode"] = json_request['barcode']
+        if "collection_id" in json_request:
+            new_object['collection_id'] = json_request['collection_id']
+        if "originals_rec_date" in json_request:
+            new_object['originals_rec_date'] = json_request[
+                'originals_rec_date']
+        if 'originals_return_date' in json_request:
+            new_object['originals_return_date'] = json_request[
+                'originals_return_date']
+        return new_object
 
     def create(self):
         data = request.get_json()
@@ -267,6 +299,11 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
 
 
 class CollectionMiddlwareEntity(AbsMiddlwareEntity):
+    WRITABLE_FIELDS = [
+        "collection_name",
+        "record_series",
+        "department"
+    ]
 
     def __init__(self, data_provider) -> None:
         super().__init__(data_provider)
@@ -314,18 +351,27 @@ class CollectionMiddlwareEntity(AbsMiddlwareEntity):
 
         return make_response("", 404)
 
+    @classmethod
+    def create_changed_data(cls, json_request) -> Dict[str, Any]:
+        new_collection = super().create_changed_data(json_request)
+        if "collection_name" in json_request:
+            new_collection["collection_name"] = json_request["collection_name"]
+
+        if "department" in json_request:
+            new_collection["department"] = json_request["department"]
+
+        if "record_series" in json_request:
+            new_collection["record_series"] = json_request["record_series"]
+        return new_collection
+
     def update(self, id):
-        new_collection = dict()
-        data = request.get_json()
+        json_request = request.get_json()
 
-        if "collection_name" in data:
-            new_collection["collection_name"] = data["collection_name"]
-
-        if "department" in data:
-            new_collection["department"] = data["department"]
-
-        if "record_series" in data:
-            new_collection["record_series"] = data["record_series"]
+        try:
+            new_collection = self.create_changed_data(json_request)
+        except ValueError as reason:
+            return make_response(
+                "Cannot update collection: Reason".format(reason), 400)
 
         updated_collection = \
             self._data_connector.update(
@@ -420,28 +466,32 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
 
         return make_response("", 404)
 
-    def update(self, id):
+    @classmethod
+    def create_changed_data(cls, json_request) -> Dict[str, Any]:
+        new_project = super().create_changed_data(json_request)
 
-        new_project = dict()
+        if "project_code" in json_request:
+            new_project["project_code"] = json_request.get("project_code")
 
-        json_request = request.json
-        for k, _ in json_request.items():
-            if not self.field_can_edit(k):
-                return make_response(
-                    "Cannot update project field: {}".format(k), 400)
-
-        if "project_code" in request.json:
-            new_project["project_code"] = request.json.get("project_code")
-
-        if "current_location" in request.json:
+        if "current_location" in json_request:
             new_project["current_location"] = \
-                request.json.get("current_location")
+                json_request.get("current_location")
 
-        if "status" in request.json:
-            new_project["status"] = request.json.get("status")
+        if "status" in json_request:
+            new_project["status"] = json_request.get("status")
 
         if "title" in request.json:
-            new_project["title"] = request.json.get("title")
+            new_project["title"] = json_request.get("title")
+        return new_project
+
+    def update(self, id):
+
+        json_request = request.json
+        try:
+            new_project = self.create_changed_data(json_request)
+        except ValueError as reason:
+            return make_response(
+                "Cannot update project. Reason: {}".format(reason), 400)
 
         updated_project = \
             self._data_connector.update(
@@ -623,30 +673,32 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
             return make_response("", 204)
         return make_response("", 404)
 
-    def update(self, id):
-        item = dict()
-        json_request = request.json
-        for k, _ in json_request.items():
-            if not self.field_can_edit(k):
-                return make_response(
-                    "Cannot update item field: {}".format(k), 400)
+    @classmethod
+    def create_changed_data(cls, json_request) -> Dict[str, Any]:
+        new_item = super().create_changed_data(json_request)
 
-        for field in self.WRITABLE_FIELDS:
+        for field in cls.WRITABLE_FIELDS:
             if field == "obj_sequence":
                 continue
-            if field in request.json:
-                item[field] = request.json.get(field)
+            if field in json_request:
+                new_item[field] = json_request.get(field)
 
-        if "obj_sequence" in request.json:
-            obj_sequence = request.json.get("obj_sequence")
-            try:
-                item["obj_sequence"] = int(obj_sequence)
-            except ValueError:
-                return make_response(
-                    "Invalid data type {}".format(obj_sequence), 400)
+        if "obj_sequence" in json_request:
+            obj_sequence = json_request.get("obj_sequence")
+            new_item["obj_sequence"] = int(obj_sequence)
+        return new_item
+
+    def update(self, id):
+        json_request = request.json
+        try:
+            new_item = self.create_changed_data(json_request)
+
+        except ValueError as reason:
+            return make_response(
+                "Cannot update item. Reason: {}".format(reason), 400)
 
         replacement_item = self._data_connector.update(
-            id, changed_data=item
+            id, changed_data=new_item
         )
         if not replacement_item:
             return make_response("", 204)

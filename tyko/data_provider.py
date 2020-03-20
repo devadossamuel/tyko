@@ -1,6 +1,7 @@
 # pylint: disable=redefined-builtin, invalid-name
 import abc
 from abc import ABC
+from datetime import datetime
 
 import sqlalchemy
 from sqlalchemy import orm
@@ -365,9 +366,17 @@ class ObjectDataConnector(AbsNotesConnector):
                     collection_object.collection = collection
 
                 if 'originals_rec_date' in changed_data:
-                    # TODO Make into a python date format
-                    collection_object.originals_rec_date = changed_data['originals_rec_date']
-
+                    collection_object.originals_rec_date = \
+                        datetime.strptime(
+                            changed_data['originals_rec_date'],
+                            '%Y-%m-%d'
+                        )
+                if 'originals_return_date' in changed_data:
+                    collection_object.originals_return_date = \
+                        datetime.strptime(
+                            changed_data['originals_return_date'],
+                            '%Y-%m-%d'
+                        )
                 # TODO: handle Originals Returned Date
 
                 session.add(collection_object)
