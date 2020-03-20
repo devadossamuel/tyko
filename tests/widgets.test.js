@@ -110,10 +110,14 @@ describe("Widget factory", ()=>{
 
     });
 
-    test("get select Widg3et", ()=>{
+    test("get select widget", ()=>{
         const sampleElement = document.getElementById("sample");
         let res = getWidget("selectEditor", sampleElement, "sampleField", "Sample text");
         expect(res.widgetType).toBe("selectEditor");
+
+        res.swap();
+        res.draw();
+        expect(sampleElement.innerHTML).toContain("select");
 
     });
 });
