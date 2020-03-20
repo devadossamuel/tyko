@@ -24,6 +24,9 @@ def test_project_update(app):
             data=json.dumps(
                 {
                     "title": "my dumb project",
+                    "project_code": "my dumb project code",
+                    "current_location": "old location",
+                    "status": "no work done"
                 }
             ),
             content_type='application/json'
@@ -37,12 +40,20 @@ def test_project_update(app):
             new_project_record,
             data=json.dumps(
                 {
-                    "title": "my dumb project has changed"
+                    "title": "my dumb project has changed",
+                    "project_code": "my dumb project code changed",
+                    "current_location": "new location",
+                    "status": "all finished"
                 }
             ),
             content_type='application/json'
         )
         assert put_resp.status_code == 200
+        updated_project = json.loads(put_resp.data)["project"]
+        assert updated_project["title"] == "my dumb project has changed"
+        assert updated_project["project_code"] == "my dumb project code changed"
+        assert updated_project["current_location"] == "new location"
+        assert updated_project["status"] == "all finished"
 
 
 def test_item_update(app):
