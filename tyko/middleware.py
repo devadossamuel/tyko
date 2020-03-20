@@ -225,8 +225,8 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
                 'originals_return_date']
         return new_object
 
-    def create(self):
-        data = request.get_json()
+    def create(self, data=None):
+        data = data or request.get_json()
         object_name = data["name"]
         barcode = data.get('barcode')
         collection_id = data.get('collection_id')
@@ -581,12 +581,10 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
             return make_response("Invalid note data", 400)
 
     def add_object(self, project_id):
-        data = request.get_json()
         try:
-            if 'collectionId' in data:
-                data['collection_id'] = int(data['collectionId'])
 
-            new_object = self._data_connector.add_object(project_id, data=data)
+            new_data = self.get_new_data(request.get_json())
+            new_object = self._data_connector.add_object(project_id, data=new_data)
             return jsonify(
                 {
                     "object": new_object
@@ -613,6 +611,13 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
             )
         except DataError as e:
             return make_response(e.message, e.status_code)
+
+    def get_new_data(self, data):
+        new_data = data.copy()
+        if 'collectionId' in data:
+            new_data['collection_id'] = int(data['collectionId'])
+
+        return new_data
 
 
 class ItemMiddlwareEntity(AbsMiddlwareEntity):
