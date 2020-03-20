@@ -514,6 +514,19 @@ def test_collection_update(app):
         assert get_object["collection_name"] == "My changed dummy collection"
         assert get_object["department"] == "preservation"
 
+        update_2 = json.loads(
+            server.put(
+                new_record_url,
+                data=json.dumps(
+                    {
+                        "department": "some other departments",
+                    }
+                ),
+                content_type='application/json'
+            ).data
+        )['collection']
+        assert update_2["department"] == "some other departments"
+
 
 def test_collection_delete(app):
     with app.test_client() as server:
