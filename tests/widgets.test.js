@@ -108,5 +108,12 @@ describe("Widget factory", ()=>{
         let res = getWidget("datePicker", sampleElement, "sampleField", "Sample text");
         expect(res.widgetType).toBe("datePicker");
 
-    })
+    });
+
+    test("get select Widg3et", ()=>{
+        const sampleElement = document.getElementById("sample");
+        let res = getWidget("selectEditor", sampleElement, "sampleField", "Sample text");
+        expect(res.widgetType).toBe("selectEditor");
+
+    });
 });

@@ -430,10 +430,6 @@ class DatePickerBuilder extends builder{
         return "input"
     }
 
-    // getEditMode(baseWidget) {
-    //     return new DatePickerPartFactory("editState", baseWidget)
-    // }
-
     getWidgetTypeName() {
         return "datePicker"
     }
@@ -452,10 +448,6 @@ class Factory {
             "datePicker": (rootElement, fieldName, displayText) => {
                 return new DatePickerBuilder(rootElement, fieldName, displayText);
             }
-            //     let baseWidget = new absMetadataWidget(rootElement, fieldName, displayText);
-            //     baseWidget['viewOnlyMode'] = new DatePickerPartFactory("viewState", baseWidget);
-            //     return baseWidget;
-            // }
         };
     }
     createWidget(type, rootElement, fieldName, displayText){
