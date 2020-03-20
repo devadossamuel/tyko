@@ -27,7 +27,9 @@ class AbsMiddlwareEntity(metaclass=abc.ABCMeta):
                 if k not in org_cls.WRITABLE_FIELDS:
                     invalid_names_found.append(k)
             if invalid_names_found:
-                raise ValueError(f"Invalid field(s) {', '.join(invalid_names_found)}")
+                raise ValueError(
+                    f"Invalid field(s) {', '.join(invalid_names_found)}")
+
             return original_method(org_cls, json_request, *args, **kwargs)
 
         return validate
@@ -69,6 +71,7 @@ class AbsMiddlwareEntity(metaclass=abc.ABCMeta):
             )
 
         return dict()
+
 
 class Middleware:
     def __init__(self, data_provider: dp.DataProvider) -> None:
@@ -584,7 +587,8 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
         try:
 
             new_data = self.get_new_data(request.get_json())
-            new_object = self._data_connector.add_object(project_id, data=new_data)
+            new_object = self._data_connector.add_object(project_id,
+                                                         data=new_data)
             return jsonify(
                 {
                     "object": new_object
