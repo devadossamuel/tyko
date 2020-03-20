@@ -95,9 +95,18 @@ describe("Widget factory", ()=>{
 
             '</div>';
     });
-    test("Get widgets", ()=>{
+    test("Get text widgets", ()=>{
         const sampleElement = document.getElementById("sample");
         let res = getWidget("textEditor", sampleElement, "sampleField", "Sample text");
         expect(res.inputType).toBe("text");
+        expect(res.widgetType).toBe("textEditor");
+
+    });
+
+    test("get datePicker", ()=>{
+        const sampleElement = document.getElementById("sample");
+        let res = getWidget("datePicker", sampleElement, "sampleField", "Sample text");
+        expect(res.widgetType).toBe("datePicker");
+
     })
 });

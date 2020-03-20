@@ -9,6 +9,9 @@ class absMetadataWidget {
         this.options = [];
         this.editButtonId = `${fieldName}EditButton`;
     }
+    get widgetType() {
+        throw new Error('You have to implement the method widgetType!');
+    }
     stateName() {
         return this._state._type;
     }
@@ -348,29 +351,111 @@ class TextEditorPartFactory{
         }
     }
 }
+class builder {
+    constructor(rootElement, fieldName, displayText) {
+        let baseWidget = new absMetadataWidget(rootElement, fieldName, displayText);
+        baseWidget["inputType"] = this.getInputType();
+        baseWidget['editMode'] = this.getEditMode(baseWidget);
+        baseWidget['viewOnlyMode'] = this.getViewOnlyMode(baseWidget);
+        Object.defineProperty(baseWidget,
+            "widgetType",
+            {
+                get: this.getWidgetTypeName
+            }
+        );
+        return baseWidget
+    }
+
+    getViewOnlyMode(baseWidget) {
+        throw new Error('You have to implement the method getViewOnlyMode!');
+    }
+
+    getInputType() {
+        throw new Error('You have to implement the method getInputType!');
+    }
+
+    getEditMode(baseWidget) {
+
+    }
+
+    getWidgetTypeName() {
+        throw new Error('You have to implement the method getWidgetTypeName!');
+    }
+}
+
+class textEditorBuilder extends builder{
+
+    getEditMode(baseWidget) {
+        return new TextEditorPartFactory("editState", baseWidget);
+    }
+    getInputType() {
+        return "text";
+    }
+
+    getViewOnlyMode(baseWidget) {
+        return new TextEditorPartFactory("viewState", baseWidget);
+    }
+
+    getWidgetTypeName() {
+        return "textEditor";
+    }
+}
+
+class selectionEditorBuilder extends builder{
+
+    getViewOnlyMode(baseWidget) {
+        return new SelectEditorPartFactory("viewState", baseWidget);
+    }
+
+    getInputType() {
+        return "select";
+    }
+
+    getEditMode(baseWidget) {
+        return new SelectEditorPartFactory("editState", baseWidget);
+    }
+
+    getWidgetTypeName() {
+        return "selectEditor";
+    }
+}
+
+class DatePickerBuilder extends builder{
+
+    getViewOnlyMode(baseWidget) {
+        return new DatePickerPartFactory("viewState", baseWidget);
+    }
+
+    getInputType() {
+        return "input"
+    }
+
+    // getEditMode(baseWidget) {
+    //     return new DatePickerPartFactory("editState", baseWidget)
+    // }
+
+    getWidgetTypeName() {
+        return "datePicker"
+    }
+}
 
 class Factory {
     constructor() {
         this.widgetTypes = {
+
             "textEditor": (rootElement, fieldName, displayText) => {
-                let baseWidget = new absMetadataWidget(rootElement, fieldName, displayText);
-                baseWidget["inputType"] = "text";
-                baseWidget['editMode'] = new TextEditorPartFactory("editState", baseWidget);
-                baseWidget['viewOnlyMode'] = new TextEditorPartFactory("viewState", baseWidget);
-                return baseWidget;
+                return new textEditorBuilder(rootElement, fieldName, displayText);
             },
             "selectEditor": (rootElement, fieldName, displayText) => {
-                let baseWidget = new absMetadataWidget(rootElement, fieldName, displayText);
-                baseWidget["inputType"] = "select";
-                baseWidget['viewOnlyMode'] = new SelectEditorPartFactory("viewState", baseWidget);
-                baseWidget['editMode'] = new SelectEditorPartFactory("editState", baseWidget);
-                return baseWidget
+                return new selectionEditorBuilder(rootElement, fieldName, displayText);
             },
             "datePicker": (rootElement, fieldName, displayText) => {
-                let baseWidget = new absMetadataWidget(rootElement, fieldName, displayText);
-                baseWidget['viewOnlyMode'] = new DatePickerPartFactory("viewState", baseWidget);
-                return baseWidget;
+                return new DatePickerBuilder(rootElement, fieldName, displayText);
             }
+            //     let baseWidget = new absMetadataWidget(rootElement, fieldName, displayText);
+            //     baseWidget['viewOnlyMode'] = new DatePickerPartFactory("viewState", baseWidget);
+            //     return baseWidget;
+            // }
         };
     }
     createWidget(type, rootElement, fieldName, displayText){
@@ -380,7 +465,6 @@ class Factory {
 
         let widgetFactory =this.widgetTypes[type];
         let widget = widgetFactory(rootElement, fieldName, displayText);
-
         widget.viewOnlyMode();
         return widget
     }
