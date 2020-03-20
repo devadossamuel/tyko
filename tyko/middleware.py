@@ -374,7 +374,7 @@ class CollectionMiddlwareEntity(AbsMiddlwareEntity):
             new_collection = self.create_changed_data(json_request)
         except ValueError as reason:
             return make_response(
-                "Cannot update collection: Reason".format(reason), 400)
+                "Cannot update collection: Reason {}".format(reason), 400)
 
         updated_collection = \
             self._data_connector.update(
