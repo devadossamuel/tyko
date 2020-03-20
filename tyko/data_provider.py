@@ -380,7 +380,6 @@ class ObjectDataConnector(AbsNotesConnector):
                             changed_data['originals_return_date'],
                             DATE_FORMAT
                         )
-                # TODO: handle Originals Returned Date
 
                 session.add(collection_object)
                 session.commit()
