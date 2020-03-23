@@ -322,3 +322,36 @@ function remove(apiPath) {
         {%- endif %}
     {% endcall %}
 {% endmacro %}
+
+{% macro metadata_number_edit_widget(field_name, field_value, field_key=None, update_api_path=None) %}
+    {% call metadata_widget(field_name, field_value) %}
+        {% if update_api_path and field_key%}
+        <script type="module">
+            import {getWidget} from "{{url_for('static', filename="js/widgets.js")}}"
+            import {requests} from "{{url_for('static', filename="js/request.js")}}"
+
+            let displayWidget = getWidget("numberPicker",
+                document.getElementById("{{field_name}}Data"),
+                "{{ field_name }}",
+                {% if field_value %}
+                "{{ field_value }}",
+                    {% else %}
+                    ""
+                {% endif %}
+            );
+            displayWidget.onEdited = function (data) {
+                const newData= {
+                    "{{ field_key }}": data
+                };
+                requests.put("{{update_api_path}}", newData).then(()=>{
+                    location.reload();
+                }).catch((response)=>{
+                    alert("Failed. Reason: " + response.statusText);
+                });
+                displayWidget.viewOnlyMode();
+
+            };
+        </script>
+        {%- endif %}
+    {% endcall %}
+{% endmacro %}

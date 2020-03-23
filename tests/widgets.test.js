@@ -125,6 +125,16 @@ describe("Widget factory", ()=>{
         res.swap();
         res.draw();
         expect(sampleElement.innerHTML).toContain("select");
-
+    });
+    test("get numberPicker widget", ()=>{
+        const sampleElement = document.getElementById("sample");
+        let res = getWidget("numberPicker", sampleElement, "sampleField", "Sample text");
+        expect(res.widgetType).toBe("numberPicker");
+        expect(res.stateName()).toBe("view");
+        res.swap();
+        expect(res.stateName()).toBe("edit");
+        res.draw();
+        expect(sampleElement.innerHTML).toContain("input");
+        expect(sampleElement.innerHTML).toContain('type="number"');
     });
 });

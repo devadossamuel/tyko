@@ -37,6 +37,9 @@ class absMetadataWidget {
 }
 
 class WidgetState{
+    draw(element, data){
+        throw new Error('You have to implement the draw method!');
+    }
     constructor(parentClass) {
         this._parent = parentClass;
     }
@@ -201,6 +204,40 @@ class ViewWidget extends WidgetState{
     }
 
 }
+class NumberPickerWidget extends WidgetEditState{
+
+    draw(element, data){
+        element.innerHTML = "";
+        const rootId = `editArea${data['fieldName']}`;
+        let newRoot = this.newRoot(rootId);
+
+        const inputElement = this._newNumberPicker(data['fieldName'], data['fieldText']);
+        newRoot.appendChild(inputElement );
+
+        const confirmButtonID = `${data['fieldName']}ConfirmButton`;
+        newRoot.appendChild(this.newConfirmationButton(confirmButtonID, inputElement) );
+        element.append(newRoot);
+        this.setupEventListeners(element.id);
+    }
+
+    _newNumberPicker(fieldName, value=null) {
+        let inputElement = document.createElement("input");
+        inputElement.setAttribute("class", "form-control");
+        inputElement.setAttribute("type", "number");
+        inputElement.setAttribute("name", fieldName);
+        if (value != null){
+            inputElement.setAttribute("value", value);
+
+        }
+
+        return inputElement;
+    }
+
+    _newInputLabel(id) {
+        let inputLabelElement = document.createElement("label");
+        return inputLabelElement
+    }
+}
 class SelectDateWidget extends WidgetEditState {
     draw(element, data){
         element.innerHTML = "";
@@ -313,6 +350,8 @@ class DatePickerPartFactory {
         }
     }
 }
+
+
 class SelectEditorPartFactory{
     constructor(type, rootElement) {
 
@@ -436,6 +475,27 @@ class DatePickerBuilder extends builder{
     }
 }
 
+class NumberPickerBuilder extends builder{
+    getViewOnlyMode(baseWidget) {
+        return ()=>{
+            let viewWidget  = new ViewWidget(baseWidget);
+            viewWidget.editWidget = NumberPickerWidget;
+            baseWidget._state = viewWidget;
+            baseWidget._state.draw(baseWidget.element, baseWidget._data);
+            return viewWidget;
+
+        }
+    }
+    getInputType() {
+        return "input"
+    }
+
+    getWidgetTypeName() {
+        return "numberPicker"
+    }
+
+}
+
 class Factory {
     constructor() {
         this.widgetTypes = {
@@ -448,6 +508,9 @@ class Factory {
             },
             "datePicker": (rootElement, fieldName, displayText) => {
                 return new DatePickerBuilder(rootElement, fieldName, displayText);
+            },
+            "numberPicker":(rootElement, fieldName, displayText) => {
+                return new NumberPickerBuilder(rootElement, fieldName, displayText);
             }
         };
     }
