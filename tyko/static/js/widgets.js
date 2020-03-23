@@ -206,7 +206,6 @@ class SelectDateWidget extends WidgetEditState {
         element.innerHTML = "";
         const rootId = `editArea${data['fieldName']}`;
         let newRoot = this.newRoot(rootId);
-        console.log("data['fieldText'], = " + data['fieldText']);
         let new_date_picker = this._new_date_picker(data['fieldText']);
         newRoot.appendChild(new_date_picker);
 
@@ -221,10 +220,12 @@ class SelectDateWidget extends WidgetEditState {
         let datePicker = document.createElement("input");
         datePicker.setAttribute("class", "form-control");
         datePicker.setAttribute("value", value);
-        $(datePicker).datepicker({
-                    uiLibrary: 'bootstrap4',
-                    format: 'yyyy-mm-dd'
-                });
+        $(datePicker).datepicker(
+            {
+                uiLibrary: 'bootstrap4',
+                format: 'yyyy-mm-dd'
+            }
+        );
 
         return datePicker;
     }

@@ -5,9 +5,11 @@ describe('Testing text widget', ()=> {
 
     beforeEach(()=>{
         document.body.innerHTML =
-            '<div id="sample">' +
-
-            '</div>';
+            '<body>' +
+                '<div id="sample">' +
+                '</div>' +
+            '   <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>' +
+            '</body>';
         metadataWidget = getWidget(
             "textEditor",
             document.getElementById("sample"),
@@ -104,9 +106,14 @@ describe("Widget factory", ()=>{
     });
 
     test("get datePicker", ()=>{
+
+        global.$ = $;
         const sampleElement = document.getElementById("sample");
         let res = getWidget("datePicker", sampleElement, "sampleField", "Sample text");
         expect(res.widgetType).toBe("datePicker");
+        res.swap();
+        res.draw();
+        expect(sampleElement.innerHTML).toContain("datepicker");
 
     });
 
