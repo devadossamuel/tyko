@@ -94,8 +94,8 @@ def test_item_update(app):
             content_type='application/json'
         )
         assert post_resp.status_code == 200
-
-        new_item_record_url = json.loads(post_resp.data)["url"]
+        new_item_data = json.loads(post_resp.data)
+        new_item_record_url = url_for("item", item_id=new_item_data['id'])
         put_resp = server.put(
             new_item_record_url,
             data=json.dumps({
@@ -134,8 +134,9 @@ def test_item_delete(app):
             content_type='application/json'
         )
         assert post_resp.status_code == 200
+        data = json.loads(post_resp.data)
 
-        new_item_record_url = json.loads(post_resp.data)["url"]
+        new_item_record_url = url_for("item", item_id=data['id'])
 
         get_resp = server.get(new_item_record_url)
         assert get_resp.status_code == 200

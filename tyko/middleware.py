@@ -737,7 +737,7 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
         return jsonify(
             {
                 "id": new_item_id,
-                "url": url_for("item_by_id", id=new_item_id)
+                "url": url_for("item", item_id=new_item_id)
             }
         )
 

@@ -94,6 +94,22 @@ class ObjectItemNotesAPI(views.MethodView):
         return self._item.remove_note(item_id, note_id)
 
 
+class ItemAPI(views.MethodView):
+    def __init__(self, item: middleware.ItemMiddlwareEntity) -> None:
+        self._item = item
+
+    def put(self, item_id):
+        return self._item.update(id=item_id)
+
+    def get(self, item_id):
+        return self._item.get(id=item_id)
+
+    def delete(self, item_id):
+        return self._item.delete(id=item_id)
+
+
+
+
 class ObjectItemAPI(views.MethodView):
     def __init__(self, parent: middleware.ObjectMiddlwareEntity) -> None:
         self._parent_object = parent
@@ -157,21 +173,12 @@ class Routes:
                           ),
                     ]),
                 APIEntity("Item", rules=[
-                    Route("/api/item", "item",
+                    Route("/api/item", "items",
                           lambda serialize=True: item.get(serialize),
-                          methods=["GET"]),
-                    Route("/api/item/<string:id>", "item_by_id",
-                          lambda id: item.get(id=id),
                           methods=["GET"]),
                     Route("/api/item/", "add_item",
                           item.create,
                           methods=["POST"]),
-                    Route("/api/item/<string:id>", "update_item",
-                          item.update,
-                          methods=["PUT"]),
-                    Route("/api/item/<string:id>", "delete_item",
-                          lambda id: item.delete(id=id),
-                          methods=["DELETE"]),
                     ]),
                 APIEntity("Object", rules=[
                     Route("/api/object", "object",
@@ -294,6 +301,17 @@ class Routes:
                 methods=["PUT", "DELETE"]
             )
 
+            self.app.add_url_rule(
+                "/api/item/<int:item_id>",
+                view_func=ItemAPI.as_view(
+                    "item",
+                    item=item),
+                methods=[
+                    "GET",
+                    "PUT",
+                    "DELETE"
+                ]
+            )
             self.app.add_url_rule(
                 "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>",  # noqa: E501 pylint: disable=C0301
                 view_func=ObjectItemAPI.as_view(
