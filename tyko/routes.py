@@ -14,7 +14,7 @@ from . import entities
 class Route:
     rule: str
     method: str
-    viewFunction: Any
+    view_function: Any
     methods: List[str] = field(default_factory=lambda: ["GET"])
 
 
@@ -244,7 +244,7 @@ class Routes:
             for entity in api_entities:
                 for rule in entity.rules:
                     self.app.add_url_rule(rule.rule, rule.method,
-                                          rule.viewFunction,
+                                          rule.view_function,
                                           methods=rule.methods)
 
             self.app.add_url_rule(
@@ -521,11 +521,11 @@ class Routes:
         if self.app:
             for rule in static_web_routes:
                 self.app.add_url_rule(rule.rule, rule.method,
-                                      rule.viewFunction)
+                                      rule.view_function)
             for rule in project_page.routes:
                 self.app.add_url_rule(rule.rule,
                                       rule.method,
-                                      rule.viewFunction)
+                                      rule.view_function)
 
             for entity in entity_pages:
                 for rule in entity.routes:
@@ -533,7 +533,7 @@ class Routes:
                                        entity.entity_list_page))
 
                     self.app.add_url_rule(rule.rule, rule.method,
-                                          rule.viewFunction)
+                                          rule.view_function)
 
 
 def page_formats(middleware_source):
