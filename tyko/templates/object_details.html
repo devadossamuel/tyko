@@ -17,7 +17,7 @@
                     {% with %}
                         {%  call metadata_select_dynamic_edit_widget("Collection", object['collection_name'], callback_name="callback", field_key="collection_id", update_api_path=api_path) %}
                                 function callback(options){
-                                    requests.get("{{url_for('collection')}}")
+                                    requests.get("{{url_for('collections')}}")
                                         .then((result)=>{
                                             let collections = [];
                                             JSON.parse(result)['collections'].forEach((collection)=>{

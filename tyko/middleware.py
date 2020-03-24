@@ -225,7 +225,7 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
         )
         return jsonify({
             "id": new_object_id,
-            "url": url_for("object_by_id", id=new_object_id)
+            "url": url_for("object", object_id=new_object_id)
         })
 
     def add_note(self, project_id, object_id):  # pylint: disable=W0613
@@ -385,7 +385,7 @@ class CollectionMiddlwareEntity(AbsMiddlwareEntity):
 
         return jsonify({
             "id": new_collection_id,
-            "url": url_for("collection_by_id", id=new_collection_id),
+            "url": url_for("collection", collection_id=new_collection_id),
             "frontend_url": url_for("page_collection_details",
                                     collection_id=new_collection_id)
         })
@@ -511,7 +511,7 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
         return jsonify(
             {
                 "id": new_project_id,
-                "url": url_for("project_by_id", id=new_project_id)
+                "url": url_for("project", project_id=new_project_id)
             }
         )
 
@@ -737,7 +737,7 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
         return jsonify(
             {
                 "id": new_item_id,
-                "url": url_for("item_by_id", id=new_item_id)
+                "url": url_for("item", item_id=new_item_id)
             }
         )
 
@@ -874,6 +874,6 @@ class NotestMiddlwareEntity(AbsMiddlwareEntity):
         return jsonify(
             {
                 "id": new_note_id,
-                "url": url_for("note_by_id", id=new_note_id)
+                "url": url_for("note", note_id=new_note_id)
             }
         )

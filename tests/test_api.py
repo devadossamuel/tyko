@@ -16,6 +16,27 @@ def app():
     return testing_app
 
 
+def test_project_create_and_delete(app):
+    with app.test_client() as server:
+        new_project_id = json.loads(server.post(
+            "/api/project/",
+            data=json.dumps(
+                {
+                    "title": "my dumb project",
+                    "project_code": "my dumb project code",
+                    "current_location": "old location",
+                    "status": "no work done"
+                }
+            ),
+            content_type='application/json'
+
+        ).data)['id']
+        delete_resp = server.delete(
+            url_for("project", project_id=new_project_id)
+        )
+        assert delete_resp.status_code == 204
+
+
 def test_project_update(app):
 
     with app.test_client() as server:
@@ -73,8 +94,8 @@ def test_item_update(app):
             content_type='application/json'
         )
         assert post_resp.status_code == 200
-
-        new_item_record_url = json.loads(post_resp.data)["url"]
+        new_item_data = json.loads(post_resp.data)
+        new_item_record_url = url_for("item", item_id=new_item_data['id'])
         put_resp = server.put(
             new_item_record_url,
             data=json.dumps({
@@ -113,8 +134,9 @@ def test_item_delete(app):
             content_type='application/json'
         )
         assert post_resp.status_code == 200
+        data = json.loads(post_resp.data)
 
-        new_item_record_url = json.loads(post_resp.data)["url"]
+        new_item_record_url = url_for("item", item_id=data['id'])
 
         get_resp = server.get(new_item_record_url)
         assert get_resp.status_code == 200
@@ -162,7 +184,7 @@ def test_object_add_note(app):
         new_note_data =new_object_note_resp.get_json()
 
         object_notes = server.get(
-            url_for("object_by_id", id=new_object_id)
+            url_for("object", object_id=new_object_id)
         ).get_json()['object']['notes']
         assert len(object_notes) == 1
 
@@ -178,7 +200,7 @@ def test_object_add_note(app):
         assert delete_resp.status_code == 202
 
         notes_after_deleting = server.get(
-            url_for("object_by_id", id=new_object_id)
+            url_for("object", object_id=new_object_id)
         ).get_json()['object']['notes']
 
         assert len(notes_after_deleting) == 0
@@ -212,8 +234,6 @@ def test_object_update(app):
             content_type='application/json'
         ).data)["id"]
 
-
-        # assert new_collection_resp.status_code == 200
         post_resp = server.post(
             "/api/object/",
             data=json.dumps(
@@ -228,8 +248,8 @@ def test_object_update(app):
             content_type='application/json'
             )
         assert post_resp.status_code == 200
-
-        new_object_record_url = json.loads(post_resp.data)["url"]
+        post_data = json.loads(post_resp.data)
+        new_object_record_url = url_for("object", object_id=post_data['id'])
 
         put_resp = server.put(
             new_object_record_url,
@@ -305,7 +325,7 @@ def test_note_create(app):
         note_data = json.loads(get_all_notes.data)
         assert note_data['total'] == 1
 
-        get_resp = server.get(f"/api/notes/{new_record_id}")
+        get_resp = server.get(url_for("note", note_id=new_record_id))
         note_data = json.loads(get_resp.data)
         assert note_data['note']["text"] == "MY dumb note"
 
@@ -324,7 +344,8 @@ def test_note_create_and_delete(app):
             content_type='application/json'
             )
         assert post_resp.status_code == 200
-        new_record_url = json.loads(post_resp.data)["url"]
+        post_data = json.loads(post_resp.data)
+        new_record_url = url_for("note", note_id=post_data['id'])
 
         get_all_notes = server.get(f"/api/notes")
         note_data = json.loads(get_all_notes.data)
@@ -399,6 +420,7 @@ def test_create_new_project_note_with_invalid_type(app):
         )
         assert note_post_resp.status_code == 400
 
+
 def test_create_new_project_note(app):
     with app.test_client() as server:
 
@@ -454,7 +476,7 @@ def test_create_new_project_note(app):
         assert note_update_resp.status_code == 200
 
         get_updated_note_resp = server.get(
-            url_for("note_by_id", id=project_notes[0]['note_id'])
+            url_for("note", note_id=project_notes[0]['note_id'])
         )
         assert get_updated_note_resp.status_code == 200
         updated_note = get_updated_note_resp.get_json()['note']
@@ -478,8 +500,9 @@ def test_collection_update(app):
             content_type='application/json'
         )
         assert post_resp.status_code == 200
-
-        new_record_url = json.loads(post_resp.data)["url"]
+        post_resp_data = json.loads(post_resp.data)
+        new_record_url = \
+            url_for("collection", collection_id=post_resp_data['id'])
 
         get_resp = server.get(new_record_url)
         assert get_resp.status_code == 200
@@ -713,8 +736,8 @@ def test_add_and_delete_item_to_object(server_with_object):
     assert new_item['format']['name'] == "audio"
 
     object_url = url_for(
-        "object_by_id",
-        id=test_object['object_id']
+        "object",
+        object_id=test_object['object_id']
     )
 
     object_get_resp = server_with_object.get(object_url)
