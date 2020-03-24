@@ -482,7 +482,7 @@ class ObjectFrontend(ProjectComponentDetailFrontend):
             edit=False,
             fields=fields,
             formats=self._data_provider.get_formats(serialize=True),
-            api_path=url_for('object_by_id', id=entity_id),
+            api_path=url_for('object', object_id=entity_id),
             valid_note_types=valid_note_types,
             breadcrumbs=breadcrumbs,
             show_bread_crumb=kwargs.get("show_bread_crumb"),

@@ -47,12 +47,28 @@ class ProjectNotesAPI(views.MethodView):
         return self._project.remove_note(project_id, note_id)
 
 
-class ObjectAPI(views.MethodView):
+class ProjectObjectAPI(views.MethodView):
     def __init__(self, project: middleware.ProjectMiddlwareEntity) -> None:
         self._project = project
 
     def delete(self, project_id, object_id):
         return self._project.remove_object(project_id, object_id)
+
+
+class ObjectApi(views.MethodView):
+    def __init__(self,
+                 object_middleware: middleware.ObjectMiddlwareEntity) -> None:
+
+        self._object_middleware = object_middleware
+
+    def delete(self, object_id: int):
+        return self._object_middleware.delete(id=object_id)
+
+    def get(self, object_id: int):
+        return self._object_middleware.get(id=object_id)
+
+    def put(self, object_id: int):
+        return self._object_middleware.update(id=object_id)
 
 
 class ProjectAPI(views.MethodView):
@@ -187,15 +203,9 @@ class Routes:
                           methods=["POST"]),
                     ]),
                 APIEntity("Object", rules=[
-                    Route("/api/object", "object",
+                    Route("/api/object", "objects",
                           lambda serialize=True: project_object.get(serialize),
                           methods=["GET"]
-                          ),
-                    Route("/api/object/<int:id>", "object_by_id",
-                          lambda id: project_object.get(id=id)),
-                    Route("/api/object/<string:id>", "object_update",
-                          project_object.update,
-                          methods=["PUT"]
                           ),
                     Route("/api/object/<int:id>-pbcore.xml",
                           "object_pbcore",
@@ -204,12 +214,6 @@ class Routes:
                     Route("/api/object/", "add_object",
                           project_object.create,
                           methods=["POST"]),
-                    Route("/api/object/<string:id>", "update_object",
-                          project_object.update,
-                          methods=["PUT"]),
-                    Route("/api/object/<string:id>", "delete_object",
-                          lambda id: project_object.delete(id=id),
-                          methods=["DELETE"]),
                     ]),
                 APIEntity("Notes", rules=[
                     Route("/api/notes", "notes",
@@ -250,7 +254,16 @@ class Routes:
                 methods=["GET", "PUT", "DELETE"]
             )
 
-            # Project
+            self.app.add_url_rule(
+                "/api/object/<int:object_id>",
+                view_func=ObjectApi.as_view("object",
+                                            object_middleware=project_object),
+                methods=[
+                    "GET",
+                    "DELETE",
+                    "PUT"
+                ]
+            )
             self.app.add_url_rule(
                 "/api/project/<int:project_id>/object",
                 "project_add_object",
@@ -261,8 +274,8 @@ class Routes:
             self.app.add_url_rule(
                 "/api/project/<int:project_id>/object/<int:object_id>",
                 "project_object",
-                view_func=ObjectAPI.as_view("project_objects",
-                                            project=project),
+                view_func=ProjectObjectAPI.as_view("project_objects",
+                                                   project=project),
                 methods=["DELETE"]
             )
             self.app.add_url_rule(

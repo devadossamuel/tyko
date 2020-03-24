@@ -225,7 +225,7 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
         )
         return jsonify({
             "id": new_object_id,
-            "url": url_for("object_by_id", id=new_object_id)
+            "url": url_for("object", object_id=new_object_id)
         })
 
     def add_note(self, project_id, object_id):  # pylint: disable=W0613

@@ -184,7 +184,7 @@ def test_object_add_note(app):
         new_note_data =new_object_note_resp.get_json()
 
         object_notes = server.get(
-            url_for("object_by_id", id=new_object_id)
+            url_for("object", object_id=new_object_id)
         ).get_json()['object']['notes']
         assert len(object_notes) == 1
 
@@ -200,7 +200,7 @@ def test_object_add_note(app):
         assert delete_resp.status_code == 202
 
         notes_after_deleting = server.get(
-            url_for("object_by_id", id=new_object_id)
+            url_for("object", object_id=new_object_id)
         ).get_json()['object']['notes']
 
         assert len(notes_after_deleting) == 0
@@ -234,8 +234,6 @@ def test_object_update(app):
             content_type='application/json'
         ).data)["id"]
 
-
-        # assert new_collection_resp.status_code == 200
         post_resp = server.post(
             "/api/object/",
             data=json.dumps(
@@ -250,8 +248,8 @@ def test_object_update(app):
             content_type='application/json'
             )
         assert post_resp.status_code == 200
-
-        new_object_record_url = json.loads(post_resp.data)["url"]
+        post_data = json.loads(post_resp.data)
+        new_object_record_url = url_for("object", object_id=post_data['id'])
 
         put_resp = server.put(
             new_object_record_url,
@@ -736,8 +734,8 @@ def test_add_and_delete_item_to_object(server_with_object):
     assert new_item['format']['name'] == "audio"
 
     object_url = url_for(
-        "object_by_id",
-        id=test_object['object_id']
+        "object",
+        object_id=test_object['object_id']
     )
 
     object_get_resp = server_with_object.get(object_url)
