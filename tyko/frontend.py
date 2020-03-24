@@ -197,16 +197,6 @@ class FrontendEntity(AbsFrontend):
         return sorted(cls._entities, key=lambda x: [0])
 
 
-class FrontendEditable(FrontendEntity):
-    @abc.abstractmethod
-    def create(self):
-        """Generate the page for the create new entity"""
-
-    @abc.abstractmethod
-    def edit_details(self, entity_id):
-        """Generate the page for the edit an existing entity"""
-
-
 class ProjectComponentDetailFrontend(FrontendEntity, ABC):  # noqa: E501 pylint: disable=W0223
     @staticmethod
     def build_breadcrumbs(active_level, project_url=None, object_url=None,
@@ -395,13 +385,6 @@ class ObjectFrontend(ProjectComponentDetailFrontend):
         return self.render_page(template="objects.html",
                                 api_path="api/object",
                                 row_table="objects"
-                                )
-
-    def create(self):
-        return self.render_page(template="object_details.html",
-                                api_path="/api/object/",
-                                title="New Object",
-                                on_success_redirect_base="/object/",
                                 )
 
     @property

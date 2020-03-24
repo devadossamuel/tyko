@@ -470,7 +470,7 @@ class Routes:
                         Route(
                             rule=simple_page.entity_rule,
                             method=simple_page.entity_list_page_name,
-                            viewFunction=simple_page.list,
+                            view_function=simple_page.list,
                         )
                     ]
                 )
