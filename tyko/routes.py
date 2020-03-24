@@ -109,7 +109,9 @@ class ItemAPI(views.MethodView):
 
 
 class CollectionsAPI(views.MethodView):
-    def __init__(self, collection: middleware.CollectionMiddlwareEntity) -> None:
+    def __init__(self,
+                 collection: middleware.CollectionMiddlwareEntity) -> None:
+
         self._collection = collection
 
     def get(self, collection_id: int):
@@ -120,8 +122,6 @@ class CollectionsAPI(views.MethodView):
 
     def delete(self, collection_id: int):
         return self._collection.delete(id=collection_id)
-
-
 
 
 class ObjectItemAPI(views.MethodView):
@@ -310,7 +310,6 @@ class Routes:
                 lambda project_id, object_id, item_id: item.add_note(item_id),
                 methods=["POST"]
             )
-
 
             self.app.add_url_rule(
                 "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/notes/<int:note_id>",  # noqa: E501 pylint: disable=C0301
