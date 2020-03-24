@@ -232,11 +232,6 @@ class NumberPickerWidget extends WidgetEditState{
 
         return inputElement;
     }
-
-    _newInputLabel(id) {
-        let inputLabelElement = document.createElement("label");
-        return inputLabelElement
-    }
 }
 class SelectDateWidget extends WidgetEditState {
     draw(element, data){
