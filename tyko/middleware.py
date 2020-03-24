@@ -385,7 +385,7 @@ class CollectionMiddlwareEntity(AbsMiddlwareEntity):
 
         return jsonify({
             "id": new_collection_id,
-            "url": url_for("collection_by_id", id=new_collection_id),
+            "url": url_for("collection", collection_id=new_collection_id),
             "frontend_url": url_for("page_collection_details",
                                     collection_id=new_collection_id)
         })

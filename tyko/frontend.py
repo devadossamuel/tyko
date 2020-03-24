@@ -517,7 +517,7 @@ class CollectiontFrontend(FrontendEntity):
         return self.render_page(template="collection_details.html",
                                 itemType="Collection",
                                 api_path=url_for(
-                                    "collection_by_id", id=entity_id),
+                                    "collection", collection_id=entity_id),
                                 collection=selected_object)
 
     @property

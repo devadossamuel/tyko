@@ -500,8 +500,9 @@ def test_collection_update(app):
             content_type='application/json'
         )
         assert post_resp.status_code == 200
-
-        new_record_url = json.loads(post_resp.data)["url"]
+        post_resp_data = json.loads(post_resp.data)
+        new_record_url = \
+            url_for("collection", collection_id=post_resp_data['id'])
 
         get_resp = server.get(new_record_url)
         assert get_resp.status_code == 200
