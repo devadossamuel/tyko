@@ -1,12 +1,15 @@
 # pylint: disable=redefined-builtin, invalid-name
 import abc
 from abc import ABC
+from datetime import datetime
 
 import sqlalchemy
 from sqlalchemy import orm
 from .exceptions import DataError
 from . import scheme
 from . import database
+
+DATE_FORMAT = '%Y-%m-%d'
 
 
 class AbsDataProviderConnector(metaclass=abc.ABCMeta):
@@ -236,7 +239,6 @@ class ProjectDataConnector(AbsNotesConnector):
         try:
 
             project = self._get_project(session, project_id)
-
             object_connector = ObjectDataConnector(self.session_maker)
             new_object_id = object_connector.create(**data)
             project.objects.append(object_connector.get(id=new_object_id))
@@ -320,16 +322,18 @@ class ObjectDataConnector(AbsNotesConnector):
 
     def create(self, *args, **kwargs):
         name = kwargs["name"]
-
+        data = self.get_data(kwargs)
         new_object = scheme.CollectionObject(
             name=name,
         )
+        if 'originals_rec_date' in data:
+            new_object.originals_rec_date = data['originals_rec_date']
 
         barcode = kwargs.get("barcode")
         if barcode is not None:
             new_object.barcode = barcode
         session = self.session_maker()
-        if "collection_id" in kwargs:
+        if "collection_id" in kwargs and kwargs['collection_id'] is not None:
             collection = session.query(scheme.Collection).filter(
                 scheme.Collection.id == kwargs['collection_id']).one()
 
@@ -344,25 +348,49 @@ class ObjectDataConnector(AbsNotesConnector):
         return object_id
 
     def update(self, id, changed_data):
-        updated_object = None
         collection_object = self.get(id, serialize=False)
 
-        if collection_object:
-            if "name" in changed_data:
-                collection_object.name = changed_data['name']
-            if "barcode" in changed_data:
-                collection_object.barcode = changed_data['barcode']
+        session = self.session_maker()
+        try:
+            if collection_object:
 
-            session = self.session_maker()
-            session.add(collection_object)
-            session.commit()
+                if "name" in changed_data:
+                    collection_object.name = changed_data['name']
+
+                if "barcode" in changed_data:
+                    collection_object.barcode = changed_data['barcode']
+
+                if "collection_id" in changed_data:
+                    collection = session.query(scheme.Collection)\
+                        .filter(scheme.Collection.id ==
+                                changed_data['collection_id'])\
+                        .one()
+
+                    collection_object.collection = collection
+
+                if 'originals_rec_date' in changed_data:
+                    collection_object.originals_rec_date = \
+                        datetime.strptime(
+                            changed_data['originals_rec_date'],
+                            DATE_FORMAT
+                        )
+                if 'originals_return_date' in changed_data:
+                    collection_object.originals_return_date = \
+                        datetime.strptime(
+                            changed_data['originals_return_date'],
+                            DATE_FORMAT
+                        )
+
+                session.add(collection_object)
+                session.commit()
+
+                updated_object = session.query(scheme.CollectionObject)\
+                    .filter(scheme.CollectionObject.id == id)\
+                    .one()
+                return updated_object.serialize()
+
+        finally:
             session.close()
-
-            updated_object = session.query(scheme.CollectionObject)\
-                .filter(scheme.CollectionObject.id == id)\
-                .one()
-
-        return updated_object.serialize()
 
     def delete(self, id):
         if id:
@@ -558,6 +586,15 @@ class ObjectDataConnector(AbsNotesConnector):
                 message="Found multiple objects with ID: {}".format(
                     object_id))
         return matching_objects[0]
+
+    @classmethod
+    def get_data(cls, data):
+        new_data = data.copy()
+        if 'originals_rec_date' in data:
+            new_data['originals_rec_date'] = \
+                datetime.strptime(data['originals_rec_date'], '%Y-%m-%d')
+
+        return new_data
 
 
 class ItemDataConnector(AbsNotesConnector):
@@ -819,6 +856,9 @@ class CollectionDataConnector(AbsDataProviderConnector):
 
             if "department" in changed_data:
                 collection.department = changed_data["department"]
+
+            if "record_series" in changed_data:
+                collection.record_series = changed_data["record_series"]
 
             session = self.session_maker()
 

@@ -24,6 +24,9 @@ def test_project_update(app):
             data=json.dumps(
                 {
                     "title": "my dumb project",
+                    "project_code": "my dumb project code",
+                    "current_location": "old location",
+                    "status": "no work done"
                 }
             ),
             content_type='application/json'
@@ -37,12 +40,20 @@ def test_project_update(app):
             new_project_record,
             data=json.dumps(
                 {
-                    "title": "my dumb project has changed"
+                    "title": "my dumb project has changed",
+                    "project_code": "my dumb project code changed",
+                    "current_location": "new location",
+                    "status": "all finished"
                 }
             ),
             content_type='application/json'
         )
         assert put_resp.status_code == 200
+        updated_project = json.loads(put_resp.data)["project"]
+        assert updated_project["title"] == "my dumb project has changed"
+        assert updated_project["project_code"] == "my dumb project code changed"
+        assert updated_project["current_location"] == "new location"
+        assert updated_project["status"] == "all finished"
 
 
 def test_item_update(app):
@@ -176,12 +187,42 @@ def test_object_add_note(app):
 def test_object_update(app):
 
     with app.test_client() as server:
+
+        collection_one_id = json.loads(server.post(
+            "/api/collection/",
+            data=json.dumps(
+                {
+                    "collection_name": "dumb collection",
+                    "department": "dumb department",
+                    "record_series": "dumb record series",
+                }
+            ),
+            content_type='application/json'
+        ).data)["id"]
+
+        collection_two_id = json.loads(server.post(
+            "/api/collection/",
+            data=json.dumps(
+                {
+                    "collection_name": "dumb other collection",
+                    "department": "dumb other department",
+                    "record_series": "dumb other record series",
+                }
+            ),
+            content_type='application/json'
+        ).data)["id"]
+
+
+        # assert new_collection_resp.status_code == 200
         post_resp = server.post(
             "/api/object/",
             data=json.dumps(
                 {
                     "name": "My dummy object",
                     "barcode": "12345",
+                    "collection_id": collection_one_id,
+                    "originals_rec_date": "2010-2-4",
+                    "originals_return_date": "2012-2-4"
                 }
             ),
             content_type='application/json'
@@ -193,7 +234,11 @@ def test_object_update(app):
         put_resp = server.put(
             new_object_record_url,
             data=json.dumps({
-                "name": "changed_dummy object"
+                "name": "changed_dummy object",
+                "barcode": "54321",
+                "collection_id": collection_two_id,
+                "originals_rec_date": "2010-01-04",
+                "originals_return_date": "2012-05-04"
             }),
             content_type='application/json'
 
@@ -203,7 +248,7 @@ def test_object_update(app):
         put_resp_data = json.loads(put_resp.data)
         put_item = put_resp_data["object"]
         assert put_item["name"] == "changed_dummy object"
-        assert put_item["barcode"] == "12345"
+        assert put_item["barcode"] == "54321"
 
         get_resp = server.get(new_object_record_url)
         assert get_resp.status_code == 200
@@ -211,7 +256,10 @@ def test_object_update(app):
         edited_data = json.loads(get_resp.data)
         get_object = edited_data["object"]
         assert get_object["name"] == "changed_dummy object"
-        assert get_object["barcode"] == "12345"
+        assert get_object["name"] == "changed_dummy object"
+        assert get_object["originals_rec_date"] == "2010-01-04"
+        assert get_object["originals_return_date"] == "2012-05-04"
+        assert get_object['collection']["collection_id"] == collection_two_id
 
 
 def test_object_delete(app):
@@ -424,6 +472,7 @@ def test_collection_update(app):
                 {
                     "collection_name": "My dummy collection",
                     "department": "preservation",
+                    "record_series": "one"
                 }
             ),
             content_type='application/json'
@@ -443,7 +492,8 @@ def test_collection_update(app):
             new_record_url,
             data=json.dumps(
                 {
-                    "collection_name": "My changed dummy collection"
+                    "collection_name": "My changed dummy collection",
+                    "record_series": "two"
                 }
             ),
             content_type='application/json'
@@ -454,6 +504,7 @@ def test_collection_update(app):
         put_item = put_resp_data["collection"]
         assert put_item["collection_name"] == "My changed dummy collection"
         assert put_item["department"] == "preservation"
+        assert put_item["record_series"] == "two"
 
         get_resp = server.get(new_record_url)
         assert get_resp.status_code == 200
@@ -462,6 +513,19 @@ def test_collection_update(app):
         get_object = edited_data["collection"]
         assert get_object["collection_name"] == "My changed dummy collection"
         assert get_object["department"] == "preservation"
+
+        update_2 = json.loads(
+            server.put(
+                new_record_url,
+                data=json.dumps(
+                    {
+                        "department": "some other departments",
+                    }
+                ),
+                content_type='application/json'
+            ).data
+        )['collection']
+        assert update_2["department"] == "some other departments"
 
 
 def test_collection_delete(app):
@@ -518,6 +582,7 @@ def test_add_object_to_project(server_with_project):
             {
                 "name": "My dummy object",
                 "barcode": "12345",
+                "originals_rec_date": "2010-2-4"
             }
         ),
         content_type='application/json'

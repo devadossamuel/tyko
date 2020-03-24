@@ -25,6 +25,7 @@ export const requests = {
                 if (xhr.readyState !== 4) {
                     return;
                 }
+                handle_results(xhr, resolve, reject);
             };
             xhr.open("get", apiPath, true);
             xhr.send();

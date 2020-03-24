@@ -5,9 +5,11 @@ describe('Testing text widget', ()=> {
 
     beforeEach(()=>{
         document.body.innerHTML =
-            '<div id="sample">' +
-
-            '</div>';
+            '<body>' +
+                '<div id="sample">' +
+                '</div>' +
+            '   <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>' +
+            '</body>';
         metadataWidget = getWidget(
             "textEditor",
             document.getElementById("sample"),
@@ -95,9 +97,44 @@ describe("Widget factory", ()=>{
 
             '</div>';
     });
-    test("Get widgets", ()=>{
+    test("Get text widgets", ()=>{
         const sampleElement = document.getElementById("sample");
         let res = getWidget("textEditor", sampleElement, "sampleField", "Sample text");
         expect(res.inputType).toBe("text");
-    })
+        expect(res.widgetType).toBe("textEditor");
+
+    });
+
+    test("get datePicker", ()=>{
+
+        global.$ = $;
+        const sampleElement = document.getElementById("sample");
+        let res = getWidget("datePicker", sampleElement, "sampleField", "Sample text");
+        expect(res.widgetType).toBe("datePicker");
+        res.swap();
+        res.draw();
+        expect(sampleElement.innerHTML).toContain("datepicker");
+
+    });
+
+    test("get select widget", ()=>{
+        const sampleElement = document.getElementById("sample");
+        let res = getWidget("selectEditor", sampleElement, "sampleField", "Sample text");
+        expect(res.widgetType).toBe("selectEditor");
+
+        res.swap();
+        res.draw();
+        expect(sampleElement.innerHTML).toContain("select");
+    });
+    test("get numberPicker widget", ()=>{
+        const sampleElement = document.getElementById("sample");
+        let res = getWidget("numberPicker", sampleElement, "sampleField", "Sample text");
+        expect(res.widgetType).toBe("numberPicker");
+        expect(res.stateName()).toBe("view");
+        res.swap();
+        expect(res.stateName()).toBe("edit");
+        res.draw();
+        expect(sampleElement.innerHTML).toContain("input");
+        expect(sampleElement.innerHTML).toContain('type="number"');
+    });
 });

@@ -41,6 +41,9 @@
       "cobertura",
       "lcov"
     ],
+    "setupFiles": [
+      "./tests/setup-jest.js"
+    ],
     "verbose": true,
     "moduleFileExtensions": [
       "js",
@@ -52,5 +55,9 @@
   },
   "jestSonar": {
     "reportPath": "reports"
+  },
+  "dependencies": {
+    "gijgo": "^1.9.13",
+    "jquery": "^3.4.1"
   }
 }

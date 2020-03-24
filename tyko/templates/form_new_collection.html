@@ -7,6 +7,7 @@
             {{ form_macros.form_header("New Collection") }}
             {{ form_macros.form_text_field("nameInput", "Collection Name", "collection_name", required=True) }}
             {{ form_macros.form_text_field("departmentInput", "Department", "department") }}
+            {{ form_macros.form_text_field("recordSeriesInput", "Record Series", "record_series") }}
             <button type="submit" class="btn btn-primary">Submit</button>
             <script type="module">
                 import {collections} from "{{ url_for('static', filename='js/api.js') }}"

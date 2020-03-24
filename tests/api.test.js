@@ -20,7 +20,6 @@ describe('Testing api', ()=>{
     }
   ]
 }`;
-    console.log("data");
     return notes.getNotes()
         .then(function (data){
 
