@@ -33,7 +33,7 @@
         <h5 class="card-header">Notes</h5>
         <div class="card-body">
             {% call(note) notes_table(item['notes'], api_path) %}
-                {{ notes_table_row(note, url_for('note_by_id', id=note['note_id'])) }}
+                {{ notes_table_row(note, url_for('note', note_id=note['note_id'])) }}
             {% endcall %}
         </div>
     </div>
