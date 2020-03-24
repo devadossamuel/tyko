@@ -874,6 +874,6 @@ class NotestMiddlwareEntity(AbsMiddlwareEntity):
         return jsonify(
             {
                 "id": new_note_id,
-                "url": url_for("note_by_id", id=new_note_id)
+                "url": url_for("note", note_id=new_note_id)
             }
         )

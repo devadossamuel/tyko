@@ -325,7 +325,7 @@ def test_note_create(app):
         note_data = json.loads(get_all_notes.data)
         assert note_data['total'] == 1
 
-        get_resp = server.get(f"/api/notes/{new_record_id}")
+        get_resp = server.get(url_for("note", note_id=new_record_id))
         note_data = json.loads(get_resp.data)
         assert note_data['note']["text"] == "MY dumb note"
 
@@ -344,7 +344,8 @@ def test_note_create_and_delete(app):
             content_type='application/json'
             )
         assert post_resp.status_code == 200
-        new_record_url = json.loads(post_resp.data)["url"]
+        post_data = json.loads(post_resp.data)
+        new_record_url = url_for("note", note_id=post_data['id'])
 
         get_all_notes = server.get(f"/api/notes")
         note_data = json.loads(get_all_notes.data)
@@ -419,6 +420,7 @@ def test_create_new_project_note_with_invalid_type(app):
         )
         assert note_post_resp.status_code == 400
 
+
 def test_create_new_project_note(app):
     with app.test_client() as server:
 
@@ -474,7 +476,7 @@ def test_create_new_project_note(app):
         assert note_update_resp.status_code == 200
 
         get_updated_note_resp = server.get(
-            url_for("note_by_id", id=project_notes[0]['note_id'])
+            url_for("note", note_id=project_notes[0]['note_id'])
         )
         assert get_updated_note_resp.status_code == 200
         updated_note = get_updated_note_resp.get_json()['note']

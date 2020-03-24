@@ -110,6 +110,21 @@ class ObjectItemNotesAPI(views.MethodView):
         return self._item.remove_note(item_id, note_id)
 
 
+class NotesAPI(views.MethodView):
+    def __init__(self,
+                 notes_middleware: middleware.NotestMiddlwareEntity) -> None:
+        self._middleware = notes_middleware
+
+    def delete(self, note_id: int):
+        return self._middleware.delete(id=note_id)
+
+    def get(self, note_id: int):
+        return self._middleware.get(id=note_id)
+
+    def put(self, note_id: int):
+        return self._middleware.update(id=note_id)
+
+
 class ItemAPI(views.MethodView):
     def __init__(self, item: middleware.ItemMiddlwareEntity) -> None:
         self._item = item
@@ -219,18 +234,9 @@ class Routes:
                     Route("/api/notes", "notes",
                           lambda serialize=True: notes.get(serialize),
                           methods=["GET"]),
-                    Route("/api/notes/<string:id>", "note_by_id",
-                          lambda id: notes.get(id=id),
-                          methods=["GET"]),
                     Route("/api/notes/", "add_note",
                           notes.create,
                           methods=["POST"]),
-                    Route("/api/notes/<string:id>", "update_note",
-                          notes.update,
-                          methods=["PUT"]),
-                    Route("/api/notes/<string:id>", "delete_note",
-                          notes.delete,
-                          methods=["DELETE"]),
                     ])
 
             ]
@@ -311,6 +317,17 @@ class Routes:
                 ]
             )
             self.app.add_url_rule(
+                "/api/note/<int:note_id>",
+                view_func=NotesAPI.as_view(
+                    "note",
+                    notes_middleware=notes),
+                methods=[
+                    "GET",
+                    "PUT",
+                    "DELETE"
+                ]
+            )
+            self.app.add_url_rule(
                 "/api/project/<int:project_id>/object/<int:object_id>/notes/<int:note_id>",  # noqa: E501 pylint: disable=C0301
                 view_func=ProjectObjectNotesAPI.as_view(
                     "object_notes",
@@ -349,7 +366,6 @@ class Routes:
                     "object_item",
                     parent=project_object),
                 methods=[
-                    # "PUT",
                     "DELETE"
                 ]
             )
