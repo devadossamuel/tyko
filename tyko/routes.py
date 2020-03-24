@@ -7,7 +7,6 @@ from flask import jsonify, render_template, views
 from . import middleware
 from .data_provider import DataProvider
 from . import frontend
-from . import entities
 
 
 @dataclass
@@ -172,20 +171,14 @@ class Routes:
         self.mw = middleware.Middleware(self.db_engine)
 
     def init_api_routes(self) -> None:
-        project = \
-            entities.load_entity("project", self.db_engine).middleware()
-
-        collection = \
-            entities.load_entity("collection", self.db_engine).middleware()
-
-        item = entities.load_entity("item", self.db_engine).middleware()
-
-        project_object = \
-            entities.load_entity("object", self.db_engine).middleware()
-
-        notes = entities.load_entity("notes", self.db_engine).middleware()
 
         if self.app:
+            project = middleware.ProjectMiddlwareEntity(self.db_engine)
+            collection = middleware.CollectionMiddlwareEntity(self.db_engine)
+            item = middleware.ItemMiddlwareEntity(self.db_engine)
+            notes = middleware.NotestMiddlwareEntity(self.db_engine)
+
+            project_object = middleware.ObjectMiddlwareEntity(self.db_engine)
             api_entities = [
                 APIEntity("Projects", rules=[
                     Route("/api/project", "projects",
