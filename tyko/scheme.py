@@ -190,51 +190,15 @@ class CollectionObject(AVTables):
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
 
-        def sorter(collection_items: List[CollectionItem]):
-            no_sequence = set()
-            has_sequence = set()
-            for collection_item in collection_items:
-                if collection_item.obj_sequence is None:
-                    no_sequence.add(collection_item)
-                else:
-                    has_sequence.add(collection_item)
-
-            resulting_sorted_list = \
-                sorted(list(has_sequence), key=lambda x: x.obj_sequence)
-
-            resulting_sorted_list += list(no_sequence)
-            return resulting_sorted_list
-
-        data: Dict[str, SerializedData] = {
-            "object_id": self.id,
-            "name": self.name,
-            "barcode": self.barcode,
-            }
-
-        items: List[SerializedData] = []
-        for item in sorter(self.items):
-            if recurse is True:
-                item_data = item.serialize()
-                del item_data['parent_object_id']
-                items.append(item_data)
-
-            else:
-                items.append({
-                    "item_id": item.id,
-                    "name": item.name
-                })
-        data["items"] = items
+        data: Dict[str, SerializedData] = {"object_id": self.id,
+                                           "name": self.name,
+                                           "barcode": self.barcode,
+                                           "items": self.get_items(recurse)}
 
         if recurse is True:
             data["notes"] = [note.serialize() for note in self.notes]
 
-        if self.collection is not None:
-            if recurse is True:
-                data["collection"] = self.collection.serialize()
-            else:
-                data["collection"] = None
-        else:
-            data["collection"] = None
+        data["collection"] = self.get_collection(recurse)
 
         if self.contact is not None:
             contact = self.contact.serialize()
@@ -260,6 +224,45 @@ class CollectionObject(AVTables):
             self.serialize_date(self.originals_return_date)
 
         return data
+
+    def get_collection(self, recurse: bool) -> Optional[dict]:
+        if self.collection is not None:
+            if recurse is True:
+                return self.collection.serialize()
+            else:
+                return None
+        else:
+            return None
+
+    def get_items(self, recurse):
+        def sorter(collection_items: List[CollectionItem]):
+            no_sequence = set()
+            has_sequence = set()
+            for collection_item in collection_items:
+                if collection_item.obj_sequence is None:
+                    no_sequence.add(collection_item)
+                else:
+                    has_sequence.add(collection_item)
+
+            resulting_sorted_list = \
+                sorted(list(has_sequence), key=lambda x: x.obj_sequence)
+
+            resulting_sorted_list += list(no_sequence)
+            return resulting_sorted_list
+
+        items: List[SerializedData] = []
+        for item in sorter(self.items):
+            if recurse is True:
+                item_data = item.serialize()
+                del item_data['parent_object_id']
+                items.append(item_data)
+
+            else:
+                items.append({
+                    "item_id": item.id,
+                    "name": item.name
+                })
+        return items
 
 
 class CollectionItem(AVTables):
