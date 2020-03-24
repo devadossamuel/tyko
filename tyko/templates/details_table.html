@@ -52,56 +52,6 @@
             </div>
         </div>
     </div>
-    <script>
-        function confirmUpdate(api_path, key) {
-            const inputElement = key + "Input";
-            editDataValue(
-                api_path,
-                key,
-                document.getElementById(inputElement).value,
-                function () {
-                    location.reload()
-                },
-                function () {
-                    alert("Failed to update " + key);
-
-                }
-            );
-        }
-        let isEdit = {};
-
-        function cancelEdit(editId, original_text, editButtonId) {
-            document.getElementById(editId).value = original_text;
-            document.getElementById(editButtonId).innerText= "Edit"
-        }
-        function setEditModeOn(displayId, editId) {
-            document.getElementById(displayId).hidden = true;
-            document.getElementById(editId).hidden = false;
-
-
-        }
-        function setEditModeOff(displayId, editId) {
-            document.getElementById(displayId).hidden = false;
-            document.getElementById(editId).hidden = true;
-
-
-        }
-        function flipMode(displayItemId, editItemAreaId, editItemId, originalData, editButtonId){
-            if(isEdit[editItemId] === true){
-                setEditModeOff(displayItemId, editItemAreaId);
-                cancelEdit(editItemId, originalData, editButtonId);
-                document.getElementById(editButtonId).innerText= "Edit";
-                isEdit[editItemId] = false;
-
-            } else {
-                setEditModeOn(displayItemId, editItemAreaId);
-                document.getElementById(editButtonId).innerText= "Cancel";
-                isEdit[editItemId] = true;
-            }
-        }
-
-    </script>
-    <script src="{{ url_for('static', filename='js/editData.js') }}"></script>
     {% include "edit_note.html" %}
 
 {% endblock %}
