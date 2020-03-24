@@ -511,7 +511,7 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
         return jsonify(
             {
                 "id": new_project_id,
-                "url": url_for("project_by_id", id=new_project_id)
+                "url": url_for("project", project_id=new_project_id)
             }
         )
 

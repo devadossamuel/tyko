@@ -32,7 +32,7 @@ def test_project_create_and_delete(app):
 
         ).data)['id']
         delete_resp = server.delete(
-            url_for("delete_project", id=new_project_id)
+            url_for("project", project_id=new_project_id)
         )
         assert delete_resp.status_code == 204
 
