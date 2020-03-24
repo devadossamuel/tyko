@@ -16,6 +16,27 @@ def app():
     return testing_app
 
 
+def test_project_create_and_delete(app):
+    with app.test_client() as server:
+        new_project_id = json.loads(server.post(
+            "/api/project/",
+            data=json.dumps(
+                {
+                    "title": "my dumb project",
+                    "project_code": "my dumb project code",
+                    "current_location": "old location",
+                    "status": "no work done"
+                }
+            ),
+            content_type='application/json'
+
+        ).data)['id']
+        delete_resp = server.delete(
+            url_for("delete_project", id=new_project_id)
+        )
+        assert delete_resp.status_code == 204
+
+
 def test_project_update(app):
 
     with app.test_client() as server:
