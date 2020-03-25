@@ -240,7 +240,13 @@ class ProjectDataConnector(AbsNotesConnector):
 
             project = self._get_project(session, project_id)
             object_connector = ObjectDataConnector(self.session_maker)
-            new_object_id = object_connector.create(**data)
+            new_data = dict()
+            for k, v in data.items():
+                if isinstance(v, str) and v.strip() == "":
+                    continue
+                new_data[k] = v
+
+            new_object_id = object_connector.create(**new_data)
             project.objects.append(object_connector.get(id=new_object_id))
             session.commit()
             return object_connector.get(id=new_object_id, serialize=True)
@@ -326,9 +332,7 @@ class ObjectDataConnector(AbsNotesConnector):
         new_object = scheme.CollectionObject(
             name=name,
         )
-        if 'originals_rec_date' in data and \
-                data['originals_rec_date'].strip() != "":
-
+        if 'originals_rec_date' in data:
             new_object.originals_rec_date = data['originals_rec_date']
 
         barcode = kwargs.get("barcode")
