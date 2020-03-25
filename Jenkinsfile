@@ -778,13 +778,15 @@ pipeline {
                         equals expected: true, actual: params.DEPLOY_SERVER
                         beforeInput true
                     }
+//                     TODO: have a option the the user selects server a or server b
                     input {
                       message 'Deploy to server'
                       parameters {
                         string(defaultValue: 'avdatabase.library.illinois.edu', description: 'Location where to install the server application', name: 'SERVER_URL', trim: false)
-                        string(defaultValue: 'avdatabase_db_1', description: 'Name of the container with the database', name: 'CONTAINER_NAME_DATABASE', trim: false)
+//                         string(defaultValue: 'avdatabase_db_1', description: 'Name of the container with the database', name: 'CONTAINER_NAME_DATABASE', trim: false)
                         credentials credentialType: 'com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl', defaultValue: 'henryUserName', description: '', name: 'SERVER_CREDS', required: false
                         credentials credentialType: 'com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl', defaultValue: 'TYKO_DB_CREDS', description: '', name: 'DATABASE_CREDS', required: false
+                        choice choices: ['green', 'blue'], description: 'Which server do you want to deploy this to?', name: 'SERVER_COLOR'
                       }
                     }
                     stages{
@@ -800,7 +802,7 @@ pipeline {
                                         remote.password = password
                                         remote.allowAnyHosts = true
                                     }
-
+                                    def CONTAINER_NAME_DATABASE = "tyko_${SERVER_COLOR}_db_1"
                                     def backup_file_name = "tyko-${BRANCH_NAME}-${BUILD_NUMBER}-backup.sql"
                                     catchError(buildResult: 'SUCCESS', message: 'Unable to make a backup of database', stageResult: 'UNSTABLE') {
                                         withCredentials([usernamePassword(credentialsId: DATABASE_CREDS, passwordVariable: 'password', usernameVariable: 'username')]) {
@@ -838,12 +840,17 @@ pipeline {
                                     sshCommand remote: remote, command: "mv ./package/tyko-${props.Version}/* ./package/"
                                     sshPut remote: remote, from: 'deploy', into: './package/'
                                     sshPut remote: remote, from: 'database', into: './package/'
+
                                     sshCommand remote: remote, command: """cd package &&
-        docker-compose -f deploy/docker-compose.yml -p avdatabase build &&
-        docker-compose -f deploy/docker-compose.yml -p avdatabase up -d"""
+        docker-compose -f deploy/docker-compose.yml -p tyko build ${SERVER_COLOR}_api ${SERVER_COLOR}_db &&
+        docker-compose -f deploy/docker-compose.yml -p tyko up -d webserver ${SERVER_COLOR}_api ${SERVER_COLOR}_db"""
                                     sshRemove remote: remote, path: "package", failOnError: false
+                                    if(SERVER_COLOR == "green"){
+                                        addBadge(icon: 'success.gif', id: '', link: "http://${SERVER_URL}:8000/", text: 'Server Application Deployed')
+                                    } else if (SERVER_COLOR == "blue"){
+                                        addBadge(icon: 'success.gif', id: '', link: "http://${SERVER_URL}:8001/", text: 'Server Application Deployed')
+                                    }
                                 }
-                                addBadge(icon: 'success.gif', id: '', link: "http://${SERVER_URL}:8000/", text: 'Server Application Deployed')
                             }
                         }
                     }
