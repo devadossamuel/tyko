@@ -27,7 +27,7 @@
 <div class="form-group row">
     <label for="datepickerOriginalsRecInput" class="col-sm-2 col-form-label">Originals Received Date</label>
     <div class="col-sm-10">
-        <input id="datepickerOriginalsRecInput" class="form-control" name="originals_rec_date" />
+        <input id="datepickerOriginalsRecInput" class="form-control" name="originals_rec_date" pattern="^([0-9]{4})-([0-9]{2})-([0-9]{2})$"/>
         <script type="module">
             $('#datepickerOriginalsRecInput').datepicker({
                 uiLibrary: 'bootstrap4',

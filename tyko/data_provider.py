@@ -326,7 +326,9 @@ class ObjectDataConnector(AbsNotesConnector):
         new_object = scheme.CollectionObject(
             name=name,
         )
-        if 'originals_rec_date' in data:
+        if 'originals_rec_date' in data and \
+                data['originals_rec_date'].strip() != "":
+
             new_object.originals_rec_date = data['originals_rec_date']
 
         barcode = kwargs.get("barcode")
@@ -590,7 +592,9 @@ class ObjectDataConnector(AbsNotesConnector):
     @classmethod
     def get_data(cls, data):
         new_data = data.copy()
-        if 'originals_rec_date' in data:
+        if 'originals_rec_date' in data and \
+                data['originals_rec_date'].strip() != "":
+
             new_data['originals_rec_date'] = \
                 datetime.strptime(data['originals_rec_date'], '%Y-%m-%d')
 

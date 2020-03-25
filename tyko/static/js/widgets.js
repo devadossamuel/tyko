@@ -239,13 +239,33 @@ class SelectDateWidget extends WidgetEditState {
         const rootId = `editArea${data['fieldName']}`;
         let newRoot = this.newRoot(rootId);
         let new_date_picker = this._new_date_picker(data['fieldText']);
+
         newRoot.appendChild(new_date_picker);
 
 
         const confirmButtonID = `${data['fieldName']}ConfirmButton`;
         newRoot.appendChild(this.newConfirmationButton(confirmButtonID, new_date_picker) );
+        let validator = this.validate_input;
+        new_date_picker.addEventListener("input", function (){
+            validator(confirmButtonID, new_date_picker.value);
+        });
         element.appendChild(newRoot);
         this.setupEventListeners(element.id);
+        this.validate_input(confirmButtonID, new_date_picker.value);
+    }
+    validate_input(confirmButtonID, value){
+        const re = new RegExp("^([0-9]{4})-([0-9]{2})-([0-9]{2})$");
+            let confirmButton = document.getElementById(confirmButtonID);
+            if (!confirmButton){
+                return;
+            }
+                if (re.test(value) === true){
+                    if(confirmButton.hasAttribute("disabled")){
+                        confirmButton.removeAttribute("disabled");
+                    }
+                } else {
+                    confirmButton.setAttribute("disabled", "")
+                }
     }
     _new_date_picker(value){
 
