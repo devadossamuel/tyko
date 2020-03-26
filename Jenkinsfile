@@ -11,59 +11,6 @@ def parseBanditReport(htmlReport){
     }
 }
 
-def get_sonarqube_unresolved_issues(report_task_file){
-    script{
-
-        def props = readProperties  file: '.scannerwork/report-task.txt'
-        def response = httpRequest url : props['serverUrl'] + "/api/issues/search?componentKeys=" + props['projectKey'] + "&resolved=no"
-        def outstandingIssues = readJSON text: response.content
-        return outstandingIssues
-    }
-}
-
-def get_sonarqube_scan_data(report_task_file){
-    script{
-        if (! fileExists(report_task_file)){
-            error "File not found ${report_task_file}"
-        }
-        def props = readProperties  file: report_task_file
-
-        def ceTaskUrl= props['ceTaskUrl']
-        def response = httpRequest ceTaskUrl
-        def ceTask = readJSON text: response.content
-        def analysisId = ceTask["task"]["analysisId"]
-        if(analysisId == null){
-            error "Unable to parse analysisId from ${report_task_file}"
-        }
-
-        def response2 = httpRequest url : props['serverUrl'] + "/api/qualitygates/project_status?analysisId=" + analysisId
-        def qualitygate =  readJSON text: response2.content
-        return qualitygate
-    }
-}
-
-def get_sonarqube_project_analysis(report_task_file, buildString){
-    script{
-        if (! fileExists(report_task_file)){
-            error "File not found ${report_task_file}"
-        }
-
-        def props = readProperties  file: report_task_file
-        def response = httpRequest url : props['serverUrl'] + "/api/project_analyses/search?project=" + props['projectKey']
-        def project_analyses = readJSON text: response.content
-
-        for( analysis in project_analyses['analyses']){
-            if(!analysis.containsKey("buildString")){
-                continue
-            }
-            def build_string = analysis["buildString"]
-            if(build_string != buildString){
-                continue
-            }
-            return analysis
-        }
-    }
-}
 
 pipeline {
     agent none
@@ -189,70 +136,6 @@ pipeline {
                         }
                     }
                 }
-
-//                        stage("Build Docker Container"){
-//                            steps{
-//                                dir("scm"){
-//                                    script{
-//                                        if(!fileExists('opengl32.dll')){
-//                                            node('Windows&&opengl32') {
-//                                                powershell(
-//                                                    label: "Searching for opengl32.dll",
-//                                                    script: '''
-//$opengl32_libraries = Get-ChildItem -Path c:\\Windows\\System32 -Recurse -Include opengl32.dll
-//foreach($file in $opengl32_libraries){
-//    Copy-Item $file.FullName
-//    break
-//}'''
-//                                                )
-//                                                stash includes: 'opengl32.dll', name: 'OPENGL'
-//                                            }
-//                                            unstash 'OPENGL'
-//                                        }
-//                                    }
-//
-//                                    bat("docker build . -f CI/build_VS2019/Dockerfile -m 2GB -t %DOCKER_IMAGE_TAG%")
-//                                }
-//                            }
-//                        }
-//                        stage("Install Dependencies"){
-//                            steps{
-//                                bat "if not exist build mkdir build"
-//                                bat(
-//                                    label: "Using conan to install dependencies to build directory.",
-//                                    script: "docker run -v \"${WORKSPACE}\\build:c:\\build\" -v \"${WORKSPACE}\\scm:c:\\source:ro\" --workdir=\"c:\\build\" --rm %DOCKER_IMAGE_TAG% conan install c:\\source"
-//                                    )
-//                            }
-//                        }
-//                        stage("Configure and Build Client"){
-//                            steps{
-//                                bat(
-//                                    label: "Configuring CMake",
-//                                    script: "docker run --rm -v \"${WORKSPACE}\\build:c:\\build\" -v \"${WORKSPACE}\\scm:c:\\source:ro\" --workdir=\"c:\\build\" %DOCKER_IMAGE_TAG% cmake -G Ninja -S c:\\source -B c:\\build -DCMAKE_TOOLCHAIN_FILE=conan_paths.cmake -DCMAKE_BUILD_TYPE=Release"
-//                                )
-//                                bat(
-//                                    label: "Running build command from CMake",
-//                                    script: "docker run --rm -v \"${WORKSPACE}\\build:c:\\build\" -v \"${WORKSPACE}\\scm:c:\\source:ro\" --workdir=\"c:\\build\" %DOCKER_IMAGE_TAG% cmake --build c:\\build --config Release"
-//                                )
-//
-//                            }
-//                        }
-//                    }
-//                    post{
-//                        success{
-//                            stash includes: "build/**", name: 'CLIENT_BUILD_DOCKER'
-//                        }
-//                        cleanup{
-//                            cleanWs(
-//                                deleteDirs: true,
-//                                patterns: [
-//                                    [pattern: 'build', type: 'INCLUDE'],
-//                                    ]
-//                            )
-//                        }
-//
-//                    }
-//                }
             }
         }
         stage('Testing') {
@@ -490,11 +373,6 @@ pipeline {
                                         label: "Running pylint"
                                     )
                                 }
-                                sh(
-                                    script: 'pylint tyko  -r n --msg-template="{path}:{module}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > reports/pylint_issues.txt',
-                                    label: "Running pylint for sonarqube",
-                                    returnStatus: true
-                                )
                             }
                             post{
                                 always{
@@ -562,87 +440,7 @@ pipeline {
                         }
                     }
                 }
-                stage("Run SonarQube Analysis"){
-                    agent{
-                        dockerfile {
-                            filename 'CI/jenkins/dockerfiles/sonarqube/scanner/Dockerfile'
-                            label "linux && docker"
-                            additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
-                            }
-                    }
-                    when{
-                        equals expected: "master", actual: env.BRANCH_NAME
-                        beforeAgent true
-                    }
-
-                    steps{
-                        unstash "DIST-INFO"
-                        unstash "PYLINT_REPORT"
-                        unstash "BANDIT_REPORT"
-                        unstash "PYTEST_COVERAGE_DATA"
-                        unstash "JEST_REPORT"
-                        sh "sed -i 1d sonar-project.properties"
-                        script{
-                            def props = readProperties interpolate: true, file: 'tyko.dist-info/METADATA'
-                            withSonarQubeEnv('sonarqube.library.illinois.edu') {
-                                sh(
-                                    label: "Running Sonar Scanner",
-                                    script: "sonar-scanner \
--Dproject.settings=${WORKSPACE}/sonar-project.properties \
--Dsonar.projectKey=tyko \
--Dsonar.host.url=https://sonarqube.library.illinois.edu \
--Dsonar.projectBaseDir=${WORKSPACE} \
--Dsonar.python.coverage.reportPaths=coverage-reports/pythoncoverage-pytest.xml \
--Dsonar.projectVersion=${props.Version} \
--Dsonar.python.bandit.reportPaths=${WORKSPACE}/reports/bandit-report.json \
--Dsonar.links.ci=${env.JOB_URL} \
--Dsonar.buildString=${env.BUILD_TAG} \
--Dsonar.analysis.packageName=${props.Name} \
--Dsonar.analysis.buildNumber=${env.BUILD_NUMBER} \
--Dsonar.analysis.scmRevision=${env.GIT_COMMIT} \
--Dsonar.working.directory=${WORKSPACE}/.scannerwork \
--Dsonar.python.pylint.reportPath=${WORKSPACE}/reports/pylint.txt \
--Dsonar.exclusions=**/bootstrap*.* \
--Dsonar.projectDescription=\"${props.Summary}\" \
-"
-                                    )
-                                }
-                        }
-                        script{
-
-                            def sonarqube_result = waitForQualityGate abortPipeline: false
-                            if(sonarqube_result.status != "OK"){
-                                unstable("SonarQube quality gate: ${sonarqube_result}")
-                            }
-                            def sonarqube_data = get_sonarqube_scan_data(".scannerwork/report-task.txt")
-                            echo get_sonarqube_project_analysis(".scannerwork/report-task.txt", BUILD_TAG).toString()
-                            def outstandingIssues = get_sonarqube_unresolved_issues(".scannerwork/report-task.txt")
-                            writeJSON file: 'reports/sonar-report.json', json: outstandingIssues
-                        }
-                    }
-                    post{
-                        always{
-                            stash includes: "reports/sonar-report.json", name: 'SONAR_REPORT'
-                            archiveArtifacts allowEmptyArchive: true, artifacts: 'reports/sonar-report.json'
-                            recordIssues(tools: [sonarQube(pattern: 'reports/sonar-report.json')])
-                        }
-                    }
-                }
             }
-//            post{
-//                cleanup{
-//                    cleanWs(patterns:
-//                        [
-//                            [pattern: 'reports/coverage.xml', type: 'INCLUDE'],
-//                            [pattern: 'reports/coverage', type: 'INCLUDE'],
-//                            [pattern: 'scm/.coverage', type: 'INCLUDE'],
-//                            [pattern: 'scm/**/__pycache__', type: 'INCLUDE'],
-//                            [pattern: 'reports/pytest/junit-*.xml', type: 'INCLUDE']
-//                        ]
-//                    )
-//
-//                }
-//            }
         }
         stage("Packaging") {
 
