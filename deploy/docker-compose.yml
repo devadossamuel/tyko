@@ -2,7 +2,6 @@ version: '2.4'
 services:
   webserver:
     image: nginx:alpine
-    container_name: webserver
     restart: unless-stopped
     tty: true
     ports:
