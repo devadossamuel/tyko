@@ -7,6 +7,8 @@ from typing import Tuple, Set, Optional, Callable, List, Iterator, \
     NamedTuple, Dict
 from dataclasses import dataclass
 
+import pkg_resources
+from flask import current_app as app
 from flask import make_response, render_template, url_for
 
 from . import data_provider
@@ -119,7 +121,15 @@ class AboutPage(AbsFrontend):
 
     def render_page(self, template="about.html", **context):
         header = self.build_header_context("About", context=context)
-        return render_template(template, **header)
+        try:
+            version = pkg_resources.get_distribution(__package__).version
+        except pkg_resources.DistributionNotFound:
+            version = "NA"
+
+        return render_template(template,
+                               server_color=app.config.get('TYKO_SERVER_COLOR'),
+                               tyko_version=version,
+                               **header)
 
 
 class MoreMenuPage(AbsFrontend):

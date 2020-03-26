@@ -26,6 +26,7 @@ services:
         DB_URI: "mysql://avuser:avpsw@green_db:3306/av_preservation"
         TYKO_USERNAME: "john"
         TYKO_PASSWORD: "doe123"
+        TYKO_SERVER_COLOR: "green"
     command: sh /app/start.sh
     restart: unless-stopped
     networks:
@@ -65,6 +66,7 @@ services:
         DB_URI: "mysql://avuser:avpsw@blue_db:3306/av_preservation"
         TYKO_USERNAME: "john"
         TYKO_PASSWORD: "doe123"
+        TYKO_SERVER_COLOR: "blue"
     command: sh /app/start.sh
     restart: unless-stopped
     networks:
