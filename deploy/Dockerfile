@@ -25,11 +25,17 @@ RUN apk update && apk add --no-cache mariadb-client mariadb-dev \
 
 WORKDIR /app
 VOLUME /database
+ARG TYKO_SERVER_COLOR
 # Create a config file
 RUN echo "SQLALCHEMY_DATABASE_URI = '${DB_URI}'" > /app/config.cfg \
   && echo "SQLALCHEMY_TRACK_MODIFICATIONS = False" >> /app/config.cfg \
   && echo "USERNAME = '${TYKO_USERNAME}'" >> /app/config.cfg \
   && echo "PASSWORD = '${TYKO_PASSWORD}'" >> /app/config.cfg
+
+RUN if [ ! -z "$TYKO_SERVER_COLOR" ]; \
+    then \
+        echo "TYKO_SERVER_COLOR = '${TYKO_SERVER_COLOR}'" >> /app/config.cfg; \
+    fi
 
 COPY deploy/start.sh /app/start.sh
 RUN chmod +x /app/start.sh

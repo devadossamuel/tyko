@@ -3,4 +3,23 @@
 {% block content %}
     <h1 class="mt-5">About Tyko</h1>
     <p>For tracking av projects</p>
+    <div>
+        <h2 id="statusTable">Status</h2>
+        <table class="table" aria-describedby="statusTable">
+            <tr hidden>
+                <th scope="col"></th>
+                <th scope="col"></th>
+            </tr>
+            <tr>
+                <th scope="row">Version</th>
+                <td>{{ tyko_version }}</td>
+            </tr>
+            {% if server_color %}
+            <tr>
+                <th scope="row">Server Environment</th>
+                <td>{{ server_color }}</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
 {% endblock %}
