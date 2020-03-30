@@ -77,6 +77,13 @@ class Contact(AVTables):
         }
 
 
+class ProjectStatus(AVTables):
+    __tablename__ = "project_status_type"
+
+    id = db.Column("project_status_id", db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column("name", db.Text)
+
+
 class Project(AVTables):
     __tablename__ = "project"
 
@@ -89,7 +96,12 @@ class Project(AVTables):
     project_code = db.Column("project_code", db.Text)
     title = db.Column("title", db.Text)
     current_location = db.Column("current_location", db.Text)
-    status = db.Column("status", db.Text)
+    status = relationship("ProjectStatus")
+    status_id = db.Column(db.Integer, db.ForeignKey("project_status_type.project_status_id"))
+    # status = db.Column("status", db.Text)
+    # contact = relationship("Contact")
+    # contact_id = db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
+    # TODO: Make status use a key from the ProjectStatus table
     specs = db.Column("specs", db.Text)
 
     notes = relationship(
