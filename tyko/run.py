@@ -9,6 +9,7 @@ from .data_provider import DataProvider
 from .routes import Routes
 import logging
 
+
 def create_app(app=None):
     if app is None:
         app = Flask(__name__)

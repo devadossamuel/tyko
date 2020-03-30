@@ -126,10 +126,11 @@ class AboutPage(AbsFrontend):
         except pkg_resources.DistributionNotFound:
             version = "NA"
 
-        return render_template(template,
-                               server_color=app.config.get('TYKO_SERVER_COLOR'),
-                               tyko_version=version,
-                               **header)
+        return render_template(
+            template,
+            server_color=app.config.get('TYKO_SERVER_COLOR'),
+            tyko_version=version,
+            **header)
 
 
 class MoreMenuPage(AbsFrontend):
