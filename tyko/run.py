@@ -7,24 +7,32 @@ from .database import init_database
 from .exceptions import DataError
 from .data_provider import DataProvider
 from .routes import Routes
-
+import logging
 
 def create_app(app=None):
     if app is None:
         app = Flask(__name__)
+    app.logger.setLevel(logging.INFO)
 
+    app.logger.info("Loading configurations")
     app.config.from_object("tyko.config.Config")
     app.config.from_envvar("TYKO_SETTINGS", True)
 
     app.register_error_handler(DataError, handle_error)
 
+    app.logger.info("Configuring database")
     database = SQLAlchemy(app, engine_options={"pool_pre_ping": True})
     engine = database.get_engine()
-    data_provider = DataProvider(engine)
-    app_routes = Routes(data_provider, app)
 
+    app.logger.info("Loading database connection")
+    data_provider = DataProvider(engine)
+
+    app_routes = Routes(data_provider, app)
+    app.logger.info("Initializing API routes")
     app_routes.init_api_routes()
+    app.logger.info("Initializing Website routes")
     app_routes.init_website_routes()
+
     return app
 
 
@@ -36,9 +44,8 @@ def main() -> None:
         my_app.config.from_envvar("TYKO_SETTINGS", True)
         database = SQLAlchemy(my_app)
         data_provider = DataProvider(database.engine)
-        print("Initializing Database")
+        my_app.logger.info("Initializing Database")
         init_database(data_provider.db_engine)
-        print("Database initialized")
         sys.exit(0)
     my_app = create_app()
     # Run as a local program and not for production

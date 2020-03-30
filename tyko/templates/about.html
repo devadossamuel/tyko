@@ -4,22 +4,14 @@
     <h1 class="mt-5">About Tyko</h1>
     <p>For tracking av projects</p>
     <div>
-        <h2 id="statusTable">Status</h2>
-        <table class="table" aria-describedby="statusTable">
-            <tr hidden>
-                <th scope="col"></th>
-                <th scope="col"></th>
-            </tr>
-            <tr>
-                <th scope="row">Version</th>
-                <td>{{ tyko_version }}</td>
-            </tr>
+        <h2 class="mt-5">Tyko Details</h2>
+        <dl class="row">
+            <dt class="col-sm-3">Version</dt>
+            <dd class="col-sm-9">{{ tyko_version }}</dd>
             {% if server_color %}
-            <tr>
-                <th scope="row">Server Environment</th>
-                <td>{{ server_color }}</td>
-            </tr>
+            <dt class="col-sm-3">Server Environment</dt>
+            <dd class="col-sm-9">{{ server_color }}</dd>
             {% endif %}
-        </table>
+        </dl>
     </div>
 {% endblock %}

@@ -1,33 +1,38 @@
 version: '2.4'
 services:
-  webserver:
+  nginx:
     image: nginx:alpine
     restart: unless-stopped
     tty: true
     ports:
       - 80:80
       - 443:443
+      - 8000:8000
+      - 8001:8001
     networks:
         - tyko-network
     volumes:
       - ./nginx/conf/:/etc/nginx/conf.d/
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/favicon.ico:/etc/nginx/html/favicon.ico
+    depends_on:
+      green_api:
+        condition: service_healthy
+      blue_api:
+        condition: service_healthy
 
   green_api:
     depends_on:
       green_db:
         condition: service_healthy
-    ports:
-      - 8000:8000
     build:
       context: ..
-      dockerfile: deploy/Dockerfile
+      dockerfile: deploy/tyko/Dockerfile
       args:
         DB_URI: "mysql://avuser:avpsw@green_db:3306/av_preservation"
         TYKO_USERNAME: "john"
         TYKO_PASSWORD: "doe123"
         TYKO_SERVER_COLOR: "green"
-    command: sh /app/start.sh
     restart: unless-stopped
     networks:
       - tyko-network
@@ -57,17 +62,14 @@ services:
     depends_on:
       blue_db:
         condition: service_healthy
-    ports:
-      - 8001:8000
     build:
       context: ..
-      dockerfile: deploy/Dockerfile
+      dockerfile: deploy/tyko/Dockerfile
       args:
         DB_URI: "mysql://avuser:avpsw@blue_db:3306/av_preservation"
         TYKO_USERNAME: "john"
         TYKO_PASSWORD: "doe123"
         TYKO_SERVER_COLOR: "blue"
-    command: sh /app/start.sh
     restart: unless-stopped
     networks:
       - tyko-network
