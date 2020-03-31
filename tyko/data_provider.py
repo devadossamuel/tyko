@@ -96,20 +96,19 @@ class ProjectDataConnector(AbsNotesConnector):
             names = session.query(scheme.ProjectStatus)\
                 .filter(scheme.ProjectStatus.name == name).all()
 
-            if len(names) == 1:
-                return names[0]
-
             if len(names) > 1:
                 raise DataError(
                     "Database contained multiple matches for {}".format(name))
+            if len(names) == 0:
+                if create_if_not_exists is True:
+                    new_project_status = scheme.ProjectStatus(name=name)
+                    session.add(new_project_status)
+                    return new_project_status
 
-            if len(names) == 0 and create_if_not_exists is False:
-                raise DataError("No valid project status")
+                if create_if_not_exists is False:
+                    raise DataError("No valid project status")
 
-            if len(names) == 0 and create_if_not_exists is True:
-                new_project_status = scheme.ProjectStatus(name=name)
-                session.add(new_project_status)
-                return new_project_status
+            return names[0]
         finally:
             session.close()
 
