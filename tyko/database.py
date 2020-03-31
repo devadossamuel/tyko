@@ -7,7 +7,6 @@ from sqlalchemy.orm.session import sessionmaker
 from tyko import scheme
 
 
-
 def init_database(engine) -> None:
     # if engine.dialect.has_table(engine, "audio_video"):
     #     return

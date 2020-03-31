@@ -80,7 +80,9 @@ class Contact(AVTables):
 class ProjectStatus(AVTables):
     __tablename__ = "project_status_type"
 
-    id = db.Column("project_status_id", db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column("project_status_id",
+                   db.Integer, primary_key=True, autoincrement=True)
+
     name = db.Column("name", db.Text)
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
@@ -103,7 +105,8 @@ class Project(AVTables):
     title = db.Column("title", db.Text)
     current_location = db.Column("current_location", db.Text)
     status = relationship("ProjectStatus")
-    status_id = db.Column(db.Integer, db.ForeignKey("project_status_type.project_status_id"))
+    status_id = db.Column(
+        db.Integer, db.ForeignKey("project_status_type.project_status_id"))
     specs = db.Column("specs", db.Text)
 
     notes = relationship(

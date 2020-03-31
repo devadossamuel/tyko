@@ -112,8 +112,6 @@ class ProjectDataConnector(AbsNotesConnector):
         finally:
             session.close()
 
-
-
     def create(self, *args, **kwargs):
         title = kwargs["title"]
         project_code = kwargs.get("project_code")
@@ -211,7 +209,8 @@ class ProjectDataConnector(AbsNotesConnector):
 
             if "status" in changed_data:
                 if isinstance(changed_data['status'], str):
-                    project.status = self.get_project_status_by_name(changed_data['status'])
+                    project.status = \
+                        self.get_project_status_by_name(changed_data['status'])
                 else:
                     project.status = changed_data['status']
 
