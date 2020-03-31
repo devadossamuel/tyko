@@ -81,6 +81,40 @@ class ProjectDataConnector(AbsNotesConnector):
 
         return all_projects
 
+    def get_project_status_by_name(self, name: str,
+                                   create_if_not_exists: bool = False
+                                   ) -> scheme.ProjectStatus:
+        """ Check if an existing status exists and if so, return that, if not
+        and create_if_not_exists is false throw an DataError exception
+
+        Args:
+            name:
+            create_if_not_exists:
+        """
+        session = self.session_maker()
+        try:
+            names = session.query(scheme.ProjectStatus)\
+                .filter(scheme.ProjectStatus.name == name).all()
+
+            if len(names) == 1:
+                return names[0]
+
+            if len(names) > 1:
+                raise DataError(
+                    "Database contained multiple matches for {}".format(name))
+
+            if len(names) == 0 and create_if_not_exists is False:
+                raise DataError("No valid project status")
+
+            if len(names) == 0 and create_if_not_exists is True:
+                new_project_status = scheme.ProjectStatus(name=name)
+                session.add(new_project_status)
+                return new_project_status
+        finally:
+            session.close()
+
+
+
     def create(self, *args, **kwargs):
         title = kwargs["title"]
         project_code = kwargs.get("project_code")
@@ -91,10 +125,13 @@ class ProjectDataConnector(AbsNotesConnector):
             title=title,
             project_code=project_code,
             current_location=current_location,
-            status=status,
             specs=specs
         )
         session = self.session_maker()
+        if status is not None:
+            project_status = self.get_project_status_by_name(status)
+            new_project.status = project_status
+
         try:
             session.add(new_project)
             session.commit()
@@ -174,7 +211,10 @@ class ProjectDataConnector(AbsNotesConnector):
                 project.project_code = changed_data['project_code']
 
             if "status" in changed_data:
-                project.status = changed_data['status']
+                if isinstance(changed_data['status'], str):
+                    project.status = self.get_project_status_by_name(changed_data['status'])
+                else:
+                    project.status = changed_data['status']
 
             session = self.session_maker()
             session.add(project)

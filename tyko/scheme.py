@@ -83,6 +83,12 @@ class ProjectStatus(AVTables):
     id = db.Column("project_status_id", db.Integer, primary_key=True, autoincrement=True)
     name = db.Column("name", db.Text)
 
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+        return {
+            "project_status_id": self.id,
+            "name": self.name
+        }
+
 
 class Project(AVTables):
     __tablename__ = "project"
@@ -115,13 +121,18 @@ class Project(AVTables):
         backref="object_source"
     )
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:\
+
+        if self.status is not None:
+            status_text = self.status.serialize()['name']
+        else:
+            status_text = None
 
         data: Dict[str, SerializedData] = {
             "project_id": self.id,
             "project_code": self.project_code,
             "current_location": self.current_location,
-            "status": self.status,
+            "status": status_text,
             "title": self.title,
         }
         notes = []

@@ -1,4 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 import tyko
 from tyko import routes, data_provider
@@ -98,7 +100,7 @@ def test_create(test_app):
             {
                 "title": "dummy title",
                 "project_code": "sample project code",
-                "status": "inactive",
+                "status": "No work done",
                 "specs": "asdfadsf"
             }
         ),
@@ -116,7 +118,7 @@ test_data_read = [
         "project", {
             "title": "dummy title",
             "project_code": "sample project code",
-            "status": "inactive"
+            "status": "No work done"
         }
      ),
     (
@@ -172,6 +174,7 @@ def test_create_and_read2(data_type, data_value):
         for k, v in data_value.items():
             assert data_object[k] == v
 
+
 def test_empty_database_error():
     # Creating a server without a validate database should raise a DataError
     # exception
@@ -207,3 +210,37 @@ def test_get_object_pbcore():
 
         pbcore_req_res = server.get("/api/object/{}-pbcore.xml".format(new_id))
         assert pbcore_req_res.status == "200 OK", "Failed create a PBCore record for id {}".format(new_id)
+
+
+def test_project_status_by_name_invalid():
+    engine = create_engine("sqlite:///:memory:")
+    tyko.database.init_database(engine)
+    dummy_session = sessionmaker(bind=engine)
+    project_provider = data_provider.ProjectDataConnector(dummy_session)
+
+    with pytest.raises(tyko.exceptions.DataError):
+        status = \
+            project_provider.get_project_status_by_name(
+                "invalid status", create_if_not_exists=False)
+
+
+def test_project_status_by_name_valid():
+    engine = create_engine("sqlite:///:memory:")
+    tyko.database.init_database(engine)
+    dummy_session = sessionmaker(bind=engine)
+    project_provider = data_provider.ProjectDataConnector(dummy_session)
+
+    status = project_provider.get_project_status_by_name(
+                "In progress", create_if_not_exists=False)
+    assert status is not None
+
+
+def test_project_status_by_name_new_create():
+    engine = create_engine("sqlite:///:memory:")
+    tyko.database.init_database(engine)
+    dummy_session = sessionmaker(bind=engine)
+    project_provider = data_provider.ProjectDataConnector(dummy_session)
+
+    status = project_provider.get_project_status_by_name(
+                "new status", create_if_not_exists=True)
+    assert status.name == "new status"
