@@ -121,8 +121,7 @@ class Project(AVTables):
         backref="object_source"
     )
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:\
-
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         if self.status is not None:
             status_text = self.status.serialize()['name']
         else:
