@@ -10,11 +10,7 @@
                 <tr>{{ metadata_text_edit_widget("Project Code", project['project_code'], "project_code", api_path) }}</tr>
                 <tr>{{ metadata_select_edit_widget("Status",
                                                    project['status'],
-                                                   options=[
-                                                        {"value": "In progress","text": "In progress"},
-                                                        {"value": "Complete", "text": "Complete"},
-                                                        {"value": "No work done", "text": "No work done"},
-                                                   ],
+                                                   options=project_status_options,
                                                    field_key="status",
                                                    update_api_path=api_path) }}</tr>
                 <tr>{{ metadata_text_edit_widget("Current Location", project['current_location'], 'current_location', api_path) }}</tr>

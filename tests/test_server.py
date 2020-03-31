@@ -244,3 +244,12 @@ def test_project_status_by_name_new_create():
     status = project_provider.get_project_status_by_name(
                 "new status", create_if_not_exists=True)
     assert status.name == "new status"
+
+
+def test_project_default_status():
+    engine = create_engine("sqlite:///:memory:")
+    tyko.database.init_database(engine)
+    dummy_session = sessionmaker(bind=engine)
+    project_provider = data_provider.ProjectDataConnector(dummy_session)
+    statuses = project_provider.get_all_project_status()
+    assert len(statuses) == 3

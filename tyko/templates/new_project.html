@@ -8,11 +8,7 @@
     {{ form_macros.form_select_field("projectStatusInput",
                                      "Project Status",
                                      "status",
-                                     options=[
-                                            {"value": "In progress","text": "In progress"},
-                                            {"value": "Complete", "text": "Complete"},
-                                            {"value": "No work done", "text": "No work done"},
-                                        ],
+                                     options=project_status_options,
                                      required=True ) }}
 
     {{ form_macros.form_text_field("currentLocationInput", "Current Location", "current_location") }}
@@ -55,7 +51,8 @@
         function report_failed(response) {
             $('#response_modal').modal('show');
             document.getElementById("status_report_title").innerText = "Failed";
-            document.getElementById("more_info").innerText = response.responseText;
+            document.getElementById("more_info").innerText = response.statusText;
+            console.error(response.responseText);
             return true;
         }
         {% endblock %}

@@ -2,6 +2,7 @@
 import abc
 from abc import ABC
 from datetime import datetime
+from typing import List
 
 import sqlalchemy
 from sqlalchemy import orm
@@ -81,6 +82,19 @@ class ProjectDataConnector(AbsNotesConnector):
 
         return all_projects
 
+    def get_all_project_status(self) -> List[scheme.ProjectStatus]:
+        """Get the list of all possible statuses that a project can be
+
+        Returns:
+            All valid status types for projects
+
+        """
+        session = self.session_maker()
+        try:
+            return session.query(scheme.ProjectStatus).all()
+        finally:
+            session.close()
+
     def get_project_status_by_name(self, name: str,
                                    create_if_not_exists: bool = False
                                    ) -> scheme.ProjectStatus:
@@ -118,21 +132,23 @@ class ProjectDataConnector(AbsNotesConnector):
         current_location = kwargs.get("current_location")
         status = kwargs.get("status")
         specs = kwargs.get("specs")
-        new_project = scheme.Project(
-            title=title,
-            project_code=project_code,
-            current_location=current_location,
-            specs=specs
-        )
         session = self.session_maker()
-        if status is not None:
-            project_status = self.get_project_status_by_name(status)
-            new_project.status = project_status
 
         try:
+            new_project = scheme.Project(
+                title=title,
+                project_code=project_code,
+                current_location=current_location,
+                specs=specs
+            )
+            if status is not None:
+                project_status = self.get_project_status_by_name(status)
+                new_project.status = project_status
+
             session.add(new_project)
-            session.commit()
+            session.flush()
             new_project_id = new_project.id
+            session.commit()
             return new_project_id
         finally:
             session.close()

@@ -255,7 +255,12 @@ class ProjectFrontend(ProjectComponentDetailFrontend):
     def display_details(self, entity_id, *args, **kwargs):
         selected_project = self._data_connector.get(
             serialize=True, id=entity_id)
-
+        project_status = [
+            {
+                "value": status.name,
+                "text": status.name
+            } for status in self._data_connector.get_all_project_status()
+        ]
         edit_link = f"{url_for('page_projects')}/{entity_id}/edit"
 
         fields = [
@@ -272,7 +277,6 @@ class ProjectFrontend(ProjectComponentDetailFrontend):
         valid_note_types = []
         for note_type in self._data_connector.get_note_types():
             valid_note_types.append((note_type.name, note_type.id))
-
         return self.render_page(
             template="project_details.html",
             project=selected_project,
@@ -281,6 +285,7 @@ class ProjectFrontend(ProjectComponentDetailFrontend):
             project_id=entity_id,
             valid_note_types=valid_note_types,
             fields=fields,
+            project_status_options=project_status,
             breadcrumbs=self.build_breadcrumbs(
                 active_level="Project",
                 project_url=url_for(
@@ -294,9 +299,16 @@ class ProjectFrontend(ProjectComponentDetailFrontend):
             )
 
     def create(self):
+        project_status = [
+            {
+                "value": status.name,
+                "text": status.name
+            } for status in self._data_connector.get_all_project_status()
+        ]
         return self.render_page(template="new_project.html",
                                 api_path="/api/project/",
                                 title="New Project",
+                                project_status_options=project_status,
                                 on_success_redirect_base="/project/",
                                 )
 
