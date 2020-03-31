@@ -104,10 +104,6 @@ class Project(AVTables):
     current_location = db.Column("current_location", db.Text)
     status = relationship("ProjectStatus")
     status_id = db.Column(db.Integer, db.ForeignKey("project_status_type.project_status_id"))
-    # status = db.Column("status", db.Text)
-    # contact = relationship("Contact")
-    # contact_id = db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
-    # TODO: Make status use a key from the ProjectStatus table
     specs = db.Column("specs", db.Text)
 
     notes = relationship(
