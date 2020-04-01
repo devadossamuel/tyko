@@ -1084,5 +1084,4 @@ def get_schema_version(db_engine: sqlalchemy.engine.Engine) -> Optional[str]:
     results = db_engine.execute("SELECT * FROM alembic_version").first()
     if results is None:
         return None
-    else:
-        return results.version_num
+    return results.version_num
