@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import tyko
-from tyko import routes, data_provider
+from tyko import routes, data_provider, scheme
 import tyko.database
 import sqlalchemy
 from tyko.database import init_database
@@ -222,6 +222,22 @@ def test_project_status_by_name_invalid():
         status = \
             project_provider.get_project_status_by_name(
                 "invalid status", create_if_not_exists=False)
+
+
+def test_project_status_by_name_invalid_multiple_with_same_name():
+    engine = create_engine("sqlite:///:memory:")
+    tyko.database.init_database(engine)
+    dummy_session = sessionmaker(bind=engine)
+    project_provider = data_provider.ProjectDataConnector(dummy_session)
+    session = dummy_session()
+    session.add(tyko.scheme.ProjectStatus(name="double"))
+    session.add(tyko.scheme.ProjectStatus(name="double"))
+    session.commit()
+
+    with pytest.raises(tyko.exceptions.DataError):
+        status = \
+            project_provider.get_project_status_by_name(
+                "double", create_if_not_exists=False)
 
 
 def test_project_status_by_name_valid():
