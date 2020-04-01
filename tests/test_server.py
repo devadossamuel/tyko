@@ -1,9 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import tyko
 from tyko import routes, data_provider, scheme
+from tyko.run import is_correct_db_version
 import tyko.database
 import sqlalchemy
 from tyko.database import init_database
@@ -213,7 +213,7 @@ def test_get_object_pbcore():
 
 
 def test_project_status_by_name_invalid():
-    engine = create_engine("sqlite:///:memory:")
+    engine = sqlalchemy.create_engine("sqlite:///:memory:")
     tyko.database.init_database(engine)
     dummy_session = sessionmaker(bind=engine)
     project_provider = data_provider.ProjectDataConnector(dummy_session)
@@ -225,7 +225,7 @@ def test_project_status_by_name_invalid():
 
 
 def test_project_status_by_name_invalid_multiple_with_same_name():
-    engine = create_engine("sqlite:///:memory:")
+    engine = sqlalchemy.create_engine("sqlite:///:memory:")
     tyko.database.init_database(engine)
     dummy_session = sessionmaker(bind=engine)
     project_provider = data_provider.ProjectDataConnector(dummy_session)
@@ -241,7 +241,7 @@ def test_project_status_by_name_invalid_multiple_with_same_name():
 
 
 def test_project_status_by_name_valid():
-    engine = create_engine("sqlite:///:memory:")
+    engine = sqlalchemy.create_engine("sqlite:///:memory:")
     tyko.database.init_database(engine)
     dummy_session = sessionmaker(bind=engine)
     project_provider = data_provider.ProjectDataConnector(dummy_session)
@@ -252,7 +252,7 @@ def test_project_status_by_name_valid():
 
 
 def test_project_status_by_name_new_create():
-    engine = create_engine("sqlite:///:memory:")
+    engine = sqlalchemy.create_engine("sqlite:///:memory:")
     tyko.database.init_database(engine)
     dummy_session = sessionmaker(bind=engine)
     project_provider = data_provider.ProjectDataConnector(dummy_session)
@@ -263,9 +263,58 @@ def test_project_status_by_name_new_create():
 
 
 def test_project_default_status():
-    engine = create_engine("sqlite:///:memory:")
+    engine = sqlalchemy.create_engine("sqlite:///:memory:")
     tyko.database.init_database(engine)
     dummy_session = sessionmaker(bind=engine)
     project_provider = data_provider.ProjectDataConnector(dummy_session)
     statuses = project_provider.get_all_project_status()
     assert len(statuses) == 3
+
+
+def test_db_version_test_valid():
+    app = Flask(__name__, template_folder="../tyko/templates")
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    db = SQLAlchemy(app)
+    version_table = sqlalchemy.Table(
+        "alembic_version", db.metadata,
+        sqlalchemy.Column("version_num",
+                          sqlalchemy.String(length=32),
+                          primary_key=True)
+    )
+    db.metadata.create_all(db.engine)
+    db.session.execute(version_table.insert().values(
+        version_num=scheme.ALEMBIC_VERSION))
+    db.session.commit()
+    assert is_correct_db_version(app, db) is True
+
+
+def test_db_version_test_different():
+    app = Flask(__name__, template_folder="../tyko/templates")
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    db = SQLAlchemy(app)
+    version_table = sqlalchemy.Table(
+        "alembic_version", db.metadata,
+        sqlalchemy.Column("version_num",
+                          sqlalchemy.String(length=32),
+                          primary_key=True)
+    )
+    db.metadata.create_all(db.engine)
+    db.session.execute(version_table.insert().values(
+        version_num="notvalid"))
+    db.session.commit()
+    assert is_correct_db_version(app, db) is False
+
+
+def test_db_version_test_no_data():
+    app = Flask(__name__, template_folder="../tyko/templates")
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    db = SQLAlchemy(app)
+    version_table = sqlalchemy.Table(
+        "alembic_version", db.metadata,
+        sqlalchemy.Column("version_num",
+                          sqlalchemy.String(length=32),
+                          primary_key=True)
+    )
+    db.metadata.create_all(db.engine)
+    db.session.commit()
+    assert is_correct_db_version(app, db) is False
