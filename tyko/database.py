@@ -21,7 +21,7 @@ def init_database(engine) -> None:
         )
         scheme.AVTables.metadata.create_all(bind=engine)
         set_version_sql = \
-            version_table.insert().values(version_num=scheme.ALEMBIC_VERSION)
+            version_table.insert().values(version_num=scheme.ALEMBIC_VERSION)  # noqa: E501 pylint: disable=E1120
         session.execute(set_version_sql)
 
     session.commit()
