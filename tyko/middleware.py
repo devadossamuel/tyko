@@ -601,7 +601,8 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
         except DataError as e:
             return make_response(e.message, e.status_code)
 
-    def get_new_data(self, data):
+    @staticmethod
+    def get_new_data(data):
         new_data = data.copy()
         if 'collectionId' in data:
             new_data['collection_id'] = int(data['collectionId'])
