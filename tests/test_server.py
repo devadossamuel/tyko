@@ -39,7 +39,7 @@ api_routes = [
 
 @pytest.mark.parametrize("route", static_page_routes)
 def test_static_pages(route):
-    app = tyko.create_app()
+    app = tyko.create_app(verify_db=False)
     app.config["TESTING"] = True
     with app.test_client() as server:
         resp = server.get(route)
@@ -50,7 +50,7 @@ def test_static_pages(route):
 def test_dynamic_pages(route):
     app = Flask(__name__, template_folder="../tyko/templates")
     db = SQLAlchemy(app)
-    tyko.create_app(app)
+    tyko.create_app(app, verify_db=False)
     tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     with app.test_client() as server:
@@ -62,7 +62,7 @@ def test_dynamic_pages(route):
 def test_app():
     app = Flask(__name__, template_folder="../tyko/templates")
     db = SQLAlchemy(app)
-    tyko.create_app(app)
+    tyko.create_app(app, verify_db=False)
     tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     return app.test_client()
@@ -86,7 +86,7 @@ def test_api_formats(test_app):
 def test_api_routes(route):
     app = Flask(__name__, template_folder="../tyko/templates")
     db = SQLAlchemy(app)
-    tyko.create_app(app)
+    tyko.create_app(app, verify_db=False)
     tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     with app.test_client() as server:
@@ -149,7 +149,7 @@ def test_create_and_read2(data_type, data_value):
 
     app = Flask(__name__, template_folder="../tyko/templates")
     db = SQLAlchemy(app)
-    tyko.create_app(app)
+    tyko.create_app(app, verify_db=False)
     tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     with app.test_client() as server:
@@ -189,7 +189,7 @@ def test_get_object_pbcore():
     app = Flask(__name__, template_folder="../tyko/templates")
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
     db = SQLAlchemy(app)
-    tyko.create_app(app)
+    tyko.create_app(app, verify_db=False)
     tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     with app.test_client() as server:

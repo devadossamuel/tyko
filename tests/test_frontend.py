@@ -16,7 +16,7 @@ from xml.dom.minidom import parseString
 def app():
     app = Flask(__name__, template_folder="../tyko/templates")
     db = SQLAlchemy(app)
-    tyko.create_app(app)
+    tyko.create_app(app, verify_db=False)
     tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     return app

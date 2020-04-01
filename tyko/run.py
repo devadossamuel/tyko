@@ -25,7 +25,7 @@ def is_correct_db_version(app, db) -> bool:
     return version == ALEMBIC_VERSION
 
 
-def create_app(app=None) -> Flask:
+def create_app(app=None, verify_db=True) -> Flask:
     if app is None:
         app = Flask(__name__)
     app.logger.setLevel(logging.INFO)
@@ -44,7 +44,7 @@ def create_app(app=None) -> Flask:
     data_provider = DataProvider(engine)
 
     app.logger.info("Checking database schema version")
-    if not is_correct_db_version(app, database):
+    if verify_db is True and not is_correct_db_version(app, database):
         app.logger.critical(f"Database requires alembic version "
                             f"{ALEMBIC_VERSION}. Please migrate or initialize "
                             f"database and try again.")

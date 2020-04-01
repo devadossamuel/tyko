@@ -10,7 +10,7 @@ import tyko.database
 def app():
     testing_app = Flask(__name__, template_folder="../tyko/templates")
     db = SQLAlchemy(testing_app)
-    tyko.create_app(testing_app)
+    tyko.create_app(testing_app, verify_db=False)
     tyko.database.init_database(db.engine)
     testing_app.config["TESTING"] = True
     return testing_app
@@ -579,7 +579,7 @@ def test_collection_delete(app):
 def server_with_project():
     testing_app = Flask(__name__, template_folder="../tyko/templates")
     db = SQLAlchemy(testing_app)
-    tyko.create_app(testing_app)
+    tyko.create_app(testing_app, verify_db=False)
     tyko.database.init_database(db.engine)
     testing_app.config["TESTING"] = True
     with testing_app.test_client() as server:
@@ -655,7 +655,7 @@ def test_add_and_delete_object_to_project(server_with_project):
 def server_with_object():
     testing_app = Flask(__name__, template_folder="../tyko/templates")
     db = SQLAlchemy(testing_app)
-    tyko.create_app(testing_app)
+    tyko.create_app(testing_app, verify_db=False)
     tyko.database.init_database(db.engine)
     testing_app.config["TESTING"] = True
     with testing_app.test_client() as server:
