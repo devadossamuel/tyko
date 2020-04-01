@@ -15,12 +15,14 @@ def init_database(engine) -> None:
     initial_session = sessionmaker(bind=engine)
     session = initial_session()
     if not engine.dialect.has_table(engine, "alembic_version"):
-        alembic_version_table = db.Table(
+        version_table = db.Table(
             "alembic_version", scheme.AVTables.metadata,
             db.Column("version_num", db.String(length=32), primary_key=True)
         )
         scheme.AVTables.metadata.create_all(bind=engine)
-        alembic_version_table.insert(scheme.ALEMBIC_VERSION)
+        set_version_sql = \
+            version_table.insert().values(version_num=scheme.ALEMBIC_VERSION)
+        session.execute(set_version_sql)
 
     session.commit()
 
