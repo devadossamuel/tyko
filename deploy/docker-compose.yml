@@ -15,11 +15,6 @@ services:
       - ./nginx/conf/:/etc/nginx/conf.d/
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/favicon.ico:/etc/nginx/html/favicon.ico
-    depends_on:
-      green_api:
-        condition: service_healthy
-      blue_api:
-        condition: service_healthy
 
   green_api:
     depends_on:

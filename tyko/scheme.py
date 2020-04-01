@@ -6,6 +6,8 @@ import sqlalchemy as db
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
 
+ALEMBIC_VERSION: str = "a6f912f5e00f"
+
 SerializedData = \
     Union[int, str, List['SerializedData'], None, Dict[str, 'SerializedData']]
 

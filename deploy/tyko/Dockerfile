@@ -48,10 +48,10 @@ RUN if [ ! -z "$TYKO_SERVER_COLOR" ]; \
     then \
         echo "TYKO_SERVER_COLOR = '${TYKO_SERVER_COLOR}'" >> /app/config.cfg; \
     fi
-
+RUN pip install alembic
 ADD deploy/tyko/alembic.ini deploy/tyko/setup_alembic.py /tmp/
 RUN python /tmp/setup_alembic.py ${DB_URI} > /app/alembic.ini
-ADD alembic/* /app/alembic/
+ADD alembic /app/alembic/
 
 EXPOSE 9182
 ENV TYKO_SETTINGS=/app/config.cfg

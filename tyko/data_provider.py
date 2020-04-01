@@ -2,7 +2,7 @@
 import abc
 from abc import ABC
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 import sqlalchemy
 from sqlalchemy import orm
@@ -1068,3 +1068,21 @@ class DataProvider:
             return [format_.serialize() for format_ in all_formats]
 
         return all_formats
+
+
+def get_schema_version(db_engine: sqlalchemy.engine.Engine) -> Optional[str]:
+    """ Get the alembic_version version of a given database
+
+    Args:
+        db_engine:
+
+    Returns:
+        Returns a version if exists but returns None is the alembic_version is
+        empty.
+
+    """
+    results = db_engine.execute("SELECT * FROM alembic_version").first()
+    if results is None:
+        return None
+    else:
+        return results.version_num
