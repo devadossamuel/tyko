@@ -1,4 +1,5 @@
 import sys
+import logging
 
 from flask import Flask, make_response
 from flask_sqlalchemy import SQLAlchemy
@@ -9,18 +10,17 @@ from .exceptions import DataError
 from .data_provider import DataProvider, get_schema_version
 from .scheme import ALEMBIC_VERSION
 from .routes import Routes
-import logging
 
 
-def is_correct_db_version(app, db) -> bool:
+def is_correct_db_version(app, database) -> bool:
     try:
-        version = get_schema_version(db_engine=db.get_engine())
+        version = get_schema_version(db_engine=database.get_engine())
         if version is None:
             app.logger.error("No version information found")
             return False
-    except OperationalError as e:
+    except OperationalError as exc:
         app.logger.error(
-            "Problem getting version information. Reason given: {}".format(e))
+            "Problem getting version information. Reason given: {}".format(exc))
         return False
     return version == ALEMBIC_VERSION
 
@@ -72,7 +72,7 @@ def main() -> None:
         my_app.config.from_envvar("TYKO_SETTINGS", True)
         database = SQLAlchemy(my_app)
         data_provider = DataProvider(database.engine)
-        my_app.logger.info("Initializing Database")
+        my_app.logger.info("Initializing Database")  # pylint: disable=E1101
         init_database(data_provider.db_engine)
         sys.exit(0)
     my_app = create_app()
