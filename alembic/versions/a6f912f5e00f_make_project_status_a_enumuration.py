@@ -66,20 +66,23 @@ def downgrade():
         batch_op.add_column(sa.Column('status', sa.TEXT(), nullable=True))
 
     conn = op.get_bind()
-    update_sql = sa.text(
-        """UPDATE project 
+    update_sql = sa.text("""
+        UPDATE project 
         SET status = :status_text 
-        WHERE project.project_id = :project_id"""
-    )
+        WHERE project.project_id = :project_id""")
+
+    status_name_sql = sa.text("""
+            SELECT name 
+            FROM project_status_type 
+            WHERE project_status_type.project_status_id = :status_id""")
+
     for project in conn.execute("SELECT project_id, status_id FROM project;"):
-        status_text = conn.execute(
-            """SELECT  name from project_status_type where project_status_id = :status_id""", status_id=project.status_id).first().name
+        status_text = \
+            conn.execute(
+                status_name_sql, status_id=project.status_id).first().name
+
         conn.execute(update_sql, status_text=status_text,
                      project_id=project.project_id)
     op.drop_table('project_status_type')
     with op.batch_alter_table("project") as batch_op:
         batch_op.drop_column('status_id')
-
-
-    # TODO: covert projects status to equal the value of the matching status.id from the project_status_type table
-    # ### end Alembic commands ###
