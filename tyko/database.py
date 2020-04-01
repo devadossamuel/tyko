@@ -12,9 +12,18 @@ def init_database(engine) -> None:
     #     return
     print("Creating all tables")
     scheme.AVTables.metadata.create_all(bind=engine)
-
     initial_session = sessionmaker(bind=engine)
     session = initial_session()
+    if not engine.dialect.has_table(engine, "alembic_version"):
+        version_table = db.Table(
+            "alembic_version", scheme.AVTables.metadata,
+            db.Column("version_num", db.String(length=32), primary_key=True)
+        )
+        scheme.AVTables.metadata.create_all(bind=engine)
+        set_version_sql = \
+            version_table.insert().values(version_num=scheme.ALEMBIC_VERSION)  # noqa: E501 pylint: disable=E1120
+        session.execute(set_version_sql)
+
     session.commit()
 
     for i in session.query(scheme.NoteTypes):
@@ -23,7 +32,11 @@ def init_database(engine) -> None:
 
     for i in session.query(scheme.FormatTypes):
         session.delete(i)
+
     _populate_format_types_table(session)
+
+    _populate_starting_project_status(
+        session, project_status_table=scheme.ProjectStatus)
 
     session.commit()
     session.close()
@@ -44,8 +57,19 @@ def _populate_note_type_table(session):
         session.add(new_note_type)
 
 
+def _populate_starting_project_status(
+        session,
+        project_status_table: Type[scheme.ProjectStatus]) -> None:
+
+    print("Populating {} Table".format(project_status_table.__tablename__))
+    statuses = ['In progress', "Complete", "No work done"]
+    for status in statuses:
+        new_status = project_status_table(name=status)
+        session.add(new_status)
+
+
 def _populate_format_types_table(session):
-    print("Populating FormatTypes Table")
+    print("Populating project_status_type Table")
     for format_type, format_metadata in scheme.format_types.items():
         format_id = format_metadata[0]
 

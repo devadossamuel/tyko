@@ -2,6 +2,7 @@
 import abc
 from abc import ABC
 from datetime import datetime
+from typing import List, Optional
 
 import sqlalchemy
 from sqlalchemy import orm
@@ -81,24 +82,73 @@ class ProjectDataConnector(AbsNotesConnector):
 
         return all_projects
 
+    def get_all_project_status(self) -> List[scheme.ProjectStatus]:
+        """Get the list of all possible statuses that a project can be
+
+        Returns:
+            All valid status types for projects
+
+        """
+        session = self.session_maker()
+        try:
+            return session.query(scheme.ProjectStatus).all()
+        finally:
+            session.close()
+
+    def get_project_status_by_name(self, name: str,
+                                   create_if_not_exists: bool = False
+                                   ) -> scheme.ProjectStatus:
+        """ Check if an existing status exists and if so, return that, if not
+        and create_if_not_exists is false throw an DataError exception
+
+        Args:
+            name:
+            create_if_not_exists:
+        """
+        session = self.session_maker()
+        try:
+            names = session.query(scheme.ProjectStatus)\
+                .filter(scheme.ProjectStatus.name == name).all()
+
+            if len(names) > 1:
+                raise DataError(
+                    "Database contained multiple matches for {}".format(name))
+            if len(names) == 0:
+                if create_if_not_exists is True:
+                    new_project_status = scheme.ProjectStatus(name=name)
+                    session.add(new_project_status)
+                    return new_project_status
+
+                if create_if_not_exists is False:
+                    raise DataError("No valid project status")
+
+            return names[0]
+        finally:
+            session.close()
+
     def create(self, *args, **kwargs):
         title = kwargs["title"]
         project_code = kwargs.get("project_code")
         current_location = kwargs.get("current_location")
         status = kwargs.get("status")
         specs = kwargs.get("specs")
-        new_project = scheme.Project(
-            title=title,
-            project_code=project_code,
-            current_location=current_location,
-            status=status,
-            specs=specs
-        )
         session = self.session_maker()
+
         try:
+            new_project = scheme.Project(
+                title=title,
+                project_code=project_code,
+                current_location=current_location,
+                specs=specs
+            )
+            if status is not None:
+                project_status = self.get_project_status_by_name(status)
+                new_project.status = project_status
+
             session.add(new_project)
-            session.commit()
+            session.flush()
             new_project_id = new_project.id
+            session.commit()
             return new_project_id
         finally:
             session.close()
@@ -174,7 +224,11 @@ class ProjectDataConnector(AbsNotesConnector):
                 project.project_code = changed_data['project_code']
 
             if "status" in changed_data:
-                project.status = changed_data['status']
+                if isinstance(changed_data['status'], str):
+                    project.status = \
+                        self.get_project_status_by_name(changed_data['status'])
+                else:
+                    project.status = changed_data['status']
 
             session = self.session_maker()
             session.add(project)
@@ -1014,3 +1068,20 @@ class DataProvider:
             return [format_.serialize() for format_ in all_formats]
 
         return all_formats
+
+
+def get_schema_version(db_engine: sqlalchemy.engine.Engine) -> Optional[str]:
+    """ Get the alembic_version version of a given database
+
+    Args:
+        db_engine:
+
+    Returns:
+        Returns a version if exists but returns None is the alembic_version is
+        empty.
+
+    """
+    results = db_engine.execute("SELECT * FROM alembic_version").first()
+    if results is None:
+        return None
+    return results.version_num

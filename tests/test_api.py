@@ -10,7 +10,7 @@ import tyko.database
 def app():
     testing_app = Flask(__name__, template_folder="../tyko/templates")
     db = SQLAlchemy(testing_app)
-    tyko.create_app(testing_app)
+    tyko.create_app(testing_app, verify_db=False)
     tyko.database.init_database(db.engine)
     testing_app.config["TESTING"] = True
     return testing_app
@@ -25,7 +25,7 @@ def test_project_create_and_delete(app):
                     "title": "my dumb project",
                     "project_code": "my dumb project code",
                     "current_location": "old location",
-                    "status": "no work done"
+                    "status": "No work done"
                 }
             ),
             content_type='application/json'
@@ -47,7 +47,7 @@ def test_project_update(app):
                     "title": "my dumb project",
                     "project_code": "my dumb project code",
                     "current_location": "old location",
-                    "status": "no work done"
+                    "status": "No work done"
                 }
             ),
             content_type='application/json'
@@ -64,7 +64,7 @@ def test_project_update(app):
                     "title": "my dumb project has changed",
                     "project_code": "my dumb project code changed",
                     "current_location": "new location",
-                    "status": "all finished"
+                    "status": "Complete"
                 }
             ),
             content_type='application/json'
@@ -74,7 +74,7 @@ def test_project_update(app):
         assert updated_project["title"] == "my dumb project has changed"
         assert updated_project["project_code"] == "my dumb project code changed"
         assert updated_project["current_location"] == "new location"
-        assert updated_project["status"] == "all finished"
+        assert updated_project["status"] == "Complete"
 
 
 def test_item_update(app):
@@ -579,7 +579,7 @@ def test_collection_delete(app):
 def server_with_project():
     testing_app = Flask(__name__, template_folder="../tyko/templates")
     db = SQLAlchemy(testing_app)
-    tyko.create_app(testing_app)
+    tyko.create_app(testing_app, verify_db=False)
     tyko.database.init_database(db.engine)
     testing_app.config["TESTING"] = True
     with testing_app.test_client() as server:
@@ -655,7 +655,7 @@ def test_add_and_delete_object_to_project(server_with_project):
 def server_with_object():
     testing_app = Flask(__name__, template_folder="../tyko/templates")
     db = SQLAlchemy(testing_app)
-    tyko.create_app(testing_app)
+    tyko.create_app(testing_app, verify_db=False)
     tyko.database.init_database(db.engine)
     testing_app.config["TESTING"] = True
     with testing_app.test_client() as server:

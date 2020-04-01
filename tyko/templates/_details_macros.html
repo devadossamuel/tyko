@@ -256,8 +256,9 @@ function remove(apiPath) {
                         location.reload();
                     }).catch((response)=>{
                         alert("Failed. Reason: " + response.statusText);
+                        console.error(response.responseText)
                     });
-                    displayWidget.viewOnlyMode();
+                    selectionEditor.viewOnlyMode();
                 }
 
             </script>

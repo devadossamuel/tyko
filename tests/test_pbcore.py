@@ -44,7 +44,7 @@ def test_pbcore_valid_id(tmpdir):
                                                 "templates")
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
     db = SQLAlchemy(app)
-    tyko.create_app(app)
+    tyko.create_app(app, verify_db=False)
     tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     with app.test_client() as server:

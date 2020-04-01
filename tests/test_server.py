@@ -1,7 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import sessionmaker
 
 import tyko
-from tyko import routes, data_provider
+from tyko import routes, data_provider, scheme
+from tyko.run import is_correct_db_version
 import tyko.database
 import sqlalchemy
 from tyko.database import init_database
@@ -37,7 +39,7 @@ api_routes = [
 
 @pytest.mark.parametrize("route", static_page_routes)
 def test_static_pages(route):
-    app = tyko.create_app()
+    app = tyko.create_app(verify_db=False)
     app.config["TESTING"] = True
     with app.test_client() as server:
         resp = server.get(route)
@@ -48,7 +50,7 @@ def test_static_pages(route):
 def test_dynamic_pages(route):
     app = Flask(__name__, template_folder="../tyko/templates")
     db = SQLAlchemy(app)
-    tyko.create_app(app)
+    tyko.create_app(app, verify_db=False)
     tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     with app.test_client() as server:
@@ -60,7 +62,7 @@ def test_dynamic_pages(route):
 def test_app():
     app = Flask(__name__, template_folder="../tyko/templates")
     db = SQLAlchemy(app)
-    tyko.create_app(app)
+    tyko.create_app(app, verify_db=False)
     tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     return app.test_client()
@@ -84,7 +86,7 @@ def test_api_formats(test_app):
 def test_api_routes(route):
     app = Flask(__name__, template_folder="../tyko/templates")
     db = SQLAlchemy(app)
-    tyko.create_app(app)
+    tyko.create_app(app, verify_db=False)
     tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     with app.test_client() as server:
@@ -98,7 +100,7 @@ def test_create(test_app):
             {
                 "title": "dummy title",
                 "project_code": "sample project code",
-                "status": "inactive",
+                "status": "No work done",
                 "specs": "asdfadsf"
             }
         ),
@@ -116,7 +118,7 @@ test_data_read = [
         "project", {
             "title": "dummy title",
             "project_code": "sample project code",
-            "status": "inactive"
+            "status": "No work done"
         }
      ),
     (
@@ -147,7 +149,7 @@ def test_create_and_read2(data_type, data_value):
 
     app = Flask(__name__, template_folder="../tyko/templates")
     db = SQLAlchemy(app)
-    tyko.create_app(app)
+    tyko.create_app(app, verify_db=False)
     tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     with app.test_client() as server:
@@ -172,6 +174,7 @@ def test_create_and_read2(data_type, data_value):
         for k, v in data_value.items():
             assert data_object[k] == v
 
+
 def test_empty_database_error():
     # Creating a server without a validate database should raise a DataError
     # exception
@@ -186,7 +189,7 @@ def test_get_object_pbcore():
     app = Flask(__name__, template_folder="../tyko/templates")
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
     db = SQLAlchemy(app)
-    tyko.create_app(app)
+    tyko.create_app(app, verify_db=False)
     tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     with app.test_client() as server:
@@ -207,3 +210,111 @@ def test_get_object_pbcore():
 
         pbcore_req_res = server.get("/api/object/{}-pbcore.xml".format(new_id))
         assert pbcore_req_res.status == "200 OK", "Failed create a PBCore record for id {}".format(new_id)
+
+
+def test_project_status_by_name_invalid():
+    engine = sqlalchemy.create_engine("sqlite:///:memory:")
+    tyko.database.init_database(engine)
+    dummy_session = sessionmaker(bind=engine)
+    project_provider = data_provider.ProjectDataConnector(dummy_session)
+
+    with pytest.raises(tyko.exceptions.DataError):
+        status = \
+            project_provider.get_project_status_by_name(
+                "invalid status", create_if_not_exists=False)
+
+
+def test_project_status_by_name_invalid_multiple_with_same_name():
+    engine = sqlalchemy.create_engine("sqlite:///:memory:")
+    tyko.database.init_database(engine)
+    dummy_session = sessionmaker(bind=engine)
+    project_provider = data_provider.ProjectDataConnector(dummy_session)
+    session = dummy_session()
+    session.add(tyko.scheme.ProjectStatus(name="double"))
+    session.add(tyko.scheme.ProjectStatus(name="double"))
+    session.commit()
+
+    with pytest.raises(tyko.exceptions.DataError):
+        status = \
+            project_provider.get_project_status_by_name(
+                "double", create_if_not_exists=False)
+
+
+def test_project_status_by_name_valid():
+    engine = sqlalchemy.create_engine("sqlite:///:memory:")
+    tyko.database.init_database(engine)
+    dummy_session = sessionmaker(bind=engine)
+    project_provider = data_provider.ProjectDataConnector(dummy_session)
+
+    status = project_provider.get_project_status_by_name(
+                "In progress", create_if_not_exists=False)
+    assert status is not None
+
+
+def test_project_status_by_name_new_create():
+    engine = sqlalchemy.create_engine("sqlite:///:memory:")
+    tyko.database.init_database(engine)
+    dummy_session = sessionmaker(bind=engine)
+    project_provider = data_provider.ProjectDataConnector(dummy_session)
+
+    status = project_provider.get_project_status_by_name(
+                "new status", create_if_not_exists=True)
+    assert status.name == "new status"
+
+
+def test_project_default_status():
+    engine = sqlalchemy.create_engine("sqlite:///:memory:")
+    tyko.database.init_database(engine)
+    dummy_session = sessionmaker(bind=engine)
+    project_provider = data_provider.ProjectDataConnector(dummy_session)
+    statuses = project_provider.get_all_project_status()
+    assert len(statuses) == 3
+
+
+def test_db_version_test_valid():
+    app = Flask(__name__, template_folder="../tyko/templates")
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    db = SQLAlchemy(app)
+    version_table = sqlalchemy.Table(
+        "alembic_version", db.metadata,
+        sqlalchemy.Column("version_num",
+                          sqlalchemy.String(length=32),
+                          primary_key=True)
+    )
+    db.metadata.create_all(db.engine)
+    db.session.execute(version_table.insert().values(
+        version_num=scheme.ALEMBIC_VERSION))
+    db.session.commit()
+    assert is_correct_db_version(app, db) is True
+
+
+def test_db_version_test_different():
+    app = Flask(__name__, template_folder="../tyko/templates")
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    db = SQLAlchemy(app)
+    version_table = sqlalchemy.Table(
+        "alembic_version", db.metadata,
+        sqlalchemy.Column("version_num",
+                          sqlalchemy.String(length=32),
+                          primary_key=True)
+    )
+    db.metadata.create_all(db.engine)
+    db.session.execute(version_table.insert().values(
+        version_num="notvalid"))
+    db.session.commit()
+    assert is_correct_db_version(app, db) is False
+
+
+def test_db_version_test_no_data():
+    app = Flask(__name__, template_folder="../tyko/templates")
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    db = SQLAlchemy(app)
+    version_table = sqlalchemy.Table(
+        "alembic_version", db.metadata,
+        sqlalchemy.Column("version_num",
+                          sqlalchemy.String(length=32),
+                          primary_key=True)
+    )
+    db.metadata.create_all(db.engine)
+    db.session.commit()
+    assert is_correct_db_version(app, db) is False

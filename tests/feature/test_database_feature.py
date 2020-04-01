@@ -174,7 +174,7 @@ def new_project(dummy_database):
         project_code=SAMPLE_PROJECT_CODE,
         title=SAMPLE_PROJECT_TITLE,
         current_location=SAMPLE_LOCATION,
-        status=SAMPLE_PROJECT_STATUS,
+        status=scheme.ProjectStatus(name=SAMPLE_PROJECT_STATUS),
         specs=SAMPLE_PROJECT_SPECS
     )
 

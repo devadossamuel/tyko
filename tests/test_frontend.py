@@ -16,7 +16,7 @@ from xml.dom.minidom import parseString
 def app():
     app = Flask(__name__, template_folder="../tyko/templates")
     db = SQLAlchemy(app)
-    tyko.create_app(app)
+    tyko.create_app(app, verify_db=False)
     tyko.database.init_database(db.engine)
     app.config["TESTING"] = True
     return app
@@ -206,3 +206,9 @@ def test_breadcrumb_builder_build_throws_on_false_level(breadcrumb_builder_with_
 def test_breadcrumb_builder_set_throws_on_bad_level(breadcrumb_builder_with_project):
     with pytest.raises(ValueError):
         result = breadcrumb_builder_with_project["invalid"] = "spam"
+
+
+def test_create_project_page(app):
+    with app.test_client() as server:
+        create_project_page = server.get("/project/create/")
+        assert create_project_page.status_code == 200

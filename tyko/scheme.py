@@ -6,6 +6,8 @@ import sqlalchemy as db
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
 
+ALEMBIC_VERSION: str = "a6f912f5e00f"
+
 SerializedData = \
     Union[int, str, List['SerializedData'], None, Dict[str, 'SerializedData']]
 
@@ -77,6 +79,21 @@ class Contact(AVTables):
         }
 
 
+class ProjectStatus(AVTables):
+    __tablename__ = "project_status_type"
+
+    id = db.Column("project_status_id",
+                   db.Integer, primary_key=True, autoincrement=True)
+
+    name = db.Column("name", db.Text)
+
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+        return {
+            "project_status_id": self.id,
+            "name": self.name
+        }
+
+
 class Project(AVTables):
     __tablename__ = "project"
 
@@ -89,7 +106,9 @@ class Project(AVTables):
     project_code = db.Column("project_code", db.Text)
     title = db.Column("title", db.Text)
     current_location = db.Column("current_location", db.Text)
-    status = db.Column("status", db.Text)
+    status = relationship("ProjectStatus")
+    status_id = db.Column(
+        db.Integer, db.ForeignKey("project_status_type.project_status_id"))
     specs = db.Column("specs", db.Text)
 
     notes = relationship(
@@ -104,12 +123,16 @@ class Project(AVTables):
     )
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+        if self.status is not None:
+            status_text = self.status.serialize()['name']
+        else:
+            status_text = None
 
         data: Dict[str, SerializedData] = {
             "project_id": self.id,
             "project_code": self.project_code,
             "current_location": self.current_location,
-            "status": self.status,
+            "status": status_text,
             "title": self.title,
         }
         notes = []

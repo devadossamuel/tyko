@@ -369,7 +369,7 @@ pipeline {
 
                                 catchError(buildResult: 'SUCCESS', message: 'Pylint found issues', stageResult: 'UNSTABLE') {
                                     sh(
-                                        script: 'pylint tyko  -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" > reports/pylint.txt',
+                                        script: 'pylint --rcfile=./CI/jenkins/pylintrc tyko > reports/pylint_issues.txt',
                                         label: "Running pylint"
                                     )
                                 }
