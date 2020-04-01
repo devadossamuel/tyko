@@ -20,7 +20,8 @@ def is_correct_db_version(app, database) -> bool:
             return False
     except OperationalError as exc:
         app.logger.error(
-            "Problem getting version information. Reason given: {}".format(exc))
+            "Problem getting version information. "
+            "Reason given: {}".format(exc))
         return False
     return version == ALEMBIC_VERSION
 
