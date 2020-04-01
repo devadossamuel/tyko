@@ -7,10 +7,10 @@ from typing import Tuple, Set, Optional, Callable, List, Iterator, \
     NamedTuple, Dict
 from dataclasses import dataclass
 
-import pkg_resources
 from flask import current_app as app
 from flask import make_response, render_template, url_for
 
+import pkg_resources
 from . import data_provider
 
 
