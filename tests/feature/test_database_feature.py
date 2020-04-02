@@ -415,7 +415,8 @@ def new_open_reel(dummy_database, create_new_object, date_recorded,
         base=base
 
     )
-
+    new_file_instance = scheme.InstantiationFile(filename=file_name)
+    new_item.files.append(new_file_instance)
     create_new_object.items.append(new_item)
     dummy_database.add(open_reel)
     dummy_database.add(new_item)
@@ -425,9 +426,12 @@ def new_open_reel(dummy_database, create_new_object, date_recorded,
 @then("the database has item record with the <file_name>")
 def database_has_item_record_w_filename(dummy_database, file_name):
     collection_items = dummy_database.query(scheme.CollectionItem)
-    collection_item = collection_items.filter(
-        scheme.CollectionItem.file_name == file_name).one()
-    assert collection_item.file_name == file_name
+    for collection_item in collection_items:
+        for file_instance in collection_item.files:
+            if file_instance.filename == file_name:
+                assert True
+                return
+    assert False, "No file matched {}".format(file_name)
 
 
 @then("the database has open reel record with a <tape_size> sized tape")

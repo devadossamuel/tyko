@@ -318,6 +318,7 @@ class CollectionItem(AVTables):
                                db.ForeignKey("format_types.format_id"))
 
     format_type = relationship("FormatTypes", foreign_keys=[format_type_id])
+    files = relationship("InstantiationFile", backref="file_source")
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         notes = [note.serialize() for note in self.notes]
@@ -648,6 +649,40 @@ class VendorTransfer(AVTables):
             "returned_originals_rec_date":
                 self.serialize_date(self.returned_originals_rec_date)
         }
+
+
+class InstantiationFile(AVTables):
+    __tablename__ = "instantiation_files"
+
+    id = db.Column(
+        "file_id", db.Integer, primary_key=True, autoincrement=True)
+
+    filename = db.Column("filename", db.Text, nullable=False)
+
+    source = db.Column("source", db.Text,
+                       default="University of Illinois library",
+                       nullable=False)
+
+    generation = db.Column("generation", db.Text)
+
+    filesize = db.Column("filesize", db.Integer)
+    filesize_unit = db.Column("filesize_unit", db.Text)
+    item_id = db.Column(db.Integer, db.ForeignKey("item.item_id"))
+
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+        # TODO: implement  serialize
+        pass
+
+
+class FileAnnotations(AVTables):
+    __tablename__ = "file_annotations"
+    id = db.Column(
+        "annotation_id", db.Integer, primary_key=True, autoincrement=True)
+    annotation_type = db.Column("annotation_type", db.Text)
+
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+        pass
+        # TODO: implement  serialize
 
 
 # =============================================================================
