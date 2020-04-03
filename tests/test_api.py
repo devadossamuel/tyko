@@ -86,7 +86,11 @@ def test_item_update(app):
             data=json.dumps(
                 {
                     "name": "My dummy item",
-                    "file_name": "dummy.txt",
+                    "files": [
+                        {
+                            "name": "dummy.txt",
+                        }
+                    ],
                     "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4",
                     "format_id": 2,
                 }
@@ -99,23 +103,54 @@ def test_item_update(app):
         put_resp = server.put(
             new_item_record_url,
             data=json.dumps({
-                "file_name": "changed_dummy.txt"
+                "name": "changed_dummy"
             }),
             content_type='application/json'
         )
         assert put_resp.status_code == 200
-        put_resp_data = json.loads(put_resp.data)
-        put_item = put_resp_data["item"]
-        assert put_item["file_name"] == "changed_dummy.txt"
-
         get_resp = server.get(new_item_record_url)
         assert get_resp.status_code == 200
-
+        #
         edited_data = json.loads(get_resp.data)
         item = edited_data["item"]
-        assert item["file_name"] == "changed_dummy.txt"
         assert item["medusa_uuid"] == "03de08f0-dada-0136-5326-0050569601ca-4"
-        assert item["name"] == "My dummy item"
+        assert item["name"] == "changed_dummy"
+
+# TODO: Create a test that changes the file name
+
+def test_update_file_name(app):
+    with app.test_client() as server:
+        new_item_post_data = json.loads(server.post(
+            "/api/item/",
+            data=json.dumps(
+                {
+                    "name": "My dummy item",
+                    "files": [
+                        {
+                            "name": "dummy.txt",
+                        }
+                    ],
+                    "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4",
+                    "format_id": 2,
+                }
+            ),
+            content_type='application/json'
+        ).data)
+
+        new_item_record_url = url_for("item",
+                                      item_id=new_item_post_data['id'])
+
+        new_item_data = json.loads(server.get(new_item_record_url).data)['item']
+
+        files = new_item_data['files']
+
+        assert len(files) == 1
+        assert files[0]['name'] == "dummy.txt"
+
+        new_file_route = url_for("file", file_id=files[0]['id'])
+        new_file_api_resp = server.get(new_file_route)
+        assert new_file_api_resp.status_code == 200
+        print("here")
 
 
 def test_item_delete(app):
@@ -126,7 +161,11 @@ def test_item_delete(app):
             data=json.dumps(
                 {
                     "name": "My dummy item",
-                    "file_name": "dummy.txt",
+                    "files": [
+                        {
+                            "name": "changed_dummy.txt",
+                        }
+                    ],
                     "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4",
                     "format_id": 1
                 }
@@ -721,7 +760,11 @@ def test_add_and_delete_item_to_object(server_with_object):
         data=json.dumps(
             {
                 "name": "My dummy item",
-                "file_name": "dummy.wav",
+                "files": [
+                    {
+                        "name": "dummy.wav",
+                    }
+                ],
                 "format_id": formats['audio']
             }
         ),
@@ -732,7 +775,7 @@ def test_add_and_delete_item_to_object(server_with_object):
     new_item = json.loads(post_response.data)['item']
     assert new_item
     assert new_item['name'] == "My dummy item"
-    assert new_item['file_name'] == "dummy.wav"
+    assert new_item["files"][0]['name'] == "dummy.wav"
     assert new_item['format']['name'] == "audio"
 
     object_url = url_for(

@@ -136,7 +136,11 @@ def test_view_web_item(app):
             data=json.dumps(
                 {
                     "name": "My dummy item",
-                    "file_name": "dummy.txt",
+                    "files": [
+                        {
+                            "name": "dummy.txt"
+                        }
+                    ],
                     "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4",
                     "format_id": 1
                 }

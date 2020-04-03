@@ -659,6 +659,33 @@ class ObjectDataConnector(AbsNotesConnector):
         return new_data
 
 
+class FilesDataConnector(AbsDataProviderConnector):
+    def get(self, id=None, serialize=False):
+        session = self.session_maker()
+        try:
+            matching_file = session.query(scheme.InstantiationFile)\
+                .filter(scheme.InstantiationFile.file_id == id).one()
+            if serialize is True:
+                res = matching_file.serialize(recurse=True)
+                return res
+
+            return matching_file
+        finally:
+            session.close()
+
+    def create(self, *args, **kwargs):
+        # TODO: create
+        pass
+
+    def update(self, id, changed_data):
+        # TODO: update
+        pass
+
+    def delete(self, id):
+        # TODO: delete
+        pass
+
+
 class ItemDataConnector(AbsNotesConnector):
 
     def get(self, id=None, serialize=False):
@@ -713,15 +740,17 @@ class ItemDataConnector(AbsNotesConnector):
         format_type = session.query(scheme.FormatTypes)\
             .filter(scheme.FormatTypes.id == format_id).one()
 
-        file_name = kwargs.get("file_name")
+
         medusa_uuid = kwargs.get("medusa_uuid")
         new_item = scheme.CollectionItem(
             name=name,
-            file_name=file_name,
             medusa_uuid=medusa_uuid,
             format_type=format_type
         )
-
+        for instance_file in kwargs.get("files", []):
+            new_file = scheme.InstantiationFile(filename=instance_file['name'])
+            new_item.files.append(new_file)
+        # new_item.files.append(f)
         session.add(new_item)
         session.commit()
         new_item_id = new_item.id
@@ -735,9 +764,6 @@ class ItemDataConnector(AbsNotesConnector):
         if item:
             if "name" in changed_data:
                 item.name = changed_data['name']
-
-            if "file_name" in changed_data:
-                item.file_name = changed_data["file_name"]
 
             if "medusa_uuid" in changed_data:
                 item.medusa_uuid = changed_data["medusa_uuid"]

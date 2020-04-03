@@ -295,7 +295,7 @@ class CollectionItem(AVTables):
 
     name = db.Column("name", db.Text)
     #
-    file_name = db.Column("file_name", db.Text)
+    # file_name = db.Column("file_name", db.Text)
     medusa_uuid = db.Column("medusa_uuid", db.Text)
 
     collection_object_id = db.Column("object_id",
@@ -322,10 +322,17 @@ class CollectionItem(AVTables):
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         notes = [note.serialize() for note in self.notes]
+        files = []
+        for file_ in self.files:
+            files.append({
+                "name": file_.filename,
+                "id": file_.file_id
+            })
+
         data: Dict[str, SerializedData] = {
             "item_id": self.id,
             "name": self.name,
-            "file_name": self.file_name,
+            "files": files,
             "medusa_uuid": self.medusa_uuid,
             "obj_sequence": self.obj_sequence,
             "parent_object_id": self.collection_object_id,
@@ -654,7 +661,7 @@ class VendorTransfer(AVTables):
 class InstantiationFile(AVTables):
     __tablename__ = "instantiation_files"
 
-    id = db.Column(
+    file_id = db.Column(
         "file_id", db.Integer, primary_key=True, autoincrement=True)
 
     filename = db.Column("filename", db.Text, nullable=False)
@@ -668,22 +675,51 @@ class InstantiationFile(AVTables):
     filesize = db.Column("filesize", db.Integer)
     filesize_unit = db.Column("filesize_unit", db.Text)
     item_id = db.Column(db.Integer, db.ForeignKey("item.item_id"))
+    notes = relationship(
+        "FileNotes",
+        backref="file_note_source"
+    )
+    annotations = relationship(
+        "FileAnnotation",
+        backref="file_annotation_source"
+    )
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
-        # TODO: implement  serialize
-        pass
+        data = {
+            "id": self.file_id,
+            "filename": self.filename
+        }
+        return data
 
 
-class FileAnnotations(AVTables):
-    __tablename__ = "file_annotations"
+class FileNotes(AVTables):
+    __tablename__ = "file_notes"
     id = db.Column(
         "annotation_id", db.Integer, primary_key=True, autoincrement=True)
-    annotation_type = db.Column("annotation_type", db.Text)
+    note = db.Column("note", db.Text, nullable=False)
+    file_id = db.Column(db.Integer,
+                        db.ForeignKey("instantiation_files.file_id"))
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         pass
         # TODO: implement  serialize
 
+
+class FileAnnotation(AVTables):
+    __tablename__ = "file_annotations"
+
+    id = db.Column(
+        "annotation_id", db.Integer, primary_key=True, autoincrement=True)
+    file_id = db.Column(db.Integer,
+                        db.ForeignKey("instantiation_files.file_id"))
+    annotation_type = db.Column("type", db.Text)
+    annotation_content = db.Column("content", db.Text, nullable=False)
+
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+        pass
+        # TODO: implement  serialize
+
+# TODO: Make a alembic migraition script that adds files and file notes and file annotations
 
 # =============================================================================
 # Enumerated tables

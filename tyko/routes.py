@@ -6,6 +6,7 @@ from flask import jsonify, render_template, views
 
 from . import middleware
 from .data_provider import DataProvider
+from . import data_provider
 from . import frontend
 
 
@@ -122,6 +123,17 @@ class NotesAPI(views.MethodView):
 
     def put(self, note_id: int):
         return self._middleware.update(id=note_id)
+
+
+class FileAPI(views.MethodView):
+    def __init__(self, provider: DataProvider) -> None:
+        self._data_provider = provider
+        self._data_connector = \
+            data_provider.FilesDataConnector(provider.db_session_maker)
+
+    def get(self, file_id: int):
+        return self._data_connector.get(file_id, serialize=True)
+
 
 
 class ItemAPI(views.MethodView):
@@ -361,6 +373,17 @@ class Routes:
                 methods=[
                     "DELETE"
                 ]
+            )
+            self.app.add_url_rule(
+                "/api/file/<int:file_id>",
+                view_func=FileAPI.as_view(
+                    "file",
+                    provider=self.db_engine
+                ),
+                methods=[
+                    "GET"
+                ]
+
             )
 
             self.app.add_url_rule(
