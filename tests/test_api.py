@@ -116,42 +116,6 @@ def test_item_update(app):
         assert item["medusa_uuid"] == "03de08f0-dada-0136-5326-0050569601ca-4"
         assert item["name"] == "changed_dummy"
 
-# TODO: Create a test that changes the file name
-
-def test_update_file_name(app):
-    with app.test_client() as server:
-        new_item_post_data = json.loads(server.post(
-            "/api/item/",
-            data=json.dumps(
-                {
-                    "name": "My dummy item",
-                    "files": [
-                        {
-                            "name": "dummy.txt",
-                        }
-                    ],
-                    "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4",
-                    "format_id": 2,
-                }
-            ),
-            content_type='application/json'
-        ).data)
-
-        new_item_record_url = url_for("item",
-                                      item_id=new_item_post_data['id'])
-
-        new_item_data = json.loads(server.get(new_item_record_url).data)['item']
-
-        files = new_item_data['files']
-
-        assert len(files) == 1
-        assert files[0]['name'] == "dummy.txt"
-
-        new_file_route = url_for("file", file_id=files[0]['id'])
-        new_file_api_resp = server.get(new_file_route)
-        assert new_file_api_resp.status_code == 200
-        print("here")
-
 
 def test_item_delete(app):
 
@@ -800,3 +764,188 @@ def test_add_and_delete_item_to_object(server_with_object):
     items_after_deleted = \
         json.loads(server_with_object.get(object_url).data)['object']['items']
     assert len(items_after_deleted) == 0
+
+
+@pytest.fixture()
+def server_with_object_and_item():
+    testing_app = Flask(__name__, template_folder="../tyko/templates")
+    db = SQLAlchemy(testing_app)
+    tyko.create_app(testing_app, verify_db=False)
+    tyko.database.init_database(db.engine)
+    testing_app.config["TESTING"] = True
+    with testing_app.test_client() as server:
+        new_collection_response = server.post(
+            "/api/collection/",
+            data=json.dumps(
+                {
+                    "collection_name": "My dummy collection",
+                    "department": "preservation",
+                }
+            ),
+            content_type='application/json'
+        )
+
+        assert new_collection_response.status_code == 200
+        new_collection_id = json.loads(new_collection_response.data)['id']
+
+        new_project_response = server.post(
+            "/api/project/",
+            data=json.dumps(
+                {
+                    "title": "my dumb project",
+                }
+            ),
+            content_type='application/json'
+        )
+        assert new_project_response.status_code == 200
+        new_project_id = json.loads(new_project_response.data)['id']
+        new_object_url = url_for("project_add_object", project_id=new_project_id)
+
+        post_new_object_project_resp = server.post(
+            new_object_url,
+            data=json.dumps({
+                "name": "My dummy object",
+                "barcode": "12345",
+                "collectionId": new_collection_id
+            }),
+            content_type='application/json'
+        )
+        new_object_id = json.loads(post_new_object_project_resp.data)['object']["object_id"]
+
+        assert post_new_object_project_resp.status_code == 200
+        new_item_url = url_for("project_object_add_item",
+                               project_id=new_project_id,
+                               object_id=new_object_id
+                               )
+        post_new_item = server.post(
+            new_item_url,
+            data=json.dumps({
+                "name": "dummy object",
+                "format_id": 2
+            }),
+            content_type='application/json'
+        )
+        assert post_new_item.status_code == 200
+        yield server
+
+
+def test_create_and_get_file(server_with_object_and_item):
+    projects = json.loads(
+        server_with_object_and_item.get(url_for("projects")).data
+    )["projects"]
+    project_id = projects[0]['project_id']
+    project = json.loads(
+        server_with_object_and_item.get(
+            url_for("project", project_id=project_id)
+        ).data
+    )['project']
+    object_id = project['objects'][0]["object_id"]
+    item_id = project['objects'][0]["items"][0]["item_id"]
+
+    new_file_url = url_for("project_object_item_add_file",
+                           project_id=project_id,
+                           object_id=object_id,
+                           item_id=item_id
+                           )
+    res = server_with_object_and_item.post(
+        new_file_url,
+        data=json.dumps({
+            "filename": "my_dumb_audio.wav",
+        }),
+        content_type='application/json'
+    )
+    assert res.status_code == 200
+    new_file_res_data = json.loads(res.data)
+    new_file_details_url = new_file_res_data['url']
+    file_details_resp = server_with_object_and_item.get(new_file_details_url)
+    assert file_details_resp.status_code == 200
+    file_details_data = json.loads(file_details_resp.data)
+    assert file_details_data['filename'] == "my_dumb_audio.wav"
+
+
+def test_update_file_name(server_with_object_and_item):
+    projects = json.loads(
+        server_with_object_and_item.get(url_for("projects")).data
+    )["projects"]
+    project = projects[0]
+    project_id = project['project_id']
+    object_id = project['objects'][0]["object_id"]
+    item_id = project['objects'][0]["items"][0]["item_id"]
+    new_file_url = url_for("project_object_item_add_file",
+                           project_id=project_id,
+                           object_id=object_id,
+                           item_id=item_id
+                           )
+
+    file_id = json.loads(server_with_object_and_item.post(
+        new_file_url,
+        data=json.dumps({
+            "filename": "my_dumb_audio.wav",
+        }),
+        content_type='application/json'
+    ).data)['id']
+
+    new_file_route = url_for("item_file_details",
+                             project_id=project_id,
+                             object_id=object_id,
+                             item_id=item_id,
+                             file_id=file_id)
+
+    put_res = server_with_object_and_item.put(
+        new_file_route,
+        data=json.dumps({
+            "filename": "my_dumb_changed_audio.wav"
+        }),
+        content_type='application/json'
+    )
+    assert put_res.status_code == 200
+
+    # Get again and see if the data is changed
+    get_res = server_with_object_and_item.get(
+        new_file_route,
+        content_type='application/json'
+    )
+    get_res_data = json.loads(get_res.data)
+    assert get_res_data['filename'] == "my_dumb_changed_audio.wav"
+
+
+def test_create_and_delete_file(server_with_object_and_item):
+    projects = json.loads(
+        server_with_object_and_item.get(url_for("projects")).data
+    )["projects"]
+    project_id = projects[0]['project_id']
+    project = json.loads(
+        server_with_object_and_item.get(
+            url_for("project", project_id=project_id)
+        ).data
+    )['project']
+    object_id = project['objects'][0]["object_id"]
+    item_id = project['objects'][0]["items"][0]["item_id"]
+
+    new_file_url = url_for("project_object_item_add_file",
+                           project_id=project_id,
+                           object_id=object_id,
+                           item_id=item_id
+                           )
+    res = server_with_object_and_item.post(
+        new_file_url,
+        data=json.dumps({
+            "filename": "my_dumb_audio.wav",
+        }),
+        content_type='application/json'
+    )
+    assert res.status_code == 200
+
+#     check that item has file
+    item = json.loads(
+        server_with_object_and_item.get(
+            url_for("item", item_id=item_id)
+        ).data
+    )['item']
+    assert len(item['files']) == 1
+    file_id = item['files'][0]['id']
+    new_file_url = url_for("item_file_details", project_id=project_id, object_id=object_id, item_id=item_id, file_id=file_id)
+    del_resp = server_with_object_and_item.delete(
+        new_file_url
+    )
+    assert del_resp.status_code == 202

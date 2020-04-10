@@ -42,7 +42,8 @@ class BreadcrumbBuilder(collections.abc.MutableMapping):
     VALID_CRUMBS = [
         "Project",
         "Object",
-        "Item"
+        "Item",
+        "File"
     ]
 
     def __init__(self) -> None:
@@ -502,7 +503,7 @@ class ObjectFrontend(ProjectComponentDetailFrontend):
         )
         return render_template(template, **new_context)
 
-
+# TODO: Typo
 class CollectiontFrontend(FrontendEntity):
     def __init__(self, provider: data_provider.DataProvider) -> None:
         super().__init__(provider)
@@ -543,3 +544,65 @@ class NewCollectionForm(AbsFrontend):
 
     def render_page(self, template="form_new_collection.html", **context):
         return render_template(template)
+
+
+class FileDetailsFrontend:
+    def __init__(self, provider: data_provider.DataProvider) -> None:
+        self._data_provider = data_provider
+        self._data_connector = \
+            data_provider.FilesDataConnector(provider.db_session_maker)
+
+    @staticmethod
+    def build_breadcrumbs(active_level, project_url=None, object_url=None,
+                          item_url=None, file_url=None) -> List[Breadcrumb]:
+
+        breadcrumb_builder = BreadcrumbBuilder()
+
+        if project_url is not None:
+            breadcrumb_builder['Project'] = project_url
+
+        if object_url is not None:
+            breadcrumb_builder['Object'] = object_url
+
+        if item_url is not None:
+            breadcrumb_builder['Item'] = item_url
+
+        if file_url is not None:
+            breadcrumb_builder['File'] = item_url
+
+        return breadcrumb_builder.build(active_level)
+
+    def display_details(self, *args, **kwargs):
+        project_id = kwargs["project_id"]
+        object_id = kwargs["object_id"]
+        item_id = kwargs["item_id"]
+        file_id = kwargs["file_id"]
+        breadcrumbs = self.build_breadcrumbs(
+            "File",
+            project_url=url_for(
+                "page_project_details",
+                project_id=project_id
+            ),
+            object_url=url_for(
+                "page_project_object_details",
+                project_id=project_id,
+                object_id=object_id
+            ),
+            item_url=url_for(
+                "page_project_object_item_details",
+                project_id=project_id,
+                object_id=object_id,
+                item_id=item_id
+            ),
+            file_url="#"
+        )
+        file_details = self._data_connector.get(file_id,
+                                                serialize=True)
+        edit_api_path = url_for("file", file_id=file_id)
+        # TODO: get an api path for editing file
+        return render_template("file_details.html",
+                               itemType="File",
+                               breadcrumbs=breadcrumbs,
+                               show_bread_crumb=True,
+                               file=file_details,
+                               api_path=edit_api_path)

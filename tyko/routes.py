@@ -1,14 +1,12 @@
 # pylint: disable=invalid-name, not-an-iterable
 
 from dataclasses import dataclass, field
-from typing import Any, List
+from typing import Any, List, Iterator, Tuple, Callable
 from flask import jsonify, render_template, views
 
 from . import middleware
 from .data_provider import DataProvider
-from . import data_provider
 from . import frontend
-
 
 @dataclass
 class Route:
@@ -123,17 +121,6 @@ class NotesAPI(views.MethodView):
 
     def put(self, note_id: int):
         return self._middleware.update(id=note_id)
-
-
-class FileAPI(views.MethodView):
-    def __init__(self, provider: DataProvider) -> None:
-        self._data_provider = provider
-        self._data_connector = \
-            data_provider.FilesDataConnector(provider.db_session_maker)
-
-    def get(self, file_id: int):
-        return self._data_connector.get(file_id, serialize=True)
-
 
 
 class ItemAPI(views.MethodView):
@@ -345,7 +332,12 @@ class Routes:
                 lambda project_id, object_id, item_id: item.add_note(item_id),
                 methods=["POST"]
             )
-
+            self.app.add_url_rule(
+                "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/file",  # noqa: E501 pylint: disable=C0301
+                "project_object_item_add_file",
+                item.add_file,
+                methods=["POST"]
+            )
             self.app.add_url_rule(
                 "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/notes/<int:note_id>",  # noqa: E501 pylint: disable=C0301
                 view_func=ObjectItemNotesAPI.as_view(
@@ -375,16 +367,29 @@ class Routes:
                 ]
             )
             self.app.add_url_rule(
-                "/api/file/<int:file_id>",
-                view_func=FileAPI.as_view(
-                    "file",
+                "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/files",  # noqa: E501 pylint: disable=C0301
+                view_func=middleware.ItemFilesAPI.as_view(
+                    "item_files",
                     provider=self.db_engine
                 ),
                 methods=[
-                    "GET"
+                    "POST"
+                ]
+            )
+            self.app.add_url_rule(
+                "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/files/<int:file_id>",
+                view_func=middleware.FileAPI.as_view(
+                    "item_file_details",
+                    provider=self.db_engine
+                ),
+                methods=[
+                    "GET",
+                    "PUT",
+                    "DELETE"
                 ]
 
             )
+
 
             self.app.add_url_rule(
                 "/api",
@@ -535,6 +540,7 @@ class Routes:
         )
 
         if self.app:
+            # TODO: Make frontend route generator into a generator function
             for rule in static_web_routes:
                 self.app.add_url_rule(rule.rule, rule.method,
                                       rule.view_function)
@@ -550,6 +556,18 @@ class Routes:
 
                     self.app.add_url_rule(rule.rule, rule.method,
                                           rule.view_function)
+            for route, route_name, func in get_frontend_page_routes(self.mw.data_provider):
+                self.app.add_url_rule(route, route_name, func)
+
+
+def get_frontend_page_routes(data_prov) -> Iterator[Tuple[str, str, Callable]]:
+    # TODO: add frontend routes to here
+
+    file_details = frontend.FileDetailsFrontend(data_prov)
+    yield (
+        "/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/file/<int:file_id>",
+        "page_file_details",
+        file_details.display_details)
 
 
 def page_formats(middleware_source):

@@ -9,7 +9,6 @@ import pytest
 import tyko
 import tyko.database
 from tyko import frontend
-from xml.dom.minidom import parseString
 
 
 @pytest.fixture()
@@ -158,16 +157,6 @@ def test_view_web_item(app):
                 item_id=new_item_data['item_id'])
         )
         assert resulting_webpage.status_code == 200
-        data = str(resulting_webpage.data, encoding="utf-8")
-        assert "My dummy item" in data
-
-        resulting_webpage_from_on_own = server.get(
-            url_for(
-                "page_item_details",
-                item_id=new_item_data['item_id']
-            )
-        )
-        assert resulting_webpage_from_on_own.status_code == 200
 
 
 @pytest.fixture()

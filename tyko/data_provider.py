@@ -673,17 +673,55 @@ class FilesDataConnector(AbsDataProviderConnector):
         finally:
             session.close()
 
-    def create(self, *args, **kwargs):
-        # TODO: create
-        pass
+    def create(self, item_id, *args, **kwargs):
+        name = kwargs['file_name']
+        session = self.session_maker()
+        try:
+            matching_item = session.query(scheme.CollectionItem)\
+                .filter(scheme.CollectionItem.id == item_id).one()
+            new_file = scheme.InstantiationFile(filename=name)
+            matching_item.files.append(new_file)
+            session.flush()
+            session.commit()
+            return new_file.serialize()
+        finally:
+            session.close()
 
     def update(self, id, changed_data):
-        # TODO: update
-        pass
+        session = self.session_maker()
+        try:
+            matching_file = session.query(scheme.InstantiationFile) \
+                .filter(scheme.InstantiationFile.file_id == id).one()
+            if "filename" in changed_data:
+                matching_file.filename = changed_data['filename']
+            session.commit()
+            return matching_file.serialize()
+        finally:
+            session.close()
 
-    def delete(self, id):
-        # TODO: delete
-        pass
+    def delete(self, id: int):
+        session = self.session_maker()
+        try:
+            items_deleted = session.query(scheme.InstantiationFile)\
+                .filter(scheme.InstantiationFile.file_id == id).delete()
+            session.commit()
+            return items_deleted > 0
+        finally:
+            session.close()
+
+    def remove(self, item_id: int, file_id: int):
+        session = self.session_maker()
+        try:
+            item = session.query(scheme.CollectionItem)\
+                .filter(scheme.CollectionItem.id == item_id).one()
+            for f in item.files:
+                if f.file_id == file_id:
+                    item.files.remove(f)
+                    return True
+            else:
+                raise ValueError(f"Item {item_id} doesn't have a file with an id of {file_id}")
+        finally:
+            session.close()
 
 
 class ItemDataConnector(AbsNotesConnector):
