@@ -719,7 +719,8 @@ class FilesDataConnector(AbsDataProviderConnector):
                     item.files.remove(f)
                     return True
             else:
-                raise ValueError(f"Item {item_id} doesn't have a file with an id of {file_id}")
+                raise ValueError(f"Item {item_id} does not have a file with an"
+                                 f" id of {file_id}")
         finally:
             session.close()
 
@@ -778,7 +779,6 @@ class ItemDataConnector(AbsNotesConnector):
         format_type = session.query(scheme.FormatTypes)\
             .filter(scheme.FormatTypes.id == format_id).one()
 
-
         medusa_uuid = kwargs.get("medusa_uuid")
         new_item = scheme.CollectionItem(
             name=name,
@@ -786,7 +786,9 @@ class ItemDataConnector(AbsNotesConnector):
             format_type=format_type
         )
         for instance_file in kwargs.get("files", []):
-            new_file = scheme.InstantiationFile(file_name=instance_file['name'])
+            new_file = \
+                scheme.InstantiationFile(file_name=instance_file['name'])
+
             new_item.files.append(new_file)
         # new_item.files.append(f)
         session.add(new_item)

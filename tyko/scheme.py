@@ -719,7 +719,6 @@ class FileAnnotation(AVTables):
         pass
         # TODO: implement  serialize
 
-# TODO: Make a alembic migraition script that adds files and file notes and file annotations
 
 # =============================================================================
 # Enumerated tables
@@ -731,6 +730,7 @@ class FileAnnotation(AVTables):
 #
 # Add to the bottom of this list, For compatibility reasons, do not
 # edit existing value ids
+
 
 note_types = {
     "Inspection": (1, ),

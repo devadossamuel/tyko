@@ -903,11 +903,12 @@ class FileAPI(views.MethodView):
         return self._data_connector.get(file_id, serialize=True)
 
     def delete(self,
-            project_id: int,
-            object_id: int,
-            item_id: int,
-            file_id: int
-            ) -> flask.wrappers.Response:
+               project_id: int,
+               object_id: int,
+               item_id: int,
+               file_id: int
+               ) -> flask.wrappers.Response:
+
         self._data_connector.remove(item_id, file_id)
         res = self._data_connector.delete(file_id)
         if res is True:
@@ -937,12 +938,14 @@ class ItemFilesAPI(views.MethodView):
             item_id=item_id,
             file_name=json_request['file_name']
         )['id']
+
         url = url_for("item_file_details",
-                           project_id=project_id,
-                           object_id=object_id,
-                           item_id=item_id,
-                           file_id=new_file_id
-                           )
+                      project_id=project_id,
+                      object_id=object_id,
+                      item_id=item_id,
+                      file_id=new_file_id
+                      )
+
         return jsonify({
             "id": new_file_id,
             "url": url

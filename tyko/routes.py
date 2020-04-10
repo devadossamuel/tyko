@@ -8,6 +8,7 @@ from . import middleware
 from .data_provider import DataProvider
 from . import frontend
 
+
 @dataclass
 class Route:
     rule: str
@@ -377,7 +378,7 @@ class Routes:
                 ]
             )
             self.app.add_url_rule(
-                "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/files/<int:file_id>",
+                "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/files/<int:file_id>",  # noqa: E501 pylint: disable=C0301
                 view_func=middleware.FileAPI.as_view(
                     "item_file_details",
                     provider=self.db_engine
@@ -389,7 +390,6 @@ class Routes:
                 ]
 
             )
-
 
             self.app.add_url_rule(
                 "/api",
@@ -556,7 +556,10 @@ class Routes:
 
                     self.app.add_url_rule(rule.rule, rule.method,
                                           rule.view_function)
-            for route, route_name, func in get_frontend_page_routes(self.mw.data_provider):
+
+            for route, route_name, func in get_frontend_page_routes(
+                    self.mw.data_provider):
+
                 self.app.add_url_rule(route, route_name, func)
 
 
@@ -565,7 +568,7 @@ def get_frontend_page_routes(data_prov) -> Iterator[Tuple[str, str, Callable]]:
 
     file_details = frontend.FileDetailsFrontend(data_prov)
     yield (
-        "/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/file/<int:file_id>",
+        "/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/file/<int:file_id>",  # noqa: E501 pylint: disable=C0301
         "page_file_details",
         file_details.display_details)
 
