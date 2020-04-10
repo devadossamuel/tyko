@@ -294,8 +294,6 @@ class CollectionItem(AVTables):
     id = db.Column("item_id", db.Integer, primary_key=True, autoincrement=True)
 
     name = db.Column("name", db.Text)
-    #
-    # file_name = db.Column("file_name", db.Text)
     medusa_uuid = db.Column("medusa_uuid", db.Text)
 
     collection_object_id = db.Column("object_id",
