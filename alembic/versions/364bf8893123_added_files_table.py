@@ -236,9 +236,17 @@ def upgrade():
     )
     # #################################333
     connection = op.get_bind()
-    connection.execute(
-        '''INSERT INTO instantiation_files (filename, item_id) SELECT file_name, item_id FROM item;'''
-    )
+    try:
+        connection.execute('''
+        INSERT INTO instantiation_files (filename, item_id) 
+        SELECT file_name, item_id 
+        FROM item WHERE file_name is not null;'''
+        )
+    except sa.exc.IntegrityError:
+        op.drop_table('file_annotations')
+        op.drop_table('file_notes')
+        op.drop_table('instantiation_files')
+        raise
     with op.batch_alter_table("item") as batch_op:
         batch_op.drop_column( 'file_name')
 
