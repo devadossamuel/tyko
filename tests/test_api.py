@@ -850,7 +850,7 @@ def test_create_and_get_file(server_with_object_and_item):
     res = server_with_object_and_item.post(
         new_file_url,
         data=json.dumps({
-            "filename": "my_dumb_audio.wav",
+            "file_name": "my_dumb_audio.wav",
         }),
         content_type='application/json'
     )
@@ -860,7 +860,7 @@ def test_create_and_get_file(server_with_object_and_item):
     file_details_resp = server_with_object_and_item.get(new_file_details_url)
     assert file_details_resp.status_code == 200
     file_details_data = json.loads(file_details_resp.data)
-    assert file_details_data['filename'] == "my_dumb_audio.wav"
+    assert file_details_data['file_name'] == "my_dumb_audio.wav"
 
 
 def test_update_file_name(server_with_object_and_item):
@@ -880,7 +880,7 @@ def test_update_file_name(server_with_object_and_item):
     file_id = json.loads(server_with_object_and_item.post(
         new_file_url,
         data=json.dumps({
-            "filename": "my_dumb_audio.wav",
+            "file_name": "my_dumb_audio.wav",
         }),
         content_type='application/json'
     ).data)['id']
@@ -894,7 +894,7 @@ def test_update_file_name(server_with_object_and_item):
     put_res = server_with_object_and_item.put(
         new_file_route,
         data=json.dumps({
-            "filename": "my_dumb_changed_audio.wav"
+            "file_name": "my_dumb_changed_audio.wav"
         }),
         content_type='application/json'
     )
@@ -906,7 +906,7 @@ def test_update_file_name(server_with_object_and_item):
         content_type='application/json'
     )
     get_res_data = json.loads(get_res.data)
-    assert get_res_data['filename'] == "my_dumb_changed_audio.wav"
+    assert get_res_data['file_name'] == "my_dumb_changed_audio.wav"
 
 
 def test_create_and_delete_file(server_with_object_and_item):
@@ -930,7 +930,7 @@ def test_create_and_delete_file(server_with_object_and_item):
     res = server_with_object_and_item.post(
         new_file_url,
         data=json.dumps({
-            "filename": "my_dumb_audio.wav",
+            "file_name": "my_dumb_audio.wav",
         }),
         content_type='application/json'
     )

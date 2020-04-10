@@ -598,8 +598,12 @@ class FileDetailsFrontend:
         )
         file_details = self._data_connector.get(file_id,
                                                 serialize=True)
-        edit_api_path = url_for("file", file_id=file_id)
-        # TODO: get an api path for editing file
+        edit_api_path = url_for("item_file_details",
+                                project_id=project_id,
+                                object_id=object_id,
+                                item_id=item_id,
+                                file_id=file_id)
+
         return render_template("file_details.html",
                                itemType="File",
                                breadcrumbs=breadcrumbs,

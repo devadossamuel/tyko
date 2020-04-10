@@ -935,7 +935,7 @@ class ItemFilesAPI(views.MethodView):
         json_request = request.get_json()
         new_file_id = self._data_connector.create(
             item_id=item_id,
-            file_name=json_request['filename']
+            file_name=json_request['file_name']
         )['id']
         url = url_for("item_file_details",
                            project_id=project_id,

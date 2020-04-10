@@ -6,7 +6,7 @@
         <div class="card-body">
             {%  call metadata_table() %}
                 <tr>
-                    {{widgets.metadata_text_edit_widget("File Name", file['filename'], 'file_name', api_path)}}
+                    {{widgets.metadata_text_edit_widget("File Name", file['file_name'], 'file_name', api_path)}}
                 </tr>
             {% endcall %}
         </div>

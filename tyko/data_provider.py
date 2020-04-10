@@ -679,7 +679,7 @@ class FilesDataConnector(AbsDataProviderConnector):
         try:
             matching_item = session.query(scheme.CollectionItem)\
                 .filter(scheme.CollectionItem.id == item_id).one()
-            new_file = scheme.InstantiationFile(filename=name)
+            new_file = scheme.InstantiationFile(file_name=name)
             matching_item.files.append(new_file)
             session.flush()
             session.commit()
@@ -692,8 +692,8 @@ class FilesDataConnector(AbsDataProviderConnector):
         try:
             matching_file = session.query(scheme.InstantiationFile) \
                 .filter(scheme.InstantiationFile.file_id == id).one()
-            if "filename" in changed_data:
-                matching_file.filename = changed_data['filename']
+            if "file_name" in changed_data:
+                matching_file.file_name = changed_data['file_name']
             session.commit()
             return matching_file.serialize()
         finally:
@@ -786,7 +786,7 @@ class ItemDataConnector(AbsNotesConnector):
             format_type=format_type
         )
         for instance_file in kwargs.get("files", []):
-            new_file = scheme.InstantiationFile(filename=instance_file['name'])
+            new_file = scheme.InstantiationFile(file_name=instance_file['name'])
             new_item.files.append(new_file)
         # new_item.files.append(f)
         session.add(new_item)

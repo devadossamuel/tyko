@@ -325,7 +325,7 @@ class CollectionItem(AVTables):
         files = []
         for file_ in self.files:
             files.append({
-                "name": file_.filename,
+                "name": file_.file_name,
                 "id": file_.file_id
             })
 
@@ -664,7 +664,7 @@ class InstantiationFile(AVTables):
     file_id = db.Column(
         "file_id", db.Integer, primary_key=True, autoincrement=True)
 
-    filename = db.Column("filename", db.Text, nullable=False)
+    file_name = db.Column("file_name", db.Text, nullable=False)
 
     source = db.Column("source", db.Text,
                        default="University of Illinois library",
@@ -687,7 +687,7 @@ class InstantiationFile(AVTables):
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         data = {
             "id": self.file_id,
-            "filename": self.filename
+            "file_name": self.file_name
         }
         return data
 
