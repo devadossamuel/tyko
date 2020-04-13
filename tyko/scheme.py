@@ -322,10 +322,15 @@ class CollectionItem(AVTables):
         notes = [note.serialize() for note in self.notes]
         files = []
         for file_ in self.files:
-            files.append({
-                "name": file_.file_name,
-                "id": file_.file_id
-            })
+            if recurse is True:
+                files.append(file_.serialize(recurse=True))
+            else:
+                files.append({
+                    "name": file_.file_name,
+                    "id": file_.file_id,
+                    "generation": file_.generation
+
+                })
 
         data: Dict[str, SerializedData] = {
             "item_id": self.id,
@@ -685,8 +690,19 @@ class InstantiationFile(AVTables):
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         data = {
             "id": self.file_id,
-            "file_name": self.file_name
+            "file_name": self.file_name,
+            "notes": []
         }
+        for file_note in self.notes:
+            if recurse:
+                data['notes'].append(file_note.serialize())
+            else:
+                data['notes'].append(
+                    {
+                        "note_id": file_note.id
+                    }
+                )
+
         return data
 
 
@@ -699,8 +715,11 @@ class FileNotes(AVTables):
                         db.ForeignKey("instantiation_files.file_id"))
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
-        pass
-        # TODO: implement  serialize
+        return {
+            "id": self.id,
+            "note": self.note,
+            "file_id": self.file_id,
+        }
 
 
 class FileAnnotation(AVTables):
