@@ -88,16 +88,20 @@ $(document).ready(function () {
             <a href="{{ file_page_url }}">{{ file.name }}</a>
         </td>
         <td>
+            {{ file.generation }}
+        </td>
+        <td>
+{#            dsdsd#}
             <button
                 class="btn btn-secondary btn-danger btn-sm"
-                data-toggle="modal"
-                data-target="#fileRemoveConfirm"
-                data-title="Remove File"
-                onclick="alert('This doesnt do anything yet')"
+{#                data-toggle="modal"#}
+{#                data-target="#fileRemoveConfirm"#}
+{#                data-title="Remove File"#}
+{#                onclick="alert('This doesnt do anything yet')"#}
 {#                data-text="{{ note['text'] }}"#}
 {#                data-apiroute="{{ note_api_route }}">#}
                 >Remove
             </button>
-        </td>
+{#        </td>#}
     </tr>
 {% endmacro %}

@@ -2,13 +2,64 @@
 {% from "_macros.html" import notes_table_row, notes_table, metadata_table %}
 {% import  "_details_macros.html" as widgets%}
 {% block detail_table %}
-    <div class="card my-1">
-        <div class="card-body">
-            {%  call metadata_table() %}
-                <tr>
-                    {{widgets.metadata_text_edit_widget("File Name", file['file_name'], 'file_name', api_path)}}
-                </tr>
-            {% endcall %}
+    <div class="row">
+       <div class="col-sm-6">
+            <div class="card my-1 h-100">
+                <h5 class="card-header">Details</h5>
+                <div class="card-body">
+                    {%  call metadata_table() %}
+                        <tr>
+                            {{widgets.metadata_text_edit_widget("File Name", file['file_name'], 'file_name', api_path)}}
+                        </tr>
+{#                        TODO Generation edit data#}
+                        <tr>
+                            {{widgets.metadata_text_edit_widget("Generation", file['generation'], 'generation', api_path)}}
+                        </tr>
+                    {% endcall %}
+                </div>
+            </div>
+
+       </div>
+       <div class="col-sm-6 h-100">
+
+{#        <div class="container-fluid">#}
+            <div class="card h-50">
+                <h5 class="card-header">Annotations</h5>
+                <div class="card-body">
+                </div>
+                <div class="card-footer bg-transparent">
+                    <button class="btn btn-primary float-right"
+                            onclick="alert('does nothing right now')">
+                        Add</button>
+                </div>
+            </div>
+            <div class="card h-50">
+                <h5 class="card-header">Notes</h5>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                    {% for note in file['notes'] %}
+                        <li class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                            {{ note['note'] }}
+                                <div class="btn-group" role="group" aria-label="Basic example">
+                                    <button class="btn btn-secondary btn-sm">Edit</button>
+                                    <button class="btn btn-danger btn-sm">Remove</button>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                    </ul>
+        {#            {% call(note) notes_table(item['notes'], api_path) %}#}
+        {#                {{ notes_table_row(note, url_for('note', note_id=note['note_id'])) }}#}
+{#                    {% endcall %}#}
+                </div>
+                <div class="card-footer bg-transparent">
+                     <button class="btn btn-primary float-right"
+                            onclick="alert('does nothing right now')">
+                        Add</button>
+                </div>
+            </div>
+
         </div>
     </div>
 {% endblock %}
