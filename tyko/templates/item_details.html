@@ -33,39 +33,25 @@
                 <div class="card">
                     <h5 class="card-header">Files</h5>
                     <div class="card-body">
-                        <table data-toggle="table"
+                        <table id="filesTable"
+                               data-toggle="table"
+                               data-cache="false"
+                               data-classes="table table-sm"
                                data-url="{{ api_path }}">
                             <thead>
-                                <tr>
+                                <th scope="col"
+                                    data-field="name"
+                                    data-sortable="true"
+                                    data-formatter="fileNameFormatter">File Name</th>
+                                <th scope="col"
+                                    data-sortable="true"
+                                    data-field="generation">Generation</th>
 
-                                    <th data-field="item.files"
-    {#                                    data-formatter="operateFormatter"#}
-                                        data-events="operateEvents">Preservation</th>
-                                </tr>
                             </thead>
                         </table>
                         <script>
-                            function operateFormatter(value, row, index) {
-                                return "sdsdsd"
-                            }
+
                         </script>
-{#                        <table class="table table-sm" data-toggle="table"#}
-{#                               data-virtual-scroll="true">#}
-{#                            <caption hidden>Files</caption>#}
-{#                            <thead>#}
-{#                                <tr>#}
-{#                                    <th class="col-sm-1" scope="col" data-sortable="true">Generation</th>#}
-{#                                    <th class="col-sm-1" scope="col" data-sortable="true">Filename</th>#}
-{#                                    <th scope="col">Remove</th>#}
-{##}
-{#                                </tr>#}
-{#                            </thead>#}
-{#                            <tbody>#}
-{#                                {% for file in item.files %}#}
-{#                                    {{ item_widgets.item_file_row(file, url_for("page_file_details", project_id=project_id, object_id=object_id, item_id=item['item_id'], file_id=file['id'])) }}#}
-{#                                {% endfor %}#}
-{#                            </tbody>#}
-{#                        </table>#}
                         <div class="card-footer bg-transparent">
                             <div class="btn-group float-right" role="group">
                                 {# TODO: make add file button work #}
@@ -98,7 +84,21 @@
 
 {% block scripts %}
     {{ super() }}
-    <script>
+    <script type="application/javascript">
+    var $table = $('#filesTable');
+    $table.bootstrapTable({
+        onLoadSuccess: function (data, status, jqXHR) {
+            $table.bootstrapTable('load', data.item.files);
+            console.log($table.bootstrapTable('getData'));
+        }
+    })
+
+
+    function fileNameFormatter(value, row, index) {
+        const id = $table.bootstrapTable('getData')[index]['id']
+        return `<a href='${window.location.href}/file/${id}'>${value}</a>`;
+    }
+
     function setup_edit(button, modal, promise){
             const noteId = button.data('notetype');
             modal.find('#noteTypeSelect').val(noteId);
