@@ -4,9 +4,14 @@ from dataclasses import dataclass, field
 from typing import Any, List, Iterator, Tuple, Callable
 from flask import jsonify, render_template, views
 
+import tyko.views.files
 from . import middleware
 from .data_provider import DataProvider
 from . import frontend
+from .views.object_item import ObjectItemNotesAPI, ObjectItemAPI, ItemAPI
+from .views.project import ProjectNotesAPI, ProjectAPI
+from .views.project_object import ProjectObjectAPI, ObjectApi, \
+    ProjectObjectNotesAPI
 
 
 @dataclass
@@ -33,82 +38,6 @@ class EntityPage:
 _all_entities = set()
 
 
-class ProjectNotesAPI(views.MethodView):
-
-    def __init__(self, project: middleware.ProjectMiddlwareEntity) -> None:
-        super().__init__()
-        self._project = project
-
-    def put(self, project_id, note_id):
-        return self._project.update_note(project_id, note_id)
-
-    def delete(self, project_id, note_id):
-        return self._project.remove_note(project_id, note_id)
-
-
-class ProjectObjectAPI(views.MethodView):
-    def __init__(self, project: middleware.ProjectMiddlwareEntity) -> None:
-        self._project = project
-
-    def delete(self, project_id, object_id):
-        return self._project.remove_object(project_id, object_id)
-
-
-class ObjectApi(views.MethodView):
-    def __init__(self,
-                 object_middleware: middleware.ObjectMiddlwareEntity) -> None:
-
-        self._object_middleware = object_middleware
-
-    def delete(self, object_id: int):
-        return self._object_middleware.delete(id=object_id)
-
-    def get(self, object_id: int):
-        return self._object_middleware.get(id=object_id)
-
-    def put(self, object_id: int):
-        return self._object_middleware.update(id=object_id)
-
-
-class ProjectAPI(views.MethodView):
-    def __init__(self, project: middleware.ProjectMiddlwareEntity) -> None:
-        self._project = project
-
-    def put(self, project_id: int):
-        return self._project.update(project_id)
-
-    def delete(self, project_id: int):
-        return self._project.delete(id=project_id)
-
-    def get(self, project_id: int):
-        return self._project.get(id=project_id)
-
-
-class ProjectObjectNotesAPI(views.MethodView):
-
-    def __init__(self,
-                 project_object: middleware.ObjectMiddlwareEntity) -> None:
-
-        self._project_object = project_object
-
-    def delete(self, project_id, object_id, note_id):  # pylint: disable=W0613
-        return self._project_object.remove_note(object_id, note_id)
-
-    def put(self, project_id, object_id, note_id):  # pylint: disable=W0613
-        return self._project_object.update_note(object_id, note_id)
-
-
-class ObjectItemNotesAPI(views.MethodView):
-    def __init__(self, item: middleware.ItemMiddlwareEntity) -> None:
-        self._item = item
-
-    def put(self, project_id, object_id, item_id, note_id):  # noqa: E501 pylint: disable=W0613,C0301
-        return self._item.update_note(item_id, note_id)
-
-    def delete(self, project_id, object_id, item_id, note_id):  # noqa: E501  pylint: disable=W0613,C0301
-        return self._item.remove_note(item_id, note_id)
-
-
 class NotesAPI(views.MethodView):
     def __init__(self,
                  notes_middleware: middleware.NotestMiddlwareEntity) -> None:
@@ -122,20 +51,6 @@ class NotesAPI(views.MethodView):
 
     def put(self, note_id: int):
         return self._middleware.update(id=note_id)
-
-
-class ItemAPI(views.MethodView):
-    def __init__(self, item: middleware.ItemMiddlwareEntity) -> None:
-        self._item = item
-
-    def put(self, item_id):
-        return self._item.update(id=item_id)
-
-    def get(self, item_id):
-        return self._item.get(id=item_id)
-
-    def delete(self, item_id):
-        return self._item.delete(id=item_id)
 
 
 class CollectionsAPI(views.MethodView):
@@ -152,15 +67,6 @@ class CollectionsAPI(views.MethodView):
 
     def delete(self, collection_id: int):
         return self._collection.delete(id=collection_id)
-
-
-class ObjectItemAPI(views.MethodView):
-    def __init__(self, parent: middleware.ObjectMiddlwareEntity) -> None:
-        self._parent_object = parent
-
-    def delete(self, project_id, object_id, item_id):  # noqa: E501  pylint: disable=W0613,C0301
-        return self._parent_object.remove_item(object_id=object_id,
-                                               item_id=item_id)
 
 
 class Routes:
@@ -369,7 +275,7 @@ class Routes:
             )
             self.app.add_url_rule(
                 "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/files",  # noqa: E501 pylint: disable=C0301
-                view_func=middleware.ItemFilesAPI.as_view(
+                view_func=tyko.views.files.ItemFilesAPI.as_view(
                     "item_files",
                     provider=self.db_engine
                 ),
@@ -379,7 +285,7 @@ class Routes:
             )
             self.app.add_url_rule(
                 "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/files/<int:file_id>",  # noqa: E501 pylint: disable=C0301
-                view_func=middleware.FileAPI.as_view(
+                view_func=tyko.views.files.FileAPI.as_view(
                     "item_file_details",
                     provider=self.db_engine
                 ),
