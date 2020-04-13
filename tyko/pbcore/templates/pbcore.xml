@@ -1,4 +1,5 @@
 {%- macro pbcorePart(part) %}
+{#    TODO: add files #}
     <pbcorePart>
         {% if part['medusa_uuid'] is not none -%}
         <pbcoreIdentifier source="medusa_uuid">{{ part['medusa_uuid'] }}</pbcoreIdentifier>
