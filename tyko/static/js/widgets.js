@@ -44,12 +44,8 @@ class WidgetState{
         this._parent = parentClass;
     }
     newRoot() {
-        // let contentContainer = document.createElement("div");
-        // contentContainer.setAttribute("class", "container");
-
         let newRow = document.createElement("div");
-        newRow.setAttribute("class", "row justify-content-between");
-        // contentContainer.appendChild(newRow);
+        newRow.setAttribute("class", "d-flex");
 
         return newRow
 
@@ -64,7 +60,6 @@ class WidgetState{
 
         newColumnSection.setAttribute("class", colClass);
         newColumnSection.setAttribute("id", id);
-        parent.appendChild(newColumnSection);
         return newColumnSection;
     }
 }
@@ -172,11 +167,13 @@ class ViewWidget extends WidgetState{
     draw(element, data){
         element.innerHTML = "";
         let newRoot = this.newRoot();
-        let newRow = this.newColumn("content", newRoot, "col-lg-auto");
-        newRow.innerText = data['fieldText'];
+        let newContent = this.newColumn("content", newRoot, "align-self-stretch");
+        newContent.innerText = data['fieldText'];
+        newRoot.appendChild(newContent);
 
         let editCol = this.newColumn("editFunction", newRoot, "col");
         editCol.appendChild(this.newEditButton());
+        newRoot.appendChild(editCol);
         element.appendChild(newRoot);
 
     }
