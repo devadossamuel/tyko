@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% import  "_details_macros.html" as widgets%}
+{% block content %}
+<div class="container-fluid">
+    {% if show_bread_crumb %}
+            {{widgets.breadcrumbs_widget(breadcrumbs)}}
+        {% endif %}
+    <div class="row">
+    <div class="col-sm-6">
+        {% block main_details %}
+        {% endblock %}
+    </div>
+    <div class="col-sm-6">
+        {% block secondary_details %}
+        {% endblock %}
+    </div>
+    </div>
+</div>
+{% endblock %}

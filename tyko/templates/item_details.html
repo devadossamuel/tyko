@@ -1,157 +1,85 @@
-{#{% extends "details_table.html" %}#}
-{% extends "layout.html" %}
-{% from "_macros.html" import notes_table_row, notes_table, metadata_table, note_editor_events %}
+{% extends "panel_details.html" %}
+{% from "_macros.html" import notes_table_row, notes_table, metadata_table, note_editor %}
 {% import  "_details_macros.html" as widgets%}
 {% import "_item_macros.html" as item_widgets %}
-{#{% from "_details_macros.html" import add_field_row, metadata_text_edit_widget %} }}#}
 
-{% block content %}
-    <div class="container-fluid">
-        {% if show_bread_crumb %}
-            {{widgets.breadcrumbs_widget(breadcrumbs)}}
-        {% endif %}
-        <div class="row">
-            <div class="col-sm-6">
-                <div class="card my-1 h-100">
-                    <h5 class="card-header">Details</h5>
-                    <div class="card-body">
-                        {%  call metadata_table() %}
-                            <tr>
-                                {{widgets.metadata_text_edit_widget("Name", item['name'], 'name', api_path)}}
-                            </tr>
-            {#                <tr>#}
-            {#                    {{widgets.metadata_text_edit_widget("File Name", item['file_name'], 'file_name', api_path)}}#}
-            {#                </tr>#}
-                            <tr>
-                                {{widgets.metadata_number_edit_widget("Object Sequence", item['obj_sequence'], 'obj_sequence', api_path)}}
-                            </tr>
-                        {% endcall %}
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-6">
-                <div class="card">
-                    <h5 class="card-header">Files</h5>
-                    <div class="card-body">
-                        <table id="filesTable"
-                               data-toggle="table"
-                               data-cache="false"
-                               data-classes="table table-sm"
-                               data-url="{{ api_path }}">
-                            <thead>
-                                <th scope="col"
-                                    data-field="name"
-                                    data-sortable="true"
-                                    data-formatter="fileNameFormatter">File Name</th>
-                                <th scope="col"
-                                    data-sortable="true"
-                                    data-field="generation">Generation</th>
-
-                            </thead>
-                        </table>
-                        <script>
-
-                        </script>
-                        <div class="card-footer bg-transparent">
-                            <div class="btn-group float-right" role="group">
-                                {# TODO: make add file button work #}
-                                <button
-                                    class="btn btn-sm btn-primary"
-                                    onclick="alert('does nothing right now')"
-            {#                                data-toggle="modal"#}
-            {#                                data-target="#noteEditor"#}
-            {#                                data-title="Create New Note"#}
-            {#                                data-dialogtype="new"#}
-            {#                                data-source="{{ note_api_route }}">#}
-                                    >Add
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card">
-                    <h5 class="card-header">Notes</h5>
-                    <div class="card-body">
-                        {% call(note) notes_table(item['notes'], api_path) %}
-                            {{ notes_table_row(note, url_for('note', note_id=note['note_id'])) }}
-                        {% endcall %}
-                    </div>
-                </div>
-            </div>
+{% block main_details %}
+    <div class="card my-1 h-100">
+        <h5 class="card-header">Details</h5>
+        <div class="card-body">
+            {%  call metadata_table() %}
+                <tr>
+                    {{widgets.metadata_text_edit_widget("Name", item['name'], 'name', api_path)}}
+                </tr>
+                <tr>
+                    {{widgets.metadata_number_edit_widget("Object Sequence", item['obj_sequence'], 'obj_sequence', api_path)}}
+                </tr>
+            {% endcall %}
         </div>
     </div>
 {% endblock %}
+{% block secondary_details %}
+<div class="card">
+    <h5 class="card-header">Files</h5>
+    <div class="card-body">
+        <table id="filesTable"
+               data-toggle="table"
+               data-cache="false"
+               data-classes="table table-sm"
+               data-url="{{ api_path }}">
+            <thead>
+                <th scope="col"
+                    data-field="name"
+                    data-sortable="true"
+                    data-formatter="fileNameFormatter">File Name</th>
+                <th scope="col"
+                    data-sortable="true"
+                    data-field="generation">Generation</th>
 
+            </thead>
+        </table>
+        <div class="card-footer bg-transparent">
+            <div class="btn-group float-right" role="group">
+{#                     TODO: make add file button work#}
+                <button
+                    class="btn btn-sm btn-primary"
+                    onclick="alert('does nothing right now')"
+                            data-toggle="modal"
+                            data-target="#noteEditor"
+                            data-title="Create New Note"
+                            data-dialogtype="new"
+                            data-source="{{ note_api_route }}">
+                    Add
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <h5 class="card-header">Notes</h5>
+    <div class="card-body">
+        {% call(note) notes_table(item['notes'], api_path) %}
+            {{ notes_table_row(note, url_for('note', note_id=note['note_id'])) }}
+        {% endcall %}
+        {{ note_editor("/api/project/" ~ project_id ~ "/object/" ~ object_id ~ "/item/" ~ item.item_id, valid_note_types) }}
+    </div>
+</div>
+{% include "edit_note.html" %}
+{% endblock %}
 {% block scripts %}
     {{ super() }}
     <script type="application/javascript">
-    var $table = $('#filesTable');
-    $table.bootstrapTable({
-        onLoadSuccess: function (data, status, jqXHR) {
-            $table.bootstrapTable('load', data.item.files);
+        var $table = $('#filesTable');
+        $table.bootstrapTable({
+            onLoadSuccess: function (data, status, jqXHR) {
+                $table.bootstrapTable('load', data.item.files);
+            }
+        })
+
+        function fileNameFormatter(value, row, index) {
+            const id = $table.bootstrapTable('getData')[index]['id']
+            return `<a href='${window.location.href}/file/${id}'>${value}</a>`;
         }
-    })
-
-
-    function fileNameFormatter(value, row, index) {
-        const id = $table.bootstrapTable('getData')[index]['id']
-        return `<a href='${window.location.href}/file/${id}'>${value}</a>`;
-    }
-
-    function setup_edit(button, modal, promise){
-            const noteId = button.data('notetype');
-            modal.find('#noteTypeSelect').val(noteId);
-            modal.find('#saveNoteButton').unbind('click').bind('click',
-            function () {
-                const noteApiRoute = button.data('apiroute');
-                const noteTypeId = modal.find('#noteTypeSelect').val();
-                const noteText = modal.find('#message-text').val();
-                promise(noteApiRoute, noteTypeId, noteText)
-                    .then(function (data) {
-                        console.log("success");
-                        location.reload();
-                    }).catch(function (data) {
-                        alert("Failed: " + data.responseText);
-                        console.log("Failed");
-                    });
-            });
-        }
-
-    function setup_new_note(button, modal, apiPath, promise) {
-        modal.find('#saveNoteButton').unbind('click').bind('click',
-        function (){
-            const noteTypeId = modal.find('#noteTypeSelect').val();
-            const noteText = modal.find('#message-text').val();
-            promise(apiPath, noteTypeId, noteText)
-                .then(function () {
-                    console.log("success");
-                    location.reload();
-                }).catch(function (data) {
-                    alert("Failed: " + data.responseText);
-                    console.log("Failed")
-                })
-        });
-    }
-    function setup_modal_window(modal, button){
-        modal.find('.modal-title').text(button.data("title"));
-        modal.find('#message-text').val(button.data('text'));
-    }
-    function setup_confirm_note_removal_modal(button, modal, apiroute, promise){
-        modal.find('#confirmRemoveNoteButton').unbind('click').bind('click',
-            function () {
-                promise(apiroute)
-                    .then(function () {
-                        console.log("success");
-                        location.reload();
-                    }).catch(function (data) {
-                        alert("Failed: " + data.responseText);
-                        console.log("Failed");
-                    });
-
-            });
-    }
-
     </script>
-    {{ note_editor_events("/api/project/" ~ project_id ~ "/object/" ~ object_id ~ "/item/" ~ item.item_id, valid_note_types) }}
 
 {% endblock %}
