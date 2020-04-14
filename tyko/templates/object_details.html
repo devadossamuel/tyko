@@ -2,8 +2,18 @@
 {% from "_macros.html" import notes_table_row, note_editor, notes_table, metadata_table%}
 {% from "_details_macros.html" import add_field_row, confirm_remove_entity_modal, child_entity_row, remove_modal_event_scripts, metadata_text_edit_widget, metadata_select_edit_widget, metadata_select_dynamic_edit_widget, metadata_date_edit_widget%}
 {% from "_item_macros.html" import item_new_button_row, new_item_modal %}
+{% block sidebar %}
+<div class="btn-group-vertical">
+    <button id="btnExportGroupDrop" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Export</button>
+    <div class="dropdown-menu" aria-labelledby="btnExportGroupDrop">
+        <a class="dropdown-item" href="{{ url_for('object_pbcore', id=object['object_id']) }}" download>PBCore</a>
+    </div>
+</div>
+{% endblock %}
 {% block main_details %}
+
 <div class="card my-1 h-100">
+    <h5 class="card-header">Details</h5>
     <div class="card-body">
         {% call metadata_table() %}
             <tr>{{metadata_text_edit_widget("Name", object['name'], 'name', api_path)}}</tr>
@@ -38,10 +48,9 @@
 {% endblock %}
 
 {% block secondary_details %}
+
 <div class="card">
-    <div class="card-header">
-        <h5 class="card-title">Items</h5>
-    </div>
+    <h5 class="card-header">Items</h5>
     <div class="card-body">
         <table class="table">
             <caption hidden>Items</caption>
@@ -75,6 +84,7 @@
     {% endif %}
     {{ confirm_remove_entity_modal("removeItemModal") }}
 </div>
+
 <div class="card">
     <h5 class="card-header">Notes</h5>
     <div class="card-body">

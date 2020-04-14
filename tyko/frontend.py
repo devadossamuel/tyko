@@ -487,6 +487,7 @@ class ObjectFrontend(ProjectComponentDetailFrontend):
         return self.render_page(
             template="object_details.html",
             edit=False,
+            show_sidebar=True,
             fields=fields,
             formats=self._data_provider.get_formats(serialize=True),
             api_path=url_for('object', object_id=entity_id),
