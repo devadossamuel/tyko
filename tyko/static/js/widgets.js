@@ -44,28 +44,27 @@ class WidgetState{
         this._parent = parentClass;
     }
     newRoot() {
-        let contentContainer = document.createElement("div");
-        contentContainer.setAttribute("class", "container");
+        // let contentContainer = document.createElement("div");
+        // contentContainer.setAttribute("class", "container");
 
         let newRow = document.createElement("div");
-        newRow.setAttribute("class", "row");
-        contentContainer.appendChild(newRow);
+        newRow.setAttribute("class", "row justify-content-between");
+        // contentContainer.appendChild(newRow);
 
-        return contentContainer
+        return newRow
 
     }
     confirmChangesGroup() {
         let confirmationButtons = document.createElement("div");
-        confirmationButtons.setAttribute("class", "input-group-append");
+        confirmationButtons.setAttribute("class", "input-group-append input-group-sm");
         return confirmationButtons;
     }
     newColumn(id, parent, colClass="col") {
-        let row = parent.querySelector(".row");
         let newColumnSection = document.createElement("div");
 
         newColumnSection.setAttribute("class", colClass);
         newColumnSection.setAttribute("id", id);
-        row.appendChild(newColumnSection);
+        parent.appendChild(newColumnSection);
         return newColumnSection;
     }
 }
@@ -101,7 +100,7 @@ class WidgetEditState extends WidgetState{
     newRoot(rootId){
         let newRoot =  document.createElement("div");
         newRoot.setAttribute("id", rootId);
-        newRoot.setAttribute("class", "input-group");
+        newRoot.setAttribute("class", "input-group input-group-sm");
         return newRoot;
     }
     newInputLabel(id){
@@ -120,7 +119,7 @@ class WidgetEditState extends WidgetState{
 
     confirmChangesGroup() {
         let confirmationButtons = document.createElement("div");
-        confirmationButtons.setAttribute("class", "input-group-append");
+        confirmationButtons.setAttribute("class", "input-group-append input-group-sm");
         return confirmationButtons;
     }
 
@@ -131,7 +130,7 @@ class WidgetEditState extends WidgetState{
 
         let confirmButton = document.createElement("button");
         confirmButton.innerText = "Confirm";
-        confirmButton.setAttribute("class", "btn btn-outline-secondary");
+        confirmButton.setAttribute("class", "btn btn-sm btn-outline-primary");
         confirmButton.setAttribute("id", confirmButtonId);
 
         const accept = this.accept;
@@ -143,7 +142,7 @@ class WidgetEditState extends WidgetState{
 
         let cancelButton = document.createElement("button");
         cancelButton.innerText = "Cancel";
-        cancelButton.setAttribute("class", "btn btn-outline-secondary");
+        cancelButton.setAttribute("class", "btn btn-outline-danger");
 
         const cancel = this.cancel;
         cancelButton.onclick = function(){
@@ -173,8 +172,8 @@ class ViewWidget extends WidgetState{
     draw(element, data){
         element.innerHTML = "";
         let newRoot = this.newRoot();
-        let newRow = this.newColumn("content", newRoot, "col-6");
-        newRow.appendChild(this._newReadOnlyText(data['fieldText']));
+        let newRow = this.newColumn("content", newRoot, "col-lg-auto");
+        newRow.innerText = data['fieldText'];
 
         let editCol = this.newColumn("editFunction", newRoot, "col");
         editCol.appendChild(this.newEditButton());
@@ -184,15 +183,10 @@ class ViewWidget extends WidgetState{
 
 
 
-    _newReadOnlyText(text) {
-        let newText = document.createElement("p");
-        newText.innerHTML = text;
-        return newText;
-    }
 
     newEditButton() {
         let newButton = document.createElement("button");
-        newButton.setAttribute("class", "btn btn-secondary float-right");
+        newButton.setAttribute("class", "btn btn-sm btn-secondary btn-sm float-right");
         newButton.setAttribute("id", this._parent.editButtonId);
 
         newButton.innerHTML = "Edit";
@@ -246,9 +240,14 @@ class SelectDateWidget extends WidgetEditState {
         const confirmButtonID = `${data['fieldName']}ConfirmButton`;
         newRoot.appendChild(this.newConfirmationButton(confirmButtonID, new_date_picker) );
         let validator = this.validate_input;
+        new_date_picker.onchange = function (e){
+            console.log("Changed " + e);
+            validator(confirmButtonID, new_date_picker.value);
+        };
         new_date_picker.addEventListener("input", function (){
             validator(confirmButtonID, new_date_picker.value);
         });
+
         element.appendChild(newRoot);
         this.setupEventListeners(element.id);
         this.validate_input(confirmButtonID, new_date_picker.value);
