@@ -56,7 +56,7 @@
                             <div class="btn-group float-right" role="group">
                                 {# TODO: make add file button work #}
                                 <button
-                                    class="btn btn-primary"
+                                    class="btn btn-sm btn-primary"
                                     onclick="alert('does nothing right now')"
             {#                                data-toggle="modal"#}
             {#                                data-target="#noteEditor"#}
@@ -89,7 +89,6 @@
     $table.bootstrapTable({
         onLoadSuccess: function (data, status, jqXHR) {
             $table.bootstrapTable('load', data.item.files);
-            console.log($table.bootstrapTable('getData'));
         }
     })
 
