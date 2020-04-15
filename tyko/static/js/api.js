@@ -84,12 +84,35 @@ function addItem(apiRoute, data) {
   }
   return requests.post(apiRoute, data);
 }
+function addFile(apiRoute, data) {
+  return requests.post(apiRoute, data)
+}
 
 export const items = {
-  "addItem": addItem
+  "addItem": addItem,
+  "addFile": addFile
 };
 
 
 export const collections = {
   "new": requests.post
 };
+
+export const files = {
+  "addFile": addFile,
+  "removeFile": (apiRoute)=>{
+    return requests.delete(apiRoute);
+  }
+}
+export const routes = {
+  "all_routes": (baseURL)=> {
+    return requests.get(baseURL).then(function (result) {
+        let d = JSON.parse(result)
+      let dataRoutes = {};
+      for (let i =0; i < d.length; i++){
+        dataRoutes[d[i].endpoint.toString()] = d[i];
+      }
+        return dataRoutes;
+    });
+  }
+}

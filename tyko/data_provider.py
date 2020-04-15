@@ -675,11 +675,16 @@ class FilesDataConnector(AbsDataProviderConnector):
 
     def create(self, item_id, *args, **kwargs):
         name = kwargs['file_name']
+        generation = kwargs['generation']
         session = self.session_maker()
         try:
             matching_item = session.query(scheme.CollectionItem)\
                 .filter(scheme.CollectionItem.id == item_id).one()
             new_file = scheme.InstantiationFile(file_name=name)
+
+            if generation is not None:
+                new_file.generation = generation
+
             matching_item.files.append(new_file)
             session.flush()
             session.commit()

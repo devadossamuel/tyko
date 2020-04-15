@@ -118,6 +118,72 @@
 </div>
 {% endmacro %}
 
+{% macro confirm_remove_entity_modal2(modalName, confirmButtonID="confirmButton") %}
+<div class="modal fade" id="{{ modalName }}" tabindex="-1" role="dialog"
+{#     aria-labelledby="exampleModalCenterTitle" #}
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="{{ modalName }}RemovalTitle">
+                    Are you Sure?
+                </h5>
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="{{ modalName }}lRemovalBody">
+                <p id="{{ modalName }}message">
+                    Are you sure you want to remove this?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                        data-dismiss="modal">Cancel
+                </button>
+
+                <button type="button" class="btn btn-primary"
+                        id="{{ confirmButtonID }}" data-dismiss="modal">
+{#                    onclick="(()=> {#}
+{#                          console.log('CLECIASDCDSA');#}
+{#                        })()">#}
+                    Remove
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="module">
+    let d = $('#{{modalName}}');
+    let confirmButton = document.getElementById("{{ confirmButtonID }}");
+    d.on('accept', function () {
+        console.log("ACCEPTEd")
+    })
+    {#confirmButton.addEventListener('click');#}
+{#let newEvent = new CustomEvent('accept', )#}
+    d.on('show.bs.modal', function (event) {
+        let button = $(event.relatedTarget)
+        const entityName = button.data('entity-name');
+        let modal = $(this);
+        if (entityName){
+            modal.find('.modal-body p').text(`Are you sure you want to remove ${entityName}?`);
+
+        } else{
+            modal.find('.modal-body p').text(`Are you sure you want to remove this?`);
+        }
+        modal.find('.modal-footer #{{ confirmButtonID }}').on('click', function () {
+            console.log("click footer")
+            modal.trigger("accept", {apiUrl: button.data('removeurl')});
+            {#let newEvent = new CustomEvent("accept")#}
+            {#this.dispatchEvent(newEvent);#}
+        })
+    })
+
+
+</script>
+{% endmacro %}
+
 {% macro remove_modal_event_scripts(modal_id) %}
 
 <script type="module">

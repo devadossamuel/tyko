@@ -474,7 +474,7 @@ def get_frontend_page_routes(data_prov) -> Iterator[Tuple[str, str, Callable]]:
 
     file_details = frontend.FileDetailsFrontend(data_prov)
     yield (
-        "/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/file/<int:file_id>",  # noqa: E501 pylint: disable=C0301
+        "/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/files/<int:file_id>",  # noqa: E501 pylint: disable=C0301
         "page_file_details",
         file_details.display_details)
 
@@ -493,6 +493,7 @@ def list_routes(app):
     results = []
     for rt in app.url_map.iter_rules():
         results.append({
+            "endpoint": rt.endpoint,
             "methods": list(rt.methods),
             "route": str(rt)
         })

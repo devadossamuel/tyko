@@ -139,8 +139,6 @@ class MoreMenuPage(AbsFrontend):
     def render_page(self, template="more.html", **context):
         entities: List[Tuple[str, str]] = [
             ("Formats", "page_formats"),
-            ("Items", "page_item"),
-            ("Objects", "page_object"),
             ("Projects", "page_projects"),
             ("Collections", "page_collections"),
         ]
@@ -158,8 +156,6 @@ class MoreMenuPage(AbsFrontend):
 class FrontendEntity(AbsFrontend):
     _entities: Set[Tuple[str, str]] = {
         # ("Formats", "page_formats"),
-        ("Items", "page_item"),
-        ("Objects", "page_object"),
         ("Collections", "page_collections"),
     }
 

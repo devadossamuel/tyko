@@ -1,4 +1,5 @@
 {% extends "panel_details.html" %}
+{% from "_file_macros.html" import filesTable, newFileModal %}
 {% from "_macros.html" import notes_table_row, notes_table, metadata_table, note_editor %}
 {% import  "_details_macros.html" as widgets%}
 {% import "_item_macros.html" as item_widgets %}
@@ -22,41 +23,15 @@
 <div class="card">
     <h5 class="card-header">Files</h5>
     <div class="card-body">
-        <table id="filesTable"
-               data-toggle="table"
-               data-cache="false"
-               data-classes="table table-sm"
-               data-url="{{ api_path }}">
-            <caption hidden>Files</caption>
-            <thead>
-                <th scope="col"
-                    data-field="name"
-                    data-sortable="true"
-                    data-formatter="fileNameFormatter">File Name</th>
-                <th scope="col"
-                    data-sortable="true"
-                    data-field="generation">Generation</th>
-
-            </thead>
-        </table>
+        {{ filesTable(api_path, item_id=item['item_id'], object_id=object_id, project_id=project_id) }}
         <div class="card-footer bg-transparent">
-            <div class="btn-group float-right" role="group">
-{#                     TODO: make add file button work#}
-                <button
-                    class="btn btn-sm btn-primary"
-                    onclick="alert('does nothing right now')"
-                            data-toggle="modal"
-                            data-target="#noteEditor"
-                            data-title="Create New Note"
-                            data-dialogtype="new"
-                            data-source="{{ note_api_route }}">
-                    Add
-                </button>
-            </div>
+
         </div>
+        {{ newFileModal("fileModal", url_for('item_files', item_id=item['item_id'], object_id=object_id, project_id=project_id)) }}
     </div>
 </div>
-<div class="card">
+
+<div class="card my-1">
     <h5 class="card-header">Notes</h5>
     <div class="card-body">
         {% call(note) notes_table(item['notes'], api_path) %}
@@ -77,10 +52,7 @@
             }
         })
 
-        function fileNameFormatter(value, row, index) {
-            const id = $table.bootstrapTable('getData')[index]['id']
-            return `<a href='${window.location.href}/file/${id}'>${value}</a>`;
-        }
+
     </script>
 
 {% endblock %}

@@ -4,7 +4,7 @@
     <td>{{ note['text'] }}</td>
     <td>
         <div class="btn-group-sm d-flex justify-content-end" role="group" aria-label="Edit">
-            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+            <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
             <div class="dropdown-menu">
                 <button
                     class="btn btn-secondary btn-sm dropdown-item"
@@ -88,7 +88,7 @@
 {% endmacro %}
 
 {% macro metadata_table() %}
-<table class="table">
+<table class="table table-sm">
     <caption hidden>Metadata</caption>
     <thead hidden>
         <tr>
@@ -103,25 +103,40 @@
 {% endmacro %}
 
 {% macro notes_table(notes, api_path) %}
-<table class="table">
-    <caption hidden>Notes</caption>
-    {% if notes|length > 0 %}
-    <thead>
-        <tr>
-            <th scope="col">Type</th>
-            <th class="col-sm-3" id="noteMessageColumnHeader">Message</th>
-            <th scope="col"></th>
-        </tr>
-    </thead>
-    {% endif %}
-    <tbody>
-    {%- for note in notes -%}
-        {{ caller(note) }}
-    {% endfor %}
-    {{notes_new_button_row(api_path)}}
-    </tbody>
-
-</table>
+<div class="flex-column">
+    <div>
+        <table class="table table-sm">
+            <caption hidden>Notes</caption>
+            {% if notes|length > 0 %}
+            <thead>
+                <tr>
+                    <th scope="col">Type</th>
+                    <th class="col-sm-3" id="noteMessageColumnHeader">Message</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            {% endif %}
+            <tbody>
+            {%- for note in notes -%}
+                {{ caller(note) }}
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <div class="btn-group float-right" role="group">
+                <button
+                    class="btn btn-primary btn-sm"
+                    data-toggle="modal"
+                    data-target="#noteEditor"
+                    data-title="Create New Note"
+                    data-dialogtype="new"
+                    data-source="{{ note_api_route }}">
+                    Add
+                </button>
+        </div>
+    </div>
+</div>
 {% endmacro %}
 
 {% macro list_header(title) %}

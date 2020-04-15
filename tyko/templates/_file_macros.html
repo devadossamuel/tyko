@@ -1,0 +1,196 @@
+{% from "_details_macros.html" import new_modal, confirm_remove_entity_modal2 %}
+{% macro filesTable(api_path, project_id, object_id, item_id) %}
+<div class="flex-column">
+        <div>
+            <table id="filesTable"
+                   data-toggle="table"
+                   data-cache="false"
+                   data-sort-name="generation"
+                   data-classes="table table-sm"
+                   data-url="{{ api_path }}">
+                <caption hidden>Files</caption>
+                <thead>
+                    <tr>
+                        <th scope="col"
+                            data-sortable="true"
+                            data-width="100"
+                            data-field="generation">Generation
+
+                        </th>
+                        <th scope="col"
+                            data-field="name"
+                            data-sortable="true"
+                            data-formatter="fileNameFormatter"
+                        >File Name
+                        </th>
+                        <script>
+
+                            function fileNameFormatter(value, row, index) {
+                                const id = $table.bootstrapTable('getData')[index]['id']
+                                const editURL = `{{ request.url }}/files/${id}`;
+                                return `<a href='${editURL}'>${value}</a>`
+                            }
+                        </script>
+                        <th id="fileOptions"
+                            scope="col"
+                            data-formatter="fileOptionsFormatter"
+                            data-width="10"
+                            data-align="right"></th>
+                        <script type="application/javascript">
+                            let dataRoutes = {};
+
+                            async function get_routes(){
+                                let xhr = new XMLHttpRequest();
+                                xhr.withCredentials = false;
+
+                                let dataRoutesPromise = new Promise(((resolve, reject) => {
+                                    xhr.onreadystatechange = function () {
+                                        if (xhr.readyState !== 4) {
+                                            return;
+                                        }
+                                        if (xhr.status >= 200 && xhr.status < 300) {
+                                            resolve(xhr.response);
+                                        } else {
+                                            reject({
+                                                status: xhr.status,
+                                                statusText: xhr.statusText,
+                                                responseText: xhr.responseText
+                                            })
+                                        }
+                                    };
+                                    xhr.open("get", "/api", true);
+                                    xhr.send();
+                                })).then(function (res) {
+                                    let d = JSON.parse(res)
+                                    for (let i =0; i < d.length; i++){
+                                        dataRoutes[d[i].endpoint.toString()] = d[i];
+                                    }
+                                    return dataRoutes
+                                }).catch(function (res) {
+                                        alert("FAiled" + res)
+                                    });
+                                await dataRoutesPromise
+
+                            }
+                            get_routes();
+
+                            function fileOptionsFormatter(value, row, index) {
+                                const id = $table.bootstrapTable('getData')[index]['id']
+                                const fileName = $table.bootstrapTable('getData')[index]['name']
+
+                                function api_url(fileID) {
+                                    const template = dataRoutes['item_file_details'].route
+                                    return template
+                                        .replace("<int:project_id>", "{{project_id}}")
+                                        .replace("<int:object_id>", "{{object_id}}")
+                                        .replace("<int:item_id>", "{{item_id}}")
+                                        .replace('<int:file_id>', fileID)
+                                }
+                                function frontend_url(fileID) {
+                                    const template = dataRoutes['page_file_details'].route
+                                    return template
+                                        .replace("<int:project_id>", "{{project_id}}")
+                                        .replace("<int:object_id>", "{{object_id}}")
+                                        .replace("<int:item_id>", "{{item_id}}")
+                                        .replace('<int:file_id>', fileID)
+                                }
+                                const fileApiUrl = api_url(id);
+                                const fileFrontendURL = frontend_url(id)
+                                const dropdownButton = '<button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>';
+                                const editButton = `<button class="dropdown-item" onclick="window.location='${fileFrontendURL}'">Edit</button>`
+                                const removeButton = `<button class="dropdown-item btn-danger" data-toggle="modal" data-target="#removeFileModal" data-entity-name=${fileName} data-removeurl=${fileApiUrl}>Remove</button>`
+                                const dropdownMenu =
+                                    `<div class="dropdown-menu">${editButton}${removeButton}</div>`
+                                return `<div class="btn-group-sm d-flex justify-content-end" role="group" aria-label="Options">${dropdownButton}${dropdownMenu}</div>`
+                            }
+
+                        </script>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <div class="btn-group float-right mt-4" role="group">
+            <button
+                class="btn btn-sm btn-primary"
+                data-toggle="modal"
+                data-target="#fileModal"
+                data-title="Create New File Record">
+                Add
+            </button>
+    </div>
+    {{ confirm_remove_entity_modal2('removeFileModal', confirmButtonID='confirmRemoveFileButton') }}
+    <script type="module">
+        import {files} from "{{ url_for('static',filename='js/api.js') }}"
+
+        $("#removeFileModal").on('accept', function remove(event, data) {
+            files.removeFile(data.apiUrl)
+                .then(function () {
+                    location.reload();
+                })
+                .catch(function(reason){
+                        alert("Failed reason: " + reason.responseText);
+                });
+        })
+
+
+    </script>
+</div>
+{% endmacro %}
+{% macro newFileForm() %}
+<div class="form-group row">
+    <label for="objectNameInput" class="col-sm-2 col-form-label">File Name</label>
+    <div class="col-sm-10">
+        <input type="text" id="objectNameInput" class="form-control" name="file_name" required>
+    </div>
+</div>
+<div class="form-group row">
+    <label for="generationSelection" class="col-sm-2 col-form-label">Generation</label>
+    <div class="col-sm-10">
+        <select class="custom-select" name="generation" id="generationSelection" required>
+            <option>Access</option>
+            <option>Preservation</option>
+            <option>Mezzanine</option>
+        </select>
+    </div>
+</div>
+{% endmacro %}
+{% macro newFileModal(modalId, apiRoute) %}
+    {{new_modal(modalId, "New File", newFileForm()) }}
+    <script type="module">
+        import {items} from "{{url_for('static', filename="js/api.js")}}"
+        const object_api_route = "{{ api_route }}";
+        $(document).ready(function () {
+            $("#newEntity").unbind("submit").bind("submit",
+                function(event){
+                    event.preventDefault();
+                    const rawData = $(this).serializeArray();
+                    let data = {};
+                    for (let i=0; i < rawData.length; i++ ){
+                        data[rawData[i].name] = rawData[i].value;
+                    }
+                    items.addFile("{{apiRoute}}", data)
+                        .then(function(){
+                            location.reload();
+                        })
+                        .catch(function(reason) {
+                            let alertBox = $("#submitResultAlert");
+                            let responsesMessage =
+                                '<div class="alert alert-danger alert-dismissible" role="alert" id="submitResultAlert">\n' +
+                                '<strong id="errorMessage">';
+
+                            responsesMessage += reason.statusText;
+                            responsesMessage += "</strong>";
+                            responsesMessage +=
+                                '    <button type="button" class="close" data-dismiss="alert" aria-label="Close">\n' +
+                                '        <span aria-hidden="true">&times;</span>\n' +
+                                '    </button>\n' +
+                                '</div>';
+                            alertBox.html(responsesMessage);
+                            console.error(reason.responseText);
+                        });
+                    return false;
+                }
+            )
+        })
+    </script>
+{% endmacro %}
