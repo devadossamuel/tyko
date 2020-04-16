@@ -714,7 +714,7 @@ def new_media_with_file_note(dummy_database, create_new_object, media_type,
 
     )
     new_file = scheme.InstantiationFile(file_name=file_name)
-    new_file.notes.append(scheme.FileNotes(note=note))
+    new_file.notes.append(scheme.FileNotes(message=note))
     new_file.annotations.append(scheme.FileAnnotation(annotation_type=annotation_type, annotation_content=annotation_content))
     new_item.files.append(new_file)
 
@@ -733,7 +733,7 @@ def file_with_note(dummy_database, file_name, note):
             .filter(scheme.InstantiationFile.file_name == file_name)
     for file in files:
         if file.file_name == file_name:
-            assert file.notes[0].note == note
+            assert file.notes[0].message == note
             return
     assert False
 
