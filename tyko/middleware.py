@@ -12,7 +12,7 @@ from flask import jsonify, make_response, abort, request, url_for
 from . import data_provider as dp
 from . import pbcore
 from .exceptions import DataError
-from .views.files import ItemFilesAPI
+from .views import files
 
 CACHE_HEADER = "private, max-age=0"
 
@@ -614,7 +614,6 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
 class ItemMiddlwareEntity(AbsMiddlwareEntity):
     WRITABLE_FIELDS = [
         "name",
-        # "file_name",
         "medusa_uuid",
         "obj_sequence",
         "files"
@@ -706,7 +705,7 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
         )
 
     def add_file(self, project_id, object_id, item_id):
-        return ItemFilesAPI(self._data_provider).post(project_id, object_id,
+        return files.ItemFilesAPI(self._data_provider).post(project_id, object_id,
                                                       item_id)
 
     def add_note(self, item_id):

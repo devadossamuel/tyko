@@ -447,8 +447,7 @@ def test_create_new_project_note(app):
             data=json.dumps({
                 "note_type_id": "3",
                 "text": "MY dumb note",
-            }
-            ),
+            }),
             content_type='application/json'
         )
 
@@ -910,15 +909,15 @@ def test_update_file_name(server_with_object_and_item):
 
 
 def test_create_and_delete_file(server_with_object_and_item):
+    server = server_with_object_and_item
     projects = json.loads(
-        server_with_object_and_item.get(url_for("projects")).data
-    )["projects"]
+        server.get(url_for("projects")).data)["projects"]
+
     project_id = projects[0]['project_id']
+
     project = json.loads(
-        server_with_object_and_item.get(
-            url_for("project", project_id=project_id)
-        ).data
-    )['project']
+        server.get(url_for("project", project_id=project_id)).data)['project']
+
     object_id = project['objects'][0]["object_id"]
     item_id = project['objects'][0]["items"][0]["item_id"]
 
@@ -927,7 +926,7 @@ def test_create_and_delete_file(server_with_object_and_item):
                            object_id=object_id,
                            item_id=item_id
                            )
-    res = server_with_object_and_item.post(
+    res = server.post(
         new_file_url,
         data=json.dumps({
             "file_name": "my_dumb_audio.wav",
@@ -937,15 +936,117 @@ def test_create_and_delete_file(server_with_object_and_item):
     assert res.status_code == 200
 
 #     check that item has file
-    item = json.loads(
-        server_with_object_and_item.get(
-            url_for("item", item_id=item_id)
-        ).data
-    )['item']
+    item = \
+        json.loads(server.get(url_for("item", item_id=item_id)).data)['item']
+
     assert len(item['files']) == 1
+
     file_id = item['files'][0]['id']
     new_file_url = url_for("item_file_details", project_id=project_id, object_id=object_id, item_id=item_id, file_id=file_id)
-    del_resp = server_with_object_and_item.delete(
+    del_resp = server.delete(
         new_file_url
     )
     assert del_resp.status_code == 202
+
+
+@pytest.fixture()
+def server_with_object_item_file(server_with_object_and_item):
+    server = server_with_object_and_item
+
+    projects = json.loads(
+        server.get(url_for("projects")).data
+    )["projects"]
+    project_id = projects[0]['project_id']
+
+    project = json.loads(
+        server.get(url_for("project", project_id=project_id)).data)['project']
+
+    object_id = project['objects'][0]["object_id"]
+    item_id = project['objects'][0]["items"][0]["item_id"]
+
+    new_file_url = url_for("project_object_item_add_file",
+                           project_id=project_id,
+                           object_id=object_id,
+                           item_id=item_id)
+    file_res = json.loads(server.post(
+        new_file_url,
+        data=json.dumps({
+            "file_name": "my_dumb_audio.wav",
+        }),
+        content_type='application/json'
+    ).data)
+    file_id = file_res['id']
+    data = {
+        "project_id": project_id,
+        "item_id": item_id,
+        "object_id": object_id,
+        "file_id": file_id
+    }
+    yield server, data
+
+
+def test_create_and_delete_file_note(server_with_object_item_file):
+    server, data = server_with_object_item_file
+
+    file_id = data['file_id']
+
+    file_notes_url = url_for("file_notes", file_id=file_id)
+    new_note_resp = server.post(
+        file_notes_url,
+        data=json.dumps(
+            {
+                "message": "This file is silly"
+            }
+        ),
+        content_type='application/json'
+    )
+    assert new_note_resp.status_code == 200
+    new_note_api_url = json.loads(new_note_resp.data)['note']['url']['api']
+    notes = json.loads(server.get(file_notes_url).data)['notes']
+    assert len(notes) == 1
+    del_resp = server.delete(new_note_api_url)
+    assert del_resp.status_code == 202
+
+    assert len(json.loads(server.get(file_notes_url).data)['notes']) == 0
+
+
+@pytest.fixture()
+def server_with_file_note(server_with_object_item_file):
+    server, data = server_with_object_item_file
+    file_id = data['file_id']
+
+    file_notes_url = url_for("file_notes", file_id=file_id)
+    new_note = json.loads(
+        server.post(
+            file_notes_url,
+            data=json.dumps(
+                {
+                    "message": "This file is silly"
+                }
+            ),
+            content_type='application/json'
+        ).data
+    )
+    data['note_id'] = new_note['note']['id']
+    yield server, data
+
+
+def test_update_file_note(server_with_file_note):
+    server, data = server_with_file_note
+
+    file_notes_url = url_for("file_note",
+                             project_id=data['project_id'],
+                             object_id=data['object_id'],
+                             file_id=data['file_id'],
+                             note_id=data['note_id']
+                             )
+
+    update_resp = server.put(
+        file_notes_url,
+        data=json.dumps({
+            "message": "New note message"
+        }),
+        content_type='application/json'
+    )
+    assert update_resp.status_code == 200
+    assert json.loads(update_resp.data)["message"] == "New note message"

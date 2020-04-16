@@ -8,7 +8,8 @@ import tyko.views.files
 from . import middleware
 from .data_provider import DataProvider
 from . import frontend
-from .views.object_item import ObjectItemNotesAPI, ObjectItemAPI, ItemAPI
+from .views.object_item import ObjectItemNotesAPI, ObjectItemAPI
+from .views.object_item import ItemAPI
 from .views.project import ProjectNotesAPI, ProjectAPI
 from .views.project_object import ProjectObjectAPI, ObjectApi, \
     ProjectObjectNotesAPI
@@ -257,7 +258,7 @@ class Routes:
                 "/api/item/<int:item_id>",
                 view_func=ItemAPI.as_view(
                     "item",
-                    item=item),
+                    provider=self.db_engine),
                 methods=[
                     "GET",
                     "PUT",
@@ -280,7 +281,8 @@ class Routes:
                     provider=self.db_engine
                 ),
                 methods=[
-                    "POST"
+                    "POST",
+                    "GET"
                 ]
             )
             self.app.add_url_rule(
@@ -295,6 +297,28 @@ class Routes:
                     "DELETE"
                 ]
 
+            )
+            self.app.add_url_rule(
+                "/api/file/<int:file_id>/note",
+                view_func=tyko.views.files.FileNotesAPI.as_view(
+                    "file_notes",
+                    provider=self.db_engine
+                ),
+                methods=[
+                    "GET",
+                    "POST"
+                ]
+            )
+            self.app.add_url_rule(
+                "/api/file/<int:file_id>/note/<int:note_id>",
+                view_func=tyko.views.files.FileNoteAPI.as_view(
+                    "file_note",
+                    provider=self.db_engine
+                ),
+                methods=[
+                    "PUT",
+                    "DELETE"
+                ]
             )
 
             self.app.add_url_rule(

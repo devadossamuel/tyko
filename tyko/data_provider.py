@@ -659,6 +659,53 @@ class ObjectDataConnector(AbsNotesConnector):
         return new_data
 
 
+class FileNotesDataConnector(AbsDataProviderConnector):
+
+    def get(self, id=None, serialize=False):
+        session = self.session_maker()
+        try:
+            if id is not None:
+                all_notes = \
+                    session.query(scheme.FileNotes).filter(
+                        scheme.FileNotes.id == id).all()
+            else:
+                all_notes = \
+                    session.query(scheme.CollectionObject).filter(
+                        scheme.CollectionObject.project is not None).all()
+
+            if serialize:
+                serialized_notes = []
+                for notes in all_notes:
+                    serialized_notes.append(
+                        notes.serialize(True)
+                    )
+
+                all_notes = serialized_notes
+            if id is not None:
+                return all_notes[0]
+
+            return all_notes
+        finally:
+            session.close()
+
+    def create(self, *args, **kwargs):
+        session = self.session_maker()
+        try:
+            new_note = scheme.FileNotes(file_id=kwargs['file_id'],
+                                        message=kwargs['message'])
+            session.add(new_note)
+            session.commit()
+            return new_note.serialize()
+        finally:
+            session.close()
+
+    def update(self, id, changed_data):
+        pass
+
+    def delete(self, id):
+        pass
+
+
 class FilesDataConnector(AbsDataProviderConnector):
     def get(self, id=None, serialize=False):
         session = self.session_maker()
@@ -699,6 +746,8 @@ class FilesDataConnector(AbsDataProviderConnector):
                 .filter(scheme.InstantiationFile.file_id == id).one()
             if "file_name" in changed_data:
                 matching_file.file_name = changed_data['file_name']
+            if "generation" in changed_data:
+                matching_file.generation = changed_data['generation']
             session.commit()
             return matching_file.serialize()
         finally:
@@ -729,34 +778,77 @@ class FilesDataConnector(AbsDataProviderConnector):
         finally:
             session.close()
 
+    def remove_note(self, file_id, note_id):
+        session = self.session_maker()
+        try:
+            file_record = session.query(scheme.InstantiationFile)\
+                .filter(scheme.InstantiationFile.file_id == file_id).one()
+            for note in file_record.notes:
+                if note_id == note.id:
+                    file_record.notes.remove(note)
+                    items_deleted = session.query(scheme.FileNotes).\
+                        filter(scheme.FileNotes.id == note.id).delete()
+                    success = items_deleted > 0
+                    session.commit()
+                    return success
+            else:
+                raise ValueError(f"File {file_id} does not have a note with an"
+                                 f" id of {note_id}")
+
+        finally:
+            session.close()
+
+    def edit_note(self, file_id, note_id, changed_data):
+        session = self.session_maker()
+        try:
+            note_record = session.query(scheme.FileNotes).join(scheme.InstantiationFile) \
+                .filter(scheme.InstantiationFile.file_id == file_id)\
+                .filter(scheme.FileNotes.id == note_id).one()
+
+            if "message" in changed_data:
+                note_record.message = changed_data['message']
+
+            # for note in file_record.notes:
+            #     if note_id == note.id:
+            session.commit()
+            return note_record.serialize()
+            #         return note
+            # else:
+            #     raise ValueError(
+            #         f"File {file_id} does not have a note with an"
+            #         f" id of {note_id}")
+        finally:
+            session.close()
+
 
 class ItemDataConnector(AbsNotesConnector):
 
     def get(self, id=None, serialize=False):
         session = self.session_maker()
+        try:
+            if id:
+                all_collection_item = session.query(scheme.CollectionItem)\
+                    .filter(scheme.CollectionItem.id == id)\
+                    .all()
+            else:
+                all_collection_item = \
+                    session.query(scheme.CollectionItem).all()
 
-        if id:
-            all_collection_item = session.query(scheme.CollectionItem)\
-                .filter(scheme.CollectionItem.id == id)\
-                .all()
-        else:
-            all_collection_item = \
-                session.query(scheme.CollectionItem).all()
+            if serialize:
+                serialized_all_collection_item = []
 
-        if serialize:
-            serialized_all_collection_item = []
+                for collection_item in all_collection_item:
+                    serialized_all_collection_item.append(
+                        collection_item.serialize())
 
-            for collection_item in all_collection_item:
-                serialized_all_collection_item.append(
-                    collection_item.serialize())
+                all_collection_item = serialized_all_collection_item
 
-            all_collection_item = serialized_all_collection_item
-        session.close()
+            if id is not None:
+                return all_collection_item[0]
 
-        if id is not None:
-            return all_collection_item[0]
-
-        return all_collection_item
+            return all_collection_item
+        finally:
+            session.close()
 
     def add_note(self, item_id: int, note_text: str, note_type_id: int):
         session = self.session_maker()

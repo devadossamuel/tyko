@@ -691,6 +691,7 @@ class InstantiationFile(AVTables):
         data = {
             "id": self.file_id,
             "file_name": self.file_name,
+            "generation": self.generation,
             "notes": []
         }
         for file_note in self.notes:
@@ -709,15 +710,15 @@ class InstantiationFile(AVTables):
 class FileNotes(AVTables):
     __tablename__ = "file_notes"
     id = db.Column(
-        "annotation_id", db.Integer, primary_key=True, autoincrement=True)
-    note = db.Column("note", db.Text, nullable=False)
+        "note_id", db.Integer, primary_key=True, autoincrement=True)
+    message = db.Column("message", db.Text, nullable=False)
     file_id = db.Column(db.Integer,
                         db.ForeignKey("instantiation_files.file_id"))
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         return {
             "id": self.id,
-            "note": self.note,
+            "message": self.message,
             "file_id": self.file_id,
         }
 

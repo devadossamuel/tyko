@@ -311,6 +311,7 @@ function remove(apiPath) {
                 "{{ field_name }}",
                 "{{ field_value }}",
             );
+                {#TODO: Check what type of object of value and if it's a list of strings#}
                 {% for option in options %}
                     selectionEditor.options.push({{option|safe}});
                 {% endfor %}

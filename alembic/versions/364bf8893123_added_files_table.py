@@ -228,11 +228,11 @@ def upgrade():
     sa.PrimaryKeyConstraint('annotation_id')
     )
     op.create_table('file_notes',
-    sa.Column('annotation_id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('note', sa.Text(), nullable=False),
+    sa.Column('note_id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('message', sa.Text(), nullable=False),
     sa.Column('file_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['file_id'], ['instantiation_files.file_id'], ),
-    sa.PrimaryKeyConstraint('annotation_id')
+    sa.PrimaryKeyConstraint('note_id')
     )
     # #################################333
     connection = op.get_bind()
