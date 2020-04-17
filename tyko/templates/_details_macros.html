@@ -423,3 +423,12 @@ function remove(apiPath) {
         {%- endif %}
     {% endcall %}
 {% endmacro %}
+
+{% macro card(title, card_class) %}
+    <div class="card {{ card_class }}">
+        <div class="card-header">{{ title }}</div>
+        <div class="card-body">
+            {{ caller() }}
+        </div>
+    </div>
+{% endmacro %}

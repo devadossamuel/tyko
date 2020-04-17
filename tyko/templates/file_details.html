@@ -2,9 +2,7 @@
 {% from "_macros.html" import notes_table_row, notes_table, metadata_table %}
 {% import  "_details_macros.html" as widgets%}
 {% block main_details %}
-<div class="card my-1 h-100">
-    <h5 class="card-header">Details</h5>
-    <div class="card-body">
+    {%  call widgets.card("Details", "my-1 h-100")  %}
         {%  call metadata_table() %}
             <tr>
                 {{widgets.metadata_text_edit_widget("File Name", file['file_name'], 'file_name', api_path)}}
@@ -26,131 +24,125 @@
                                                        update_api_path=api_path) }}
             </tr>
         {% endcall %}
-    </div>
-</div>
+    {% endcall %}
 {% endblock %}
 
 {% block secondary_details %}
-<div class="card my-1">
-    <h5 class="card-header">Annotations</h5>
-    <div class="card-body">
+    {% call widgets.card("Annotations", "my-1")  %}
+        <div class="card-footer bg-transparent">
+            <button class="btn btn-primary float-right"
+                    onclick="alert('does nothing right now')">
+                Add</button>
+        </div>
+    {% endcall %}
 {#        TODO: setup file annocations#}
-    </div>
-    <div class="card-footer bg-transparent">
-        <button class="btn btn-primary float-right"
-                onclick="alert('does nothing right now')">
-            Add</button>
-    </div>
-</div>
-<div class="card">
-    <h5 class="card-header">Notes</h5>
-    <div class="card-body">
-        <ul id="notesList" class="list-group list-group-flush">
-{#        TODO: update notes SO THAT IT CAN be edited#}
-        {% for note in file['notes'] %}
-            <li class="list-group-item">
-                <div class="d-flex w-100 justify-content-between">
-                {{ note['message'] }}
-                    <div class="btn-group" role="group" aria-label="Edit">
-                        <button type="button"
-                                class="btn btn-sm btn-secondary dropdown-toggle"
-                                data-toggle="dropdown"
-                                aria-haspopup="true"
-                                aria-expanded="false"></button>
-                        <div class="dropdown-menu">
-                        <button class="btn btn-secondary btn-sm dropdown-item"
-                                id="noteEditButton{{ loop.index }}"
-                        >Edit</button>
-                        <script type="module">
-{#                            TODO: Pass project, object, item ids via editNote custom event #}
-                            document.getElementById("noteEditButton{{ loop.index }}").addEventListener("click", function () {
-                                document.getElementById("notesList").dispatchEvent(
-                                    new CustomEvent("editNote", {
-                                            detail: {
-                                                "note": {
-                                                    "id": {{ note['id'] }},
-                                                    "text": "{{ note['message'] }}",
-                                                },
-                                                "file":{
-                                                    "id": {{ note['file_id'] }},
-                                                },
-                                            }
-                                        })
-                                )
-                            })
-                            </script>
-                        <button class="btn btn-danger btn-sm dropdown-item">Remove</button>
+    {% call widgets.card("Notes", "my-1")  %}
+            <ul id="notesList" class="list-group list-group-flush">
+    {#        TODO: update notes SO THAT IT CAN be edited#}
+            {% for note in file['notes'] %}
+                <li class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                    {{ note['message'] }}
+                        <div class="btn-group" role="group" aria-label="Edit">
+                            <button type="button"
+                                    class="btn btn-sm btn-secondary dropdown-toggle"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false"></button>
+                            <div class="dropdown-menu">
+                            <button class="btn btn-secondary btn-sm dropdown-item"
+                                    id="noteEditButton{{ loop.index }}"
+                            >Edit</button>
+                            <script type="module">
+    {#                            TODO: Pass project, object, item ids via editNote custom event #}
+                                document.getElementById("noteEditButton{{ loop.index }}").addEventListener("click", function () {
+                                    document.getElementById("notesList").dispatchEvent(
+                                        new CustomEvent("editNote", {
+                                                detail: {
+                                                    "note": {
+                                                        "id": {{ note['id'] }},
+                                                        "text": "{{ note['message'] }}",
+                                                    },
+                                                    "file":{
+                                                        "id": {{ note['file_id'] }},
+                                                    },
+                                                }
+                                            })
+                                    )
+                                })
+                                </script>
+                            <button class="btn btn-danger btn-sm dropdown-item">Remove</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </li>
-        {% endfor %}
-        </ul>
-    <script type="module">
-        document.getElementById("editNoteModal").addEventListener("accept", function (event) {
-            console.log("Got accept with new text " + event.detail['note']["text"]);
-            console.log("Got accept with note id " + event.detail['note']["id"]);
-        {#    TODO: send update request for file notes#}
-        })
-        document.getElementById("notesList").addEventListener("editNote", function (event) {
-            const modal = $('#editNoteModal');
-            modal.modal('show');
-            modal.data['noteId'] = event.detail['note']['id'];
-            {#                            TODO: set, object, item ids in data from editNote custom event #}
-            modal.find('#noteContentTextarea').val(event.detail['note']['text']);
-        })
-    </script>
-    <div class="modal fade" id="editNoteModal" tabindex="-1" role="dialog">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">File Note</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-              <form>
-                  <div class="form-group">
-                    <label for="noteContentTextarea">Note</label>
-                    <textarea class="form-control" id="noteContentTextarea" rows="3"></textarea>
-                  </div>
-              </form>
-          </div>
-          <div class="modal-footer">
-            <button id="noteEditSaveChangeBtn" type="button" class="btn btn-primary">Save changes</button>
-              <script type="module">
-                  document.getElementById("noteEditSaveChangeBtn").addEventListener("click", function () {
-                      const modal = document.getElementById("editNoteModal");
-                      modal.dispatchEvent(new CustomEvent("accept",
-                          {
-                              detail: {
-                                  note: {
-                                      "text": document.getElementById('noteContentTextarea').value,
-                                      "id": $(modal).data['noteId']
+                </li>
+            {% endfor %}
+            </ul>
+        <script type="module">
+            document.getElementById("editNoteModal").addEventListener("accept", function (event) {
+                console.log("Got accept with new text " + event.detail['note']["text"]);
+                console.log("Got accept with note id " + event.detail['note']["id"]);
+            {#    TODO: send update request for file notes#}
+            })
+            document.getElementById("notesList").addEventListener("editNote", function (event) {
+                const modal = $('#editNoteModal');
+                modal.modal('show');
+                modal.data['noteId'] = event.detail['note']['id'];
+                {#                            TODO: set, object, item ids in data from editNote custom event #}
+                modal.find('#noteContentTextarea').val(event.detail['note']['text']);
+            })
+        </script>
+        <div class="modal fade" id="editNoteModal" tabindex="-1" role="dialog">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">File Note</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                  <form>
+                      <div class="form-group">
+                        <label for="noteContentTextarea">Note</label>
+                        <textarea class="form-control" id="noteContentTextarea" rows="3"></textarea>
+                      </div>
+                  </form>
+              </div>
+              <div class="modal-footer">
+                <button id="noteEditSaveChangeBtn" type="button" class="btn btn-primary">Save changes</button>
+                  <script type="module">
+                      document.getElementById("noteEditSaveChangeBtn").addEventListener("click", function () {
+                          const modal = document.getElementById("editNoteModal");
+                          modal.dispatchEvent(new CustomEvent("accept",
+                              {
+                                  detail: {
+                                      note: {
+                                          "text": document.getElementById('noteContentTextarea').value,
+                                          "id": $(modal).data['noteId']
+                                      }
                                   }
-                              }
-                          })
-                      )
-                  })
-              </script>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                              })
+                          )
+                      })
+                  </script>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-    <div class="card-footer bg-transparent">
-         <button id="newNoteBtn" class="btn btn-primary float-right">Add</button>
-        <script type="module">
-            document.getElementById('newNoteBtn').addEventListener('click', function () {
-                const modal = $('#editNoteModal');
-            {#     TODO: Clear the modal dialog first and set the action to the new filenote#}
-                modal.modal('show');
+        <div class="card-footer bg-transparent">
+             <button id="newNoteBtn" class="btn btn-primary float-right">Add</button>
+            <script type="module">
+                document.getElementById('newNoteBtn').addEventListener('click', function () {
+                    const modal = $('#editNoteModal');
+                {#     TODO: Clear the modal dialog first and set the action to the new filenote#}
+                    modal.modal('show');
 
-            });
+                });
 
-        </script>
-    </div>
-</div>
+            </script>
+        </div>
+    {% endcall %}
 
 {% endblock %}

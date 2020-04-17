@@ -1,6 +1,6 @@
 {% extends "panel_details.html" %}
 {% from "_macros.html" import notes_table_row, note_editor, notes_table, metadata_table%}
-{% from "_details_macros.html" import add_field_row, confirm_remove_entity_modal, child_entity_row, remove_modal_event_scripts, metadata_text_edit_widget, metadata_select_edit_widget, metadata_select_dynamic_edit_widget, metadata_date_edit_widget%}
+{% from "_details_macros.html" import add_field_row, confirm_remove_entity_modal, child_entity_row, remove_modal_event_scripts, metadata_text_edit_widget, metadata_select_edit_widget, metadata_select_dynamic_edit_widget, metadata_date_edit_widget, card%}
 {% from "_item_macros.html" import item_new_button_row, new_item_modal %}
 {% block sidebar %}
 <div class="btn-group-vertical">
@@ -10,11 +10,9 @@
     </div>
 </div>
 {% endblock %}
-{% block main_details %}
 
-<div class="card my-1 h-100">
-    <h5 class="card-header">Details</h5>
-    <div class="card-body">
+{% block main_details %}
+    {% call card("Details", 'my-1 h-100') %}
         {% call metadata_table() %}
             <tr>{{metadata_text_edit_widget("Name", object['name'], 'name', api_path)}}</tr>
             <tr>
@@ -43,15 +41,12 @@
             <tr>{{metadata_date_edit_widget("Originals Received Date", object['originals_rec_date'], "originals_rec_date", api_path)}}</tr>
             <tr>{{metadata_date_edit_widget("Originals Returned Date", object['originals_return_date'], "originals_return_date", api_path)}}</tr>
         {% endcall %}
-    </div>
-</div>
+    {% endcall %}
+
 {% endblock %}
 
 {% block secondary_details %}
-
-<div class="card my-1">
-    <h5 class="card-header">Items</h5>
-    <div class="card-body">
+    {% call card("Items", 'my-1') %}
         <table class="table">
             <caption hidden>Items</caption>
             <thead>
@@ -77,24 +72,18 @@
                 </tbody>
             {% endif %}
         </table>
-    </div>
-    {% if "project_id" in object %}
-        {{ new_item_modal("newItemtModal", formats, url_for("project_object_add_item", object_id=object['object_id'], project_id=object['project_id'])) }}
+            {% if "project_id" in object %}
+                {{ new_item_modal("newItemtModal", formats, url_for("project_object_add_item", object_id=object['object_id'], project_id=object['project_id'])) }}
 
-    {% endif %}
-    {{ confirm_remove_entity_modal("removeItemModal") }}
-</div>
-
-<div class="card">
-    <h5 class="card-header">Notes</h5>
-    <div class="card-body">
+            {% endif %}
+            {{ confirm_remove_entity_modal("removeItemModal") }}
+    {% endcall %}
+    {% call card("Notes", 'my-1') %}
         {% call(note) notes_table(object['notes'], api_path) %}
             {{notes_table_row(note, url_for("object_notes", project_id=object['project_id'], object_id=object['object_id'], note_id=note['note_id']) )}}
-
         {% endcall %}
     {{ note_editor(url_for('project_object', project_id=object['project_id'], object_id=object['object_id']), valid_note_types) }}
-    </div>
-</div>
+    {% endcall %}
 {% endblock %}
 
 {% block scripts %}

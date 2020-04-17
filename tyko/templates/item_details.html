@@ -1,45 +1,35 @@
 {% extends "panel_details.html" %}
 {% from "_file_macros.html" import filesTable, newFileModal %}
-{% from "_macros.html" import notes_table_row, notes_table, metadata_table, note_editor %}
+{% from "_macros.html" import notes_table_row, notes_table, metadata_table, note_editor%}
 {% import  "_details_macros.html" as widgets%}
 {% import "_item_macros.html" as item_widgets %}
 
 {% block main_details %}
-    <div class="card my-1 h-100">
-        <h5 class="card-header">Details</h5>
-        <div class="card-body">
-            {%  call metadata_table() %}
-                <tr>
-                    {{widgets.metadata_text_edit_widget("Name", item['name'], 'name', api_path)}}
-                </tr>
-                <tr>
-                    {{widgets.metadata_number_edit_widget("Object Sequence", item['obj_sequence'], 'obj_sequence', api_path)}}
-                </tr>
-            {% endcall %}
-        </div>
-    </div>
+    {%  call widgets.card("Details", "my-1 h-100")  %}
+        {%  call metadata_table() %}
+            <tr>
+                {{widgets.metadata_text_edit_widget("Name", item['name'], 'name', api_path)}}
+            </tr>
+            <tr>
+                {{widgets.metadata_number_edit_widget("Object Sequence", item['obj_sequence'], 'obj_sequence', api_path)}}
+            </tr>
+        {% endcall %}
+    {% endcall %}
 {% endblock %}
+
 {% block secondary_details %}
-<div class="card my-1">
-    <h5 class="card-header">Files</h5>
-    <div class="card-body">
+    {%  call widgets.card("Files", "my-1")  %}
         {{ filesTable(api_path, item_id=item['item_id'], object_id=object_id, project_id=project_id) }}
-        <div class="card-footer bg-transparent">
-
-        </div>
         {{ newFileModal("fileModal", url_for('item_files', item_id=item['item_id'], object_id=object_id, project_id=project_id)) }}
-    </div>
-</div>
+    {% endcall %}
 
-<div class="card my-1">
-    <h5 class="card-header">Notes</h5>
-    <div class="card-body">
+    {% call widgets.card("Notes", "my-1")  %}
         {% call(note) notes_table(item['notes'], api_path) %}
             {{ notes_table_row(note, url_for('note', note_id=note['note_id'])) }}
         {% endcall %}
         {{ note_editor("/api/project/" ~ project_id ~ "/object/" ~ object_id ~ "/item/" ~ item.item_id, valid_note_types) }}
-    </div>
-</div>
+    {% endcall %}
+
 {% include "edit_note.html" %}
 {% endblock %}
 {% block scripts %}
