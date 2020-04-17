@@ -1,0 +1,101 @@
+{% macro confirmRemoveFileNote(modal_id, title="Remove Note") %}
+<div class="modal fade" id="{{ modal_id }}" data-backdrop="static"
+     tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ title }}</h5>
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to permanently remove the
+                    following note?</p>
+                <div>
+                    <p id="noteContent"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+
+                <button id="noteDeleteYesBtn" type="button"
+                        class="btn btn-primary">Yes</button>
+                <button type="button" class="btn btn-secondary"
+                        data-dismiss="modal">No</button>
+                <script type="module">
+                    document.getElementById("noteDeleteYesBtn").addEventListener(
+                        "click",
+                        function () {
+                            const modal = document.getElementById("{{ modal_id }}");
+                            modal.dispatchEvent(new CustomEvent("accept",
+                                {
+                                    detail: {
+                                        note: $(modal).data['note'],
+                                        file: $(modal).data['file'],
+                                        request: $(modal).data['request'],
+                                    }
+                                }
+                            ));
+                        }
+                        );
+
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro%}
+
+{%  macro editFileNote(modal_id) %}
+<div class="modal fade" id="{{ modal_id }}" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">File Note</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+              <form>
+                  <div class="form-group">
+                    <label for="noteContentTextarea">Note</label>
+                    <textarea class="form-control" id="noteContentTextarea" rows="3"></textarea>
+                  </div>
+              </form>
+          </div>
+          <div class="modal-footer">
+            <button id="noteEditSaveChangeBtn" type="button" class="btn btn-primary">Save changes</button>
+              <script type="module">
+                  document.getElementById("noteEditSaveChangeBtn").addEventListener(
+                      "click",
+                      function () {
+                          const modal = document.getElementById("{{ modal_id }}");
+                          let newNote = Object.assign({}, $(modal).data['note']);
+                          newNote["text"] = document.getElementById('noteContentTextarea').value
+                          modal.dispatchEvent(
+                              new CustomEvent(
+                                  "accept",
+                                  {
+                                      detail: {
+                                          note: newNote,
+                                          request:{
+                                              "type": $(modal).data['request']['type'],
+                                              "url": $(modal).data['request']['url'],
+                                          },
+                                          file: $(modal).data['file']
+
+                                      }
+                                  }
+                              )
+                          )
+                      }
+                  )
+              </script>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endmacro%}

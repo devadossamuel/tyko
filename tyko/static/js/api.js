@@ -84,6 +84,12 @@ function addItem(apiRoute, data) {
   }
   return requests.post(apiRoute, data);
 }
+function editFileNote(apiRoute, data) {
+  return requests.put(apiRoute, data);
+}
+function addFileNote(apiRoute, data) {
+  return requests.post(apiRoute, data);
+}
 function addFile(apiRoute, data) {
   return requests.post(apiRoute, data)
 }
@@ -102,7 +108,12 @@ export const files = {
   "addFile": addFile,
   "removeFile": (apiRoute)=>{
     return requests.delete(apiRoute);
-  }
+  },
+  "removeNote": (apiRoute)=>{
+    return requests.delete(apiRoute);
+  },
+  "addNote": addFileNote,
+  "editNote": editFileNote
 }
 export const routes = {
   "all_routes": (baseURL)=> {
