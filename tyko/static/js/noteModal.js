@@ -13,11 +13,9 @@ export function edit_note(button, modal, promise) {
             const noteText = modal.find('#message-text').val();
             promise(noteApiRoute, noteTypeId, noteText)
                 .then(function (data) {
-                    console.log("success");
                     location.reload();
                 }).catch(function (data) {
                 alert("Failed: " + data.responseText);
-                console.log("Failed");
             });
         });
 }

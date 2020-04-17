@@ -21,11 +21,12 @@
   },
   "homepage": "https://github.com/UIUCLibrary/tyko#readme",
   "devDependencies": {
-    "@babel/preset-env": "^7.8.7",
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.5",
     "babel-core": "^6.26.3",
     "babel-jest": "^25.1.0",
     "babel-preset-env": "^1.7.0",
-    "jest": "^25.1.0",
+    "jest": "^25.3.0",
     "jest-junit": "^10.0.0",
     "jest-sonar-reporter": "^2.0.0",
     "mkdirp": ">=1.0.3"
@@ -57,7 +58,9 @@
     "reportPath": "reports"
   },
   "dependencies": {
+    "bootstrap": "^4.4.1",
     "gijgo": "^1.9.13",
-    "jquery": "^3.4.1"
+    "jquery": "^3.4.1",
+    "popper.js": "^1.16.1"
   }
 }
