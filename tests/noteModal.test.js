@@ -55,4 +55,18 @@ describe('Testing text widget', ()=> {
         modal.find('#cancelButton').trigger("click");
         expect(modal.hasClass('show')).toBe(false);
     });
+
+    test("save button closes the window", ()=>{
+        let modal = $("#noteEditor");
+        let triggerButton = $(document.getElementById("select"));
+        triggerButton.trigger('click');
+        triggerButton.data('apiroute', "/api");
+        expect(modal.hasClass('show')).toBe(false);
+
+        modal.modal('show');
+        expect(modal.hasClass('show')).toBe(true);
+        edit_note(triggerButton, modal, notes.editNote);
+        modal.find('#saveNoteButton').trigger("click");
+        expect(modal.hasClass('show')).toBe(false);
+    });
 });
