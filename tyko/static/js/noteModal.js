@@ -27,11 +27,9 @@ export function new_note(button, modal, apiPath, promise) {
             const noteText = modal.find('#message-text').val();
             promise(apiPath, noteTypeId, noteText)
                 .then(function () {
-                    console.log("success");
                     location.reload();
                 }).catch(function (data) {
                 alert("Failed: " + data.responseText);
-                console.log("Failed")
             })
         });
 }
@@ -41,11 +39,9 @@ export function remove_note(button, modal, apiroute, promise) {
         function () {
             promise(apiroute)
                 .then(function () {
-                    console.log("success");
                     location.reload();
                 }).catch(function (data) {
                 alert("Failed: " + data.responseText);
-                console.log("Failed");
             });
 
         });
