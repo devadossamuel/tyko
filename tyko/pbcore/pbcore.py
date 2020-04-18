@@ -1,6 +1,7 @@
 from importlib.resources import read_text
 from jinja2 import Template
-from tyko.data_provider import DataProvider, ObjectDataConnector
+from tyko.data_provider import DataProvider, ObjectDataConnector, \
+    FilesDataConnector
 
 
 def create_pbcore_from_object(object_id: int,
@@ -12,6 +13,16 @@ def create_pbcore_from_object(object_id: int,
 
     connector = ObjectDataConnector(data_provider.db_session_maker)
     resulting_object = connector.get(object_id, serialize=True)
+    file_connector = FilesDataConnector(data_provider.db_session_maker)
+
+    for item in resulting_object.get("items", []):
+        for item_file in item.get("files", []):
+            file_id = item_file['id']
+            res = file_connector.get(file_id, serialize=True)
+            item['files'].remove(item_file)
+            item['files'].append(res)
+
+
 
     xml = template.render(
         obj=resulting_object

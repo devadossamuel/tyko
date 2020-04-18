@@ -1,5 +1,17 @@
+
+{%- macro pbcoreInstantiationFile(file) %}
+    <pbcoreInstantiation>
+        <instantiationIdentifier annotation="file name">{{ file['name'] }}</instantiationIdentifier>
+        {% if file['generation'] %}
+        <instantiationGenerations>{{ file['generation']}}</instantiationGenerations>
+        {% endif %}
+        {% for note in file['notes'] %}
+            <instantiationAnnotation annotationType="note">{{ note['message'] }}</instantiationAnnotation>
+        {% endfor %}
+    </pbcoreInstantiation>
+{% endmacro %}
+
 {%- macro pbcorePart(part) %}
-{#    TODO: add files #}
     <pbcorePart>
         {% if part['medusa_uuid'] is not none -%}
         <pbcoreIdentifier source="medusa_uuid">{{ part['medusa_uuid'] }}</pbcoreIdentifier>
@@ -11,7 +23,10 @@
         <pbcoreDescription descriptionType="{{- note['note_type'] if note['note_type']|length else "Note" -}} ">{{ note['text'] }}</pbcoreDescription>
         {%- else %}
         <pbcoreDescription/>
-    {%- endfor %}
+        {%- endfor %}
+        {% for file in part['files'] %}
+            {{ pbcoreInstantiationFile(file) }}
+        {% endfor %}
     </pbcorePart>
 {% endmacro -%}
 <?xml version="1.0" encoding="UTF-8"?>
