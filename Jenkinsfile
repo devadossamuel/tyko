@@ -187,6 +187,36 @@ pipeline {
                                 }
                             }
                         }
+                        stage("pydocstyle"){
+                            agent {
+                              dockerfile {
+                                filename 'CI/jenkins/dockerfiles/server_testing/Dockerfile'
+                                label "linux && docker"
+                              }
+                            }
+                            steps{
+                                sh "mkdir -p reports"
+                                catchError(buildResult: 'SUCCESS', message: 'Did not pass all pydocstyle tests', stageResult: 'UNSTABLE') {
+                                    sh(
+                                        label: "Run PyTest",
+                                        script: "pydocstyle tyko > reports/pydocstyle-report.txt"
+                                    )
+                                }
+                            }
+                            post {
+                                always{
+                                    recordIssues(tools: [pyDocStyle(pattern: 'reports/pydocstyle-report.txt')])
+                                }
+                                cleanup{
+                                    cleanWs(
+                                        deleteDirs: true,
+                                        patterns: [
+                                            [pattern: 'reports/', type: 'INCLUDE'],
+                                        ]
+                                    )
+                                }
+                            }
+                        }
                         stage("Tox") {
                             when {
                                 equals expected: true, actual: params.TEST_RUN_TOX

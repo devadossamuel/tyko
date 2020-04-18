@@ -1071,7 +1071,7 @@ class DataProvider:
 
 
 def get_schema_version(db_engine: sqlalchemy.engine.Engine) -> Optional[str]:
-    """ Get the alembic_version version of a given database
+    """Get the alembic_version version of a given database.
 
     Args:
         db_engine:
