@@ -687,24 +687,22 @@ class InstantiationFile(AVTables):
         backref="file_annotation_source"
     )
 
+    def _create_notes(self, recurse):
+        for file_note in self.notes:
+            if recurse:
+                yield file_note.serialize()
+            else:
+                yield {
+                        "note_id": file_note.id
+                    }
+
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
-        data = {
+        return {
             "id": self.file_id,
             "file_name": self.file_name,
             "generation": self.generation,
-            "notes": []
+            "notes": [n for n in self._create_notes(recurse)]
         }
-        for file_note in self.notes:
-            if recurse:
-                data['notes'].append(file_note.serialize())
-            else:
-                data['notes'].append(
-                    {
-                        "note_id": file_note.id
-                    }
-                )
-
-        return data
 
 
 class FileNotes(AVTables):
