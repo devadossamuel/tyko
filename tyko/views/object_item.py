@@ -25,21 +25,6 @@ class ObjectItemAPI(views.MethodView):
                                                item_id=item_id)
 
 
-# class ItemAPI(views.MethodView):
-#     def __init__(self, item: middleware.ItemMiddlwareEntity) -> None:
-#         self._item = item
-#
-#     def put(self, item_id):
-#         return self._item.update(id=item_id)
-#
-#     def get(self, item_id):
-#         return self._item.get(id=item_id)
-#
-#     def delete(self, item_id):
-#         return self._item.delete(id=item_id)
-
-#
-
 class ItemAPI(views.MethodView):
     WRITABLE_FIELDS = [
         "name",
@@ -47,7 +32,8 @@ class ItemAPI(views.MethodView):
         "obj_sequence",
         "files"
     ]
-    def __init__(self, provider: data_provider) -> None:
+
+    def __init__(self, provider: data_provider.DataProvider) -> None:
         self._data_provider = provider
         self._data_connector = \
             data_provider.ItemDataConnector(provider.db_session_maker)
