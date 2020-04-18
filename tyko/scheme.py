@@ -253,8 +253,7 @@ class CollectionObject(AVTables):
             if recurse is True:
                 return self.collection.serialize()
             return None
-        else:
-            return None
+        return None
 
     def get_items(self, recurse):
         def sorter(collection_items: List[CollectionItem]):
