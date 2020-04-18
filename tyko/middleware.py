@@ -705,8 +705,9 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
         )
 
     def add_file(self, project_id, object_id, item_id):
-        return files.ItemFilesAPI(self._data_provider).post(project_id, object_id,
-                                                      item_id)
+        return files.ItemFilesAPI(self._data_provider).post(project_id,
+                                                            object_id,
+                                                            item_id)
 
     def add_note(self, item_id):
         data = request.get_json()

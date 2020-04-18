@@ -89,7 +89,9 @@ class FileNoteAPI(views.MethodView):
             data_provider.FilesDataConnector(provider.db_session_maker)
 
     def get(self, file_id: int, note_id: int) -> flask.wrappers.Response:
-        dc = data_provider.FileNotesDataConnector(self._data_provider.db_session_maker)
+        dc = data_provider.FileNotesDataConnector(
+            self._data_provider.db_session_maker)
+
         res = dc.get(note_id, serialize=True)
         return res
 
@@ -105,7 +107,9 @@ class FileNoteAPI(views.MethodView):
         changed_data = dict()
         changed_data['message'] = json_request['message']
 
-        note_record = self._data_connector.edit_note(file_id, note_id, changed_data)
+        note_record = \
+            self._data_connector.edit_note(file_id, note_id, changed_data)
+
         return note_record
 
 

@@ -801,7 +801,8 @@ class FilesDataConnector(AbsDataProviderConnector):
     def edit_note(self, file_id, note_id, changed_data):
         session = self.session_maker()
         try:
-            note_record = session.query(scheme.FileNotes).join(scheme.InstantiationFile) \
+            note_record = session.query(scheme.FileNotes)\
+                .join(scheme.InstantiationFile) \
                 .filter(scheme.InstantiationFile.file_id == file_id)\
                 .filter(scheme.FileNotes.id == note_id).one()
 
