@@ -149,5 +149,5 @@ class FileNotesAPI(views.MethodView):
                     },
                     "id": new_note['id']
                 }
-             }
+            }
         )
