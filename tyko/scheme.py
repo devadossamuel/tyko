@@ -693,8 +693,8 @@ class InstantiationFile(AVTables):
                 yield file_note.serialize()
             else:
                 yield {
-                        "note_id": file_note.id
-                    }
+                    "note_id": file_note.id
+                }
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         return {
