@@ -772,9 +772,8 @@ class FilesDataConnector(AbsDataProviderConnector):
                 if f.file_id == file_id:
                     item.files.remove(f)
                     return True
-            else:
-                raise ValueError(f"Item {item_id} does not have a file with an"
-                                 f" id of {file_id}")
+            raise ValueError(f"Item {item_id} does not have a file with an"
+                             f" id of {file_id}")
         finally:
             session.close()
 
@@ -791,9 +790,8 @@ class FilesDataConnector(AbsDataProviderConnector):
                     success = items_deleted > 0
                     session.commit()
                     return success
-            else:
-                raise ValueError(f"File {file_id} does not have a note with an"
-                                 f" id of {note_id}")
+            raise ValueError(f"File {file_id} does not have a note with an"
+                             f" id of {note_id}")
 
         finally:
             session.close()
