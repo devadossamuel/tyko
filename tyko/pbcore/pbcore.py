@@ -22,8 +22,6 @@ def create_pbcore_from_object(object_id: int,
             item['files'].remove(item_file)
             item['files'].append(res)
 
-
-
     xml = template.render(
         obj=resulting_object
     )
