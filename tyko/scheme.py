@@ -701,7 +701,7 @@ class InstantiationFile(AVTables):
             "id": self.file_id,
             "file_name": self.file_name,
             "generation": self.generation,
-            "notes": [n for n in self._create_notes(recurse)]
+            "notes": list(self._create_notes(recurse))
         }
 
 
