@@ -99,8 +99,7 @@ class FileNoteAPI(views.MethodView):
         file_record = self._data_connector.remove_note(file_id, note_id)
         if file_record is True:
             return make_response("", 202)
-        else:
-            return make_response("Something went wrong", 500)
+        return make_response("Something went wrong", 500)
 
     def put(self, file_id: int, note_id: int) -> flask.wrappers.Response:
         json_request = request.get_json()

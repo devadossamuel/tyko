@@ -252,8 +252,7 @@ class CollectionObject(AVTables):
         if self.collection is not None:
             if recurse is True:
                 return self.collection.serialize()
-            else:
-                return None
+            return None
         else:
             return None
 
