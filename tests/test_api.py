@@ -1031,6 +1031,19 @@ def server_with_file_note(server_with_object_item_file):
     yield server, data
 
 
+def test_get_file_note(server_with_file_note):
+    server, data = server_with_file_note
+    file_notes_url = url_for("file_note",
+                             project_id=data['project_id'],
+                             object_id=data['object_id'],
+                             file_id=data['file_id'],
+                             note_id=data['note_id']
+                             )
+    get_resp = server.get(file_notes_url)
+    assert get_resp.status_code == 200
+    res_data = json.loads(get_resp.data)
+    assert res_data['file_id'] == data['file_id']
+
 def test_update_file_note(server_with_file_note):
     server, data = server_with_file_note
 
@@ -1050,3 +1063,4 @@ def test_update_file_note(server_with_file_note):
     )
     assert update_resp.status_code == 200
     assert json.loads(update_resp.data)["message"] == "New note message"
+

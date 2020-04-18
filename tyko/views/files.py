@@ -88,6 +88,11 @@ class FileNoteAPI(views.MethodView):
         self._data_connector = \
             data_provider.FilesDataConnector(provider.db_session_maker)
 
+    def get(self, file_id: int, note_id: int) -> flask.wrappers.Response:
+        dc = data_provider.FileNotesDataConnector(self._data_provider.db_session_maker)
+        res = dc.get(note_id, serialize=True)
+        return res
+
     def delete(self, file_id: int, note_id: int) -> flask.wrappers.Response:
         file_record = self._data_connector.remove_note(file_id, note_id)
         if file_record is True:

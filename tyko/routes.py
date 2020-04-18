@@ -317,7 +317,8 @@ class Routes:
                 ),
                 methods=[
                     "PUT",
-                    "DELETE"
+                    "DELETE",
+                    "GET"
                 ]
             )
 
