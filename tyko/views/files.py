@@ -157,14 +157,27 @@ class FileNotesAPI(views.MethodView):
 class FileAnnotationAPI(views.MethodView):
     def __init__(self, provider: DataProvider) -> None:
         self._data_provider = provider
+        self._connector = data_provider.FileAnnotationsConnector(self._data_provider.db_session_maker)
 
     def delete(self, file_id: int, annotation_id):
-        pass
-        # TODO: FileAnnotation.delete()
+        annotation = self._connector.get(annotation_id, serialize=True)
+
+        if annotation['file_id'] != file_id:
+            return make_response("File id does not match annotation id", 400)
+
+        successfully_deleted = self._connector.delete(annotation_id)
+        if successfully_deleted is True:
+            return make_response("", 202)
+        return make_response("Something went wrong", 500)
 
     def put(self, file_id: int, annotation_id):
-        pass
-        # TODO: FileAnnotation.put()
+        json_request = request.get_json()
+        changed_data = {
+            'content': json_request.get('content'),
+            'type_id': int(json_request.get('type_id')),
+        }
+        return self._connector.update(annotation_id, changed_data)
+
 
 class FileAnnotationsAPI(views.MethodView):
     def __init__(self, provider: DataProvider) -> None:
@@ -188,7 +201,7 @@ class FileAnnotationsAPI(views.MethodView):
         new_annotation_id = annotation_connector.create(
             file_id=file_id,
             content=json_request['content'],
-            annotation_type_id=json_request['type']
+            annotation_type_id=json_request['type_id']
         )
         return {
             "fileAnnotation": {

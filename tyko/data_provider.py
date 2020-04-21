@@ -1253,8 +1253,8 @@ class FileAnnotationsConnector(AbsDataProviderConnector):
     def get_single_annotations(self, annotation_id, serialize):
         session = self.session_maker()
         try:
-            annotation = session.query(scheme.FileAnnotationType)\
-                .filter(scheme.FileAnnotationType.id == annotation_id)\
+            annotation = session.query(scheme.FileAnnotation)\
+                .filter(scheme.FileAnnotation.id == annotation_id)\
                 .one()
             if serialize is True:
                 return annotation.serialize()
@@ -1299,16 +1299,31 @@ class FileAnnotationsConnector(AbsDataProviderConnector):
             return annotation_id
         finally:
             session.close()
-        # TODO: FileAnnotationsConnector.create()
-        pass
 
     def update(self, id, changed_data):
-        # TODO: FileAnnotationsConnector.update()
-        pass
+        session = self.session_maker()
+        try:
+            annotation = session.query(scheme.FileAnnotation).filter(scheme.FileAnnotation.id == id).one()
+            if "content" in changed_data:
+                annotation.annotation_content = changed_data['content']
+            if "type_id" in changed_data:
+                annotation.type_id = changed_data['type_id']
+            session.commit()
+            return annotation.serialize()
+        finally:
+            session.close()
 
     def delete(self, id):
-        # TODO: FileAnnotationsConnector.delete()
-        pass
+        session = self.session_maker()
+        try:
+            items_deleted = session.query(scheme.FileAnnotation)\
+                .filter(scheme.FileAnnotation.id == id)\
+                .delete()
+            session.commit()
+            session.close()
+            return items_deleted > 0
+        finally:
+            session.close()
 
 
 class FileAnnotationTypeConnector(AbsDataProviderConnector):

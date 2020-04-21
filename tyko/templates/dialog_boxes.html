@@ -1,3 +1,55 @@
+{% macro confirmRemoveAnnotation(modal_id, title="Remove Annotation") %}
+    <div class="modal fade" id="{{ modal_id }}" data-backdrop="static"
+         tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ title }}</h5>
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-label="Close">
+                        <span aria-hidden="true">&times</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to permanently remove the
+                        following annotation?</p>
+                    <div>
+                        <p id="entityContent"></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+
+                    <button id="annotationRemoveYesBtn" type="button"
+                            class="btn btn-primary">Yes
+                    </button>
+                    <button type="button" class="btn btn-secondary"
+                            data-dismiss="modal">No
+                    </button>
+                    <script type="module">
+                        const dialog = $("#{{ modal_id }}");
+
+                        document.getElementById("annotationRemoveYesBtn").addEventListener(
+                            "click",
+                            function (event) {
+                              dialog.trigger("accept", [dialog.data['annotation']]);
+                            });
+
+                    </script>
+                </div>
+            </div>
+        </div>
+    <script type="module">
+         let dialogBox = $("#{{ modal_id }}");
+        dialogBox.on("confirm", (event, annotation) => {
+          const messageContent = `${annotation["type"]["name"]}: ${annotation["content"]}`
+          dialogBox.data['annotation'] =  annotation;
+          dialogBox.find("#entityContent").text(messageContent)
+          dialogBox.modal("show");
+          dialogBox.find()
+        });
+    </script>
+    </div>
+{% endmacro %}
 {% macro confirmRemoveFileNote(modal_id, title="Remove Note") %}
     <div class="modal fade" id="{{ modal_id }}" data-backdrop="static"
          tabindex="-1" role="dialog">
@@ -149,7 +201,7 @@
                             function () {
                                 const modal = document.getElementById("{{ modal_id }}");
                                 let newAnnotation = Object.assign({}, $(modal).data['note']);
-                                newAnnotation["text"] = document.getElementById('valueContentTextarea').value
+                                newAnnotation["content"] = document.getElementById('valueContentTextarea').value
                                 const annotationSelection = document.getElementById('annotationTypeSelect')
                                 newAnnotation["type_id"] = annotationSelection.options[annotationSelection.selectedIndex].value
                                 modal.dispatchEvent(
@@ -157,7 +209,7 @@
                                         "accept",
                                         {
                                             detail: {
-                                                annotationText: newAnnotation,
+                                                annotation: newAnnotation,
                                                 request: {
                                                     "type": $(modal).data['request']['type'],
                                                     "url": $(modal).data['request']['url'],
@@ -221,30 +273,32 @@
                             let textArea = dialogBox.find('#valueContentTextarea');
                             let selection = dialogBox.find('#annotationTypeSelect');
                             let saveButton = dialogBox.find('#{{ saveButtonID }}');
-
+                            let apiRequest = {
+                              "url" : requestUrl
+                            }
                             switch (mode_type) {
-
                                 case "create":
                                     set_options("{{ url_for('file_annotation_types') }}", selection);
                                     textArea.val("");
                                     saveButton.text("Add")
+                                    apiRequest['type'] = "create";
                                     break;
 
                                 case "edit":
                                     textArea.val(annotation['content']);
                                     set_options("{{ url_for('file_annotation_types') }}", selection, annotation['type']['type_id']);
                                     saveButton.text("Update")
+                                    apiRequest['type'] = "edit";
+
                                     break;
-                                {#    TODO: send signals for what this needs to do when ending#}
                                 default:
                                     throw "invalid mode";
-
                             }
+                            dialogBox.data['request'] = apiRequest;
                         }
                     )
                 </script>
             </div>
-
         </div>
     </div>
 {% endmacro %}

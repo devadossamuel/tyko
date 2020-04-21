@@ -340,7 +340,7 @@ class Routes:
                 ),
                 methods=[
                     "PUT",
-                    # "DELETE"
+                    "DELETE"
                 ]
             )
 

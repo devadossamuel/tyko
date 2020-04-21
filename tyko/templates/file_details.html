@@ -56,7 +56,9 @@
                                 <button class="dropdown-item btn-sm"
                                         onclick='document.getElementById("fileAnnotationTable").dispatchEvent(new CustomEvent("editAnnotation", {"detail": {"annotation": {{ annotation|tojson }} }}))'>
                                     Edit</button>
-                                <button class="dropdown-item btn-sm btn-danger">Remove</button>
+                                <button class="dropdown-item btn-sm btn-danger"
+                                        onclick='document.getElementById("fileAnnotationTable").dispatchEvent(new CustomEvent("removeAnnotation", {"detail": {"annotation": {{ annotation|tojson }} }}))'>
+                                    Remove</button>
                             </div>
                         </td>
                     </tr>
@@ -69,19 +71,47 @@
     {% endcall %}
 <script type="module">
     import {routes} from "{{ url_for('static', filename="js/api.js") }}"
+    import {requests} from "{{ url_for('static', filename="js/request.js") }}"
     const all_routes = routes.all_routes("{{ url_for('list_routes') }}");
     const file_id = {{ file['id'] }};
-    $("#fileAnnotationTable").on('editAnnotation', function (event) {
+
+    function get_file_annotation_route(routes, file_id, annotationId) {
+      const routeTemplate = routes["file_annotation"]['route']
+      return routeTemplate
+        .replace("<int:file_id>", file_id)
+        .replace("<int:annotation_id>", annotationId);
+    }
+    const fileAnnotationTable = $("#fileAnnotationTable");
+
+    const removeAnnotationDialog = $('#removeAnnotationsModal');
+    const annotationDialog = $('#editAnnotationsModal');
+    removeAnnotationDialog.on("accept", function(event, annotation) {
+      console.log(annotation);
+      all_routes.then((routes)=> {
+        const remove_route = get_file_annotation_route(routes, annotation['file_id'], annotation["id"]);
+        requests.delete(remove_route).then(function() {
+          console.log("Success");
+          location.reload();
+        }).catch(function(res) {
+          alert("FAILEd to remove " + res['statusText']);
+        });
+      });
+
+    })
+    fileAnnotationTable.on('removeAnnotation', function (event) {
+      const annotation = event.detail['annotation']
+      all_routes.then((routes)=> {
+        removeAnnotationDialog.trigger("confirm", [annotation]);
+      });
+    });
+
+    fileAnnotationTable.on('editAnnotation', function (event) {
         const annotation = event.detail['annotation']
         all_routes.then((routes)=> {
-            const routeTemplate = routes["file_annotation"]['route']
-            const requestUrl = routeTemplate
-                .replace("<int:file_id>", file_id)
-                .replace("<int:annotation_id>", annotation["id"])
             annotationDialog.trigger("set_mode",
                 [
                     "edit",
-                    requestUrl,
+                    get_file_annotation_route(routes, file_id, annotation["id"]),
                     annotation,
 
                 ]
@@ -89,9 +119,11 @@
             annotationDialog.modal('show');
         });
     })
-    const annotationDialog = $('#editAnnotationsModal')
 
-    $("#addAnnotationsBtn").on('click', function () {
+
+    const addAnnotationBtn = $('#addAnnotationsBtn');
+
+    addAnnotationBtn.on('click', function () {
         all_routes.then((routes)=>{
             const routeTemplate = routes["file_annotations"]['route']
             const requestUrl = routeTemplate.replace("<int:file_id>", file_id)
@@ -104,14 +136,46 @@
             }
         )
     });
-    annotationDialog.on("accept", function () {
+    annotationDialog.on("accept", function (event) {
         console.log("Accepted")
+        const request = event.detail["request"];
+        console.log("request type " + request['type']);
+        console.log("request url " + request['url']);
+
+        const annotation = event.detail["annotation"];
+        console.log("annotation text " + annotation['text']);
+        console.log("annotation id " + annotation['type_id']);
+        switch (request['type']) {
+            case "create":
+              requests.post(request['url'], annotation)
+                .then(function() {
+                  annotationDialog.modal('hide');
+                  location.reload();
+                }).catch(function(res) {
+                  alert("Creating new record failed" + res["statusText"]);
+                  console.error(res["responseText"]);
+              })
+              break;
+            case "edit":
+                console.log("editing exisiting record")
+                requests.put(request['url'], annotation)
+                    .then(function() {
+                      annotationDialog.modal('hide');
+                      location.reload();
+                }).catch(function(res) {
+                  alert("Updating record failed" + res["statusText"]);
+                  console.error(res["responseText"]);
+              })
+              break;
+            default:
+              throw "invalid type";
+        }
     })
 
 
 </script>
- {{ dialog.editFileAnnotation("editAnnotationsModal", url_for('file_annotation_types')) }}
-{#       TODO: setup file annotations#}
+    {{ dialog.editFileAnnotation("editAnnotationsModal", url_for('file_annotation_types')) }}
+    {{ dialog.confirmRemoveAnnotation("removeAnnotationsModal") }}
     {% call widgets.card("Notes", "my-1")  %}
             <ul id="notesList" class="list-group list-group-flush">
             {% for note in file['notes'] %}
