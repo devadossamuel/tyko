@@ -155,7 +155,9 @@ class FileNotesAPI(views.MethodView):
 class FileAnnotationAPI(views.MethodView):
     def __init__(self, provider: DataProvider) -> None:
         self._data_provider = provider
-        self._connector = data_provider.FileAnnotationsConnector(self._data_provider.db_session_maker)
+
+        self._connector = data_provider.FileAnnotationsConnector(
+            self._data_provider.db_session_maker)
 
     def delete(self, file_id: int, annotation_id):
         annotation = self._connector.get(annotation_id, serialize=True)
@@ -212,6 +214,7 @@ class FileAnnotationsAPI(views.MethodView):
             },
         }
 
+
 class FileAnnotationTypesAPI(views.MethodView):
     def __init__(self, provider: DataProvider) -> None:
         self._data_provider = provider
@@ -234,10 +237,12 @@ class FileAnnotationTypesAPI(views.MethodView):
         annotation_connector = \
             data_provider.FileAnnotationTypeConnector(
                 self._data_provider.db_session_maker)
-        new_annotation_type_id = annotation_connector.create(text=json_request['text'])
+
+        new_annotation_type_id = \
+            annotation_connector.create(text=json_request['text'])
+
         return {
             "fileAnnotationType": {
                 "id": new_annotation_type_id['type_id'],
                 }
         }
-

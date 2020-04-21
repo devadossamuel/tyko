@@ -712,6 +712,7 @@ class InstantiationFile(AVTables):
                     "annotation_id": annotation.id
                 }
 
+
 class FileNotes(AVTables):
     __tablename__ = "file_notes"
     id = db.Column(
@@ -743,6 +744,7 @@ class FileAnnotationType(AVTables):
             "active": self.active
         }
 
+
 class FileAnnotation(AVTables):
     __tablename__ = "file_annotations"
 
@@ -750,8 +752,9 @@ class FileAnnotation(AVTables):
         "annotation_id", db.Integer, primary_key=True, autoincrement=True)
     file_id = db.Column(db.Integer,
                         db.ForeignKey("instantiation_files.file_id"))
+
     type_id = db.Column(db.Integer,
-                               db.ForeignKey("file_annotation_types.type_id"))
+                        db.ForeignKey("file_annotation_types.type_id"))
 
     annotation_type = relationship("FileAnnotationType",
                                    foreign_keys=[type_id])

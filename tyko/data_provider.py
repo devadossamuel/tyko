@@ -1303,7 +1303,10 @@ class FileAnnotationsConnector(AbsDataProviderConnector):
     def update(self, id, changed_data):
         session = self.session_maker()
         try:
-            annotation = session.query(scheme.FileAnnotation).filter(scheme.FileAnnotation.id == id).one()
+            annotation = session.query(scheme.FileAnnotation)\
+                .filter(scheme.FileAnnotation.id == id)\
+                .one()
+
             if "content" in changed_data:
                 annotation.annotation_content = changed_data['content']
             if "type_id" in changed_data:
@@ -1336,7 +1339,9 @@ class FileAnnotationTypeConnector(AbsDataProviderConnector):
         annotation_message = kwargs['text']
         session = self.session_maker()
         try:
-            new_annotation_type = scheme.FileAnnotationType(name=annotation_message)
+            new_annotation_type = scheme.FileAnnotationType(
+                name=annotation_message)
+
             session.add(new_annotation_type)
             session.flush()
             session.refresh(new_annotation_type)
