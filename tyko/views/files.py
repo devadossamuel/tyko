@@ -151,8 +151,6 @@ class FileNotesAPI(views.MethodView):
             }
         )
 
-# TODO: Create a file annotation types api class for CRUD
-
 
 class FileAnnotationAPI(views.MethodView):
     def __init__(self, provider: DataProvider) -> None:
@@ -240,11 +238,6 @@ class FileAnnotationTypesAPI(views.MethodView):
         return {
             "fileAnnotationType": {
                 "id": new_annotation_type_id['type_id'],
-                # "url": {
-                #     "api": url_for("file_annotations",
-                #                    file_id=file_id,
-                #                    annotation_id=new_annotation_id)
                 }
         }
-        # todo FileAnnotationTypesAPI post
 
