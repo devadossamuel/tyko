@@ -468,6 +468,39 @@ pipeline {
                                 }
                             }
                         }
+                        stage("Linting Javascript with ESlint"){
+                            agent {
+                                dockerfile {
+                                    filename 'CI/jenkins/dockerfiles/testing_javascript/Dockerfile'
+                                    label "linux && docker"
+                                    additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
+                                }
+                            }
+                            steps{
+                                sh "mkdir -p reports"
+                                sh("npm install  -y")
+                                catchError(buildResult: 'SUCCESS', message: 'ESlint found issues', stageResult: 'UNSTABLE') {
+                                    sh(
+                                        label:  "Running ESlint",
+                                        script: "./node_modules/.bin/eslint --format checkstyle tyko/static/js/ -o reports/eslint.xml"
+                                    )
+                                }
+                            }
+                            post{
+                                always{
+                                    archiveArtifacts allowEmptyArchive: true, artifacts: "reports/*.xml"
+                                    recordIssues(tools: [esLint(pattern: 'reports/eslint.xml')])
+                                }
+                                cleanup{
+                                    cleanWs(
+                                        deleteDirs: true,
+                                        patterns: [
+                                            [pattern: 'reports/', type: 'INCLUDE'],
+                                        ]
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
