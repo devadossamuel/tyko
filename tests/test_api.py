@@ -1094,15 +1094,12 @@ def test_create_and_delete_file_annotation(server_with_object_item_file):
         content_type='application/json'
     )
     assert new_annotation_resp.status_code == 200
-    new_annotation_url = \
-        json.loads(new_annotation_resp.data)['fileAnnotation']['url']['api']
 
     annotations = \
         json.loads(server.get(file_annotations_url).data)['annotations']
 
     assert len(annotations) == 1
-    # del_resp = server.delete(new_note_api_url)
-    # assert del_resp.status_code == 202
-    #
-    # assert len(json.loads(server.get(file_notes_url).data)['notes']) == 0
-
+    annotation_url = url_for("file_annotation", file_id=file_id, annotation_id=annotations[0]['id'])
+    del_resp = server.delete(annotation_url)
+    assert del_resp.status_code == 202
+    assert len(json.loads(server.get(file_annotations_url).data)['annotations']) == 0
