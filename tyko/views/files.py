@@ -11,7 +11,7 @@ class ItemFilesAPI(views.MethodView):
         self._data_connector = \
             data_provider.FilesDataConnector(provider.db_session_maker)
 
-    def get(self, project_id, object_id, item_id):
+    def get(self, project_id, object_id, item_id) -> flask.wrappers.Response:
 
         items_dp = data_provider.ItemDataConnector(
             self._data_provider.db_session_maker)
@@ -23,7 +23,7 @@ class ItemFilesAPI(views.MethodView):
 
         })
 
-    def post(self, project_id, object_id, item_id):
+    def post(self, project_id, object_id, item_id) -> flask.wrappers.Response:
         json_request = request.get_json()
         new_file_id = self._data_connector.create(
             item_id=item_id,
@@ -159,7 +159,7 @@ class FileAnnotationAPI(views.MethodView):
         self._connector = data_provider.FileAnnotationsConnector(
             self._data_provider.db_session_maker)
 
-    def delete(self, file_id: int, annotation_id):
+    def delete(self, file_id: int, annotation_id) -> flask.wrappers.Response:
         annotation = self._connector.get(annotation_id, serialize=True)
 
         if annotation['file_id'] != file_id:
@@ -170,7 +170,7 @@ class FileAnnotationAPI(views.MethodView):
             return make_response("", 202)
         return make_response("Something went wrong", 500)
 
-    def put(self, file_id: int, annotation_id):
+    def put(self, file_id: int, annotation_id) -> flask.wrappers.Response:
         json_request = request.get_json()
         changed_data = {
             'content': json_request.get('content'),
@@ -188,12 +188,12 @@ class FileAnnotationsAPI(views.MethodView):
             self._data_provider.db_session_maker)
         res = file_connector.get(file_id, serialize=True)
 
-        return {
+        return jsonify({
             "annotations": res['annotations'],
             "total": len(res['annotations'])
-        }
+        })
 
-    def post(self, file_id: int):
+    def post(self, file_id: int) -> flask.wrappers.Response:
         json_request = request.get_json()
         annotation_connector = \
             data_provider.FileAnnotationsConnector(
@@ -203,7 +203,7 @@ class FileAnnotationsAPI(views.MethodView):
             content=json_request['content'],
             annotation_type_id=json_request['type_id']
         )
-        return {
+        return jsonify({
             "fileAnnotation": {
                 "id": new_annotation_id,
                 "url": {
@@ -212,14 +212,14 @@ class FileAnnotationsAPI(views.MethodView):
                                    annotation_id=new_annotation_id)
                 }
             },
-        }
+        })
 
 
 class FileAnnotationTypesAPI(views.MethodView):
     def __init__(self, provider: DataProvider) -> None:
         self._data_provider = provider
 
-    def get(self):
+    def get(self) -> flask.wrappers.Response:
         connector = data_provider.FileAnnotationsConnector(
             self._data_provider.db_session_maker)
         all_types = connector.get(serialize=True)
@@ -232,7 +232,7 @@ class FileAnnotationTypesAPI(views.MethodView):
         pass
         # todo FileAnnotationTypesAPI delete
 
-    def post(self):
+    def post(self) -> flask.wrappers.Response:
         json_request = request.get_json()
         annotation_connector = \
             data_provider.FileAnnotationTypeConnector(
@@ -241,8 +241,8 @@ class FileAnnotationTypesAPI(views.MethodView):
         new_annotation_type_id = \
             annotation_connector.create(text=json_request['text'])
 
-        return {
+        return jsonify({
             "fileAnnotationType": {
                 "id": new_annotation_type_id['type_id'],
                 }
-        }
+        })
