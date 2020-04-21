@@ -5,6 +5,9 @@
         {% if file['generation'] %}
         <instantiationGenerations>{{ file['generation']}}</instantiationGenerations>
         {% endif %}
+        {% for annotation in file['annotations'] %}
+            <instantiationAnnotation annotationType="{{ annotation['type']['name'] }}">{{ annotation['content']}}</instantiationAnnotation>
+        {% endfor %}
         {% for note in file['notes'] %}
             <instantiationAnnotation annotationType="note">{{ note['message'] }}</instantiationAnnotation>
         {% endfor %}
