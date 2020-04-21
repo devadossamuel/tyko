@@ -1069,7 +1069,6 @@ def test_create_and_delete_file_annotation(server_with_object_item_file):
     server, data = server_with_object_item_file
 
     file_id = data['file_id']
-    # TODO: Create an annotation type
     file_annotation_types_url = url_for("file_annotation_types")
     new_annotation_type_resp = server.post(
         file_annotation_types_url,
@@ -1089,7 +1088,7 @@ def test_create_and_delete_file_annotation(server_with_object_item_file):
         data=json.dumps(
             {
                 "content": "This file is silly",
-                "type": new_annotation_type_data["id"]
+                "type_id": new_annotation_type_data["id"]
             }
         ),
         content_type='application/json'
