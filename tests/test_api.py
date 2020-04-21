@@ -1065,6 +1065,35 @@ def test_update_file_note(server_with_file_note):
     assert json.loads(update_resp.data)["message"] == "New note message"
 
 
+def test_create_file_annotation_types(server_with_object_item_file):
+    server, data = server_with_object_item_file
+    file_annotation_types_url = url_for("file_annotation_types")
+
+    new_annotation_type_get_resp = server.get(file_annotation_types_url)
+
+    assert new_annotation_type_get_resp.status_code == 200
+
+    new_annotation_type_data = json.loads(new_annotation_type_get_resp.data)
+    assert len(new_annotation_type_data['annotation_types']) == 0
+    assert new_annotation_type_data['total'] == 0
+
+    new_annotation_type_resp = server.post(
+        file_annotation_types_url,
+        data=json.dumps({
+            "text": "Audio Quality"
+
+        }),
+        content_type='application/json'
+    )
+    assert new_annotation_type_resp.status_code == 200
+
+    new_annotation_type_after_adding_data = json.loads(server.get(file_annotation_types_url).data)
+    assert len(new_annotation_type_after_adding_data['annotation_types']) == 1
+    assert new_annotation_type_after_adding_data['total'] == 1
+    assert new_annotation_type_after_adding_data['annotation_types'][0]["name"] == "Audio Quality"
+
+
+
 def test_create_and_delete_file_annotation(server_with_object_item_file):
     server, data = server_with_object_item_file
 
@@ -1078,8 +1107,11 @@ def test_create_and_delete_file_annotation(server_with_object_item_file):
         }),
         content_type='application/json'
     )
+
     assert new_annotation_type_resp.status_code == 200
+
     new_annotation_type_data = json.loads(new_annotation_type_resp.data)['fileAnnotationType']
+
     assert isinstance(new_annotation_type_data["id"], int)
 
     file_annotations_url = url_for("file_annotations", file_id=file_id)
