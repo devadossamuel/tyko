@@ -150,3 +150,88 @@ class FileNotesAPI(views.MethodView):
                 }
             }
         )
+
+# TODO: Create a file annotation types api class for CRUD
+
+
+class FileAnnotationAPI(views.MethodView):
+    def __init__(self, provider: DataProvider) -> None:
+        self._data_provider = provider
+
+    def delete(self, file_id: int, annotation_id):
+        pass
+        # TODO: FileAnnotation.delete()
+
+    def put(self, file_id: int, annotation_id):
+        pass
+        # TODO: FileAnnotation.put()
+
+class FileAnnotationsAPI(views.MethodView):
+    def __init__(self, provider: DataProvider) -> None:
+        self._data_provider = provider
+
+    def get(self, file_id: int) -> flask.wrappers.Response:
+        file_connector = data_provider.FilesDataConnector(
+            self._data_provider.db_session_maker)
+        res = file_connector.get(file_id, serialize=True)
+
+        return {
+            "annotations": res['annotations'],
+            "total": len(res['annotations'])
+        }
+
+    def post(self, file_id: int):
+        json_request = request.get_json()
+        annotation_connector = \
+            data_provider.FileAnnotationsConnector(
+                self._data_provider.db_session_maker)
+        new_annotation_id = annotation_connector.create(
+            file_id=file_id,
+            content=json_request['content'],
+            annotation_type_id=json_request['type']
+        )
+        return {
+            "fileAnnotation": {
+                "id": new_annotation_id,
+                "url": {
+                    "api": url_for("file_annotations",
+                                   file_id=file_id,
+                                   annotation_id=new_annotation_id)
+                }
+            },
+        }
+
+class FileAnnotationTypesAPI(views.MethodView):
+    def __init__(self, provider: DataProvider) -> None:
+        self._data_provider = provider
+
+    def get(self):
+        connector = data_provider.FileAnnotationsConnector(
+            self._data_provider.db_session_maker)
+        all_types = connector.get(serialize=True)
+        return jsonify({
+            "annotation_types": all_types,
+            "total": len(all_types)
+        })
+
+    def delete(self):
+        pass
+        # todo FileAnnotationTypesAPI delete
+
+    def post(self):
+        json_request = request.get_json()
+        annotation_connector = \
+            data_provider.FileAnnotationTypeConnector(
+                self._data_provider.db_session_maker)
+        new_annotation_type_id = annotation_connector.create(text=json_request['text'])
+        return {
+            "fileAnnotationType": {
+                "id": new_annotation_type_id['type_id'],
+                # "url": {
+                #     "api": url_for("file_annotations",
+                #                    file_id=file_id,
+                #                    annotation_id=new_annotation_id)
+                }
+        }
+        # todo FileAnnotationTypesAPI post
+

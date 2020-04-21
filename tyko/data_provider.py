@@ -1247,3 +1247,94 @@ def get_schema_version(db_engine: sqlalchemy.engine.Engine) -> Optional[str]:
     if results is None:
         return None
     return results.version_num
+
+
+class FileAnnotationsConnector(AbsDataProviderConnector):
+    def get_single_annotations(self, annotation_id, serialize):
+        session = self.session_maker()
+        try:
+            annotation = session.query(scheme.FileAnnotationType)\
+                .filter(scheme.FileAnnotationType.id == annotation_id)\
+                .one()
+            if serialize is True:
+                return annotation.serialize()
+            else:
+                return annotation
+        finally:
+            session.close()
+
+    def get_all_annotations(self, serialize):
+        session = self.session_maker()
+        try:
+            annotations = []
+
+            for annotation in session.query(scheme.FileAnnotationType):
+                if serialize:
+                    annotations.append(annotation.serialize())
+                else:
+                    annotations.append(annotation)
+            return annotations
+        finally:
+            session.close()
+
+    def get(self, id=None, serialize=False):
+        if id is None:
+            return self.get_all_annotations(serialize)
+        return self.get_single_annotations(id, serialize)
+
+    def create(self, *args, **kwargs):
+        file_id = kwargs['file_id']
+        content = kwargs['content']
+        annotation_type_id = kwargs['annotation_type_id']
+        session = self.session_maker()
+        try:
+            new_data = scheme.FileAnnotation(file_id=file_id,
+                                             annotation_content=content,
+                                             type_id=annotation_type_id)
+            session.add(new_data)
+            session.flush()
+            session.refresh(new_data)
+            annotation_id = new_data.id
+            session.commit()
+            return annotation_id
+        finally:
+            session.close()
+        # TODO: FileAnnotationsConnector.create()
+        pass
+
+    def update(self, id, changed_data):
+        # TODO: FileAnnotationsConnector.update()
+        pass
+
+    def delete(self, id):
+        # TODO: FileAnnotationsConnector.delete()
+        pass
+
+
+class FileAnnotationTypeConnector(AbsDataProviderConnector):
+
+    def get(self, id=None, serialize=False):
+        # TDOD: FileAnnotationTypeConnector.get()
+        pass
+
+    def create(self, *args, **kwargs):
+        annotation_message = kwargs['text']
+        session = self.session_maker()
+        try:
+            new_annotation_type = scheme.FileAnnotationType(name=annotation_message)
+            session.add(new_annotation_type)
+            session.flush()
+            session.refresh(new_annotation_type)
+            session.commit()
+            return new_annotation_type.serialize()
+
+        finally:
+            session.close()
+
+    def update(self, id, changed_data):
+        # TDOD: FileAnnotationTypeConnector.update()
+        pass
+
+    def delete(self, id):
+        # TDOD: FileAnnotationTypeConnector.delete()
+        pass

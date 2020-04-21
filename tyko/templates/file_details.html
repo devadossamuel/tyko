@@ -31,13 +31,87 @@
 
 {% block secondary_details %}
     {% call widgets.card("Annotations", "my-1")  %}
+        <script>var editAnnotationEvent = new Event("editAnnotation")</script>
+        <table id="fileAnnotationTable" class="table table-sm">
+            <caption hidden>File Annotations</caption>
+            <thead hidden>
+                <tr>
+                    <th scope="col">Type</th>
+                    <th scope="col">Content</th>
+                    <th scope="col">Edit</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for annotation in file['annotations'] %}
+                    <tr>
+                        <td>{{ annotation['type']['name'] }}</td>
+                        <td>{{ annotation['content'] }}</td>
+                        <td>
+                            <button type="button"
+                                    class="btn btn-sm btn-secondary dropdown-toggle"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false"></button>
+                            <div class="dropdown-menu">
+                                <button class="dropdown-item btn-sm"
+                                        onclick='document.getElementById("fileAnnotationTable").dispatchEvent(new CustomEvent("editAnnotation", {"detail": {"annotation": {{ annotation|tojson }} }}))'>
+                                    Edit</button>
+                                <button class="dropdown-item btn-sm btn-danger">Remove</button>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
         <div class="card-footer bg-transparent">
-            <button class="btn btn-primary float-right"
-                    onclick="alert('does nothing right now')">
-                Add</button>
+            <button id="addAnnotationsBtn" class="btn btn-primary float-right btn-sm">Add</button>
         </div>
     {% endcall %}
-{#        TODO: setup file annotations#}
+<script type="module">
+    import {routes} from "{{ url_for('static', filename="js/api.js") }}"
+    const all_routes = routes.all_routes("{{ url_for('list_routes') }}");
+    const file_id = {{ file['id'] }};
+    $("#fileAnnotationTable").on('editAnnotation', function (event) {
+        const annotation = event.detail['annotation']
+        all_routes.then((routes)=> {
+            const routeTemplate = routes["file_annotation"]['route']
+            const requestUrl = routeTemplate
+                .replace("<int:file_id>", file_id)
+                .replace("<int:annotation_id>", annotation["id"])
+            annotationDialog.trigger("set_mode",
+                [
+                    "edit",
+                    requestUrl,
+                    annotation,
+
+                ]
+            );
+            annotationDialog.modal('show');
+        });
+    })
+    const annotationDialog = $('#editAnnotationsModal')
+
+    $("#addAnnotationsBtn").on('click', function () {
+        all_routes.then((routes)=>{
+            const routeTemplate = routes["file_annotations"]['route']
+            const requestUrl = routeTemplate.replace("<int:file_id>", file_id)
+            annotationDialog.trigger("set_mode",
+                    [
+                        "create",
+                        requestUrl
+                    ]);
+            annotationDialog.modal('show');
+            }
+        )
+    });
+    annotationDialog.on("accept", function () {
+        console.log("Accepted")
+    })
+
+
+</script>
+ {{ dialog.editFileAnnotation("editAnnotationsModal", url_for('file_annotation_types')) }}
+{#       TODO: setup file annotations#}
     {% call widgets.card("Notes", "my-1")  %}
             <ul id="notesList" class="list-group list-group-flush">
             {% for note in file['notes'] %}
@@ -47,15 +121,14 @@
 
                         {{ note['message'] }}
                         </div>
-                        <div>
-
-                            <div class="btn-group" role="group" aria-label="Edit">
-                                <button type="button"
-                                        class="btn btn-sm btn-secondary dropdown-toggle"
-                                        data-toggle="dropdown"
-                                        aria-haspopup="true"
-                                        aria-expanded="false"></button>
-                                <div class="dropdown-menu">
+                    <div>
+                        <div class="btn-group" role="group" aria-label="Edit">
+                            <button type="button"
+                                    class="btn btn-sm btn-secondary dropdown-toggle"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false"></button>
+                            <div class="dropdown-menu">
                                 <button class="btn btn-secondary btn-sm dropdown-item"
                                         id="noteEditButton{{ loop.index }}">
                                     Edit
@@ -110,14 +183,9 @@
             </ul>
         <script type="application/javascript" src="{{ url_for('static', filename='js/notes.js') }}"></script>
         <script type="module">
-            import {files} from "{{url_for('static', filename="js/api.js")}}"
+            import {files} from "{{ url_for('static', filename='js/api.js') }}"
             const removeModal = document.getElementById("removeNoteModal");
             removeModal.addEventListener("accept", function (event) {
-                    console.log("Got accept to delete");
-                    console.log("Got accept to delete note id " + event.detail['note']["id"])
-                    console.log("Got accept to delete note from file id  " + event.detail['file']["id"])
-                    console.log("Got accept to use request  " + event.detail['request']["url"])
-                    {#TODO: delete note#}
                     files.removeNote(
                         event.detail['request']['url']).then(function () {
                             location.reload();
@@ -184,7 +252,7 @@
 
 
         <div class="card-footer bg-transparent">
-             <button id="newNoteBtn" class="btn btn-primary float-right">Add</button>
+             <button id="newNoteBtn" class="btn btn-primary btn-sm float-right">Add</button>
             <script type="module">
                 document.getElementById('newNoteBtn').addEventListener('click', function (event) {
                     const modal = $('#editNoteModal');

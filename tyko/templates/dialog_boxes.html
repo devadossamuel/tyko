@@ -1,101 +1,250 @@
 {% macro confirmRemoveFileNote(modal_id, title="Remove Note") %}
-<div class="modal fade" id="{{ modal_id }}" data-backdrop="static"
-     tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">{{ title }}</h5>
-                <button type="button" class="close" data-dismiss="modal"
-                        aria-label="Close">
-                    <span aria-hidden="true">&times</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to permanently remove the
-                    following note?</p>
-                <div>
-                    <p id="noteContent"></p>
+    <div class="modal fade" id="{{ modal_id }}" data-backdrop="static"
+         tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ title }}</h5>
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-label="Close">
+                        <span aria-hidden="true">&times</span>
+                    </button>
                 </div>
-            </div>
-            <div class="modal-footer">
+                <div class="modal-body">
+                    <p>Are you sure you want to permanently remove the
+                        following note?</p>
+                    <div>
+                        <p id="noteContent"></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
 
-                <button id="noteDeleteYesBtn" type="button"
-                        class="btn btn-primary">Yes</button>
-                <button type="button" class="btn btn-secondary"
-                        data-dismiss="modal">No</button>
-                <script type="module">
-                    document.getElementById("noteDeleteYesBtn").addEventListener(
-                        "click",
-                        function () {
-                            const modal = document.getElementById("{{ modal_id }}");
-                            modal.dispatchEvent(new CustomEvent("accept",
-                                {
-                                    detail: {
-                                        note: $(modal).data['note'],
-                                        file: $(modal).data['file'],
-                                        request: $(modal).data['request'],
+                    <button id="noteDeleteYesBtn" type="button"
+                            class="btn btn-primary">Yes
+                    </button>
+                    <button type="button" class="btn btn-secondary"
+                            data-dismiss="modal">No
+                    </button>
+                    <script type="module">
+                        document.getElementById("noteDeleteYesBtn").addEventListener(
+                            "click",
+                            function () {
+                                const modal = document.getElementById("{{ modal_id }}");
+                                modal.dispatchEvent(new CustomEvent("accept",
+                                    {
+                                        detail: {
+                                            note: $(modal).data['note'],
+                                            file: $(modal).data['file'],
+                                            request: $(modal).data['request'],
+                                        }
                                     }
-                                }
-                            ));
-                        }
+                                ));
+                            }
                         );
 
-                </script>
+                    </script>
+                </div>
             </div>
         </div>
     </div>
-</div>
-{% endmacro%}
+{% endmacro %}
 
-{%  macro editFileNote(modal_id) %}
-<div class="modal fade" id="{{ modal_id }}" tabindex="-1" role="dialog">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">File Note</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-              <form>
-                  <div class="form-group">
-                    <label for="noteContentTextarea">Note</label>
-                    <textarea class="form-control" id="noteContentTextarea" rows="3"></textarea>
-                  </div>
-              </form>
-          </div>
-          <div class="modal-footer">
-            <button id="noteEditSaveChangeBtn" type="button" class="btn btn-primary">Save changes</button>
-              <script type="module">
-                  document.getElementById("noteEditSaveChangeBtn").addEventListener(
-                      "click",
-                      function () {
-                          const modal = document.getElementById("{{ modal_id }}");
-                          let newNote = Object.assign({}, $(modal).data['note']);
-                          newNote["text"] = document.getElementById('noteContentTextarea').value
-                          modal.dispatchEvent(
-                              new CustomEvent(
-                                  "accept",
-                                  {
-                                      detail: {
-                                          note: newNote,
-                                          request:{
-                                              "type": $(modal).data['request']['type'],
-                                              "url": $(modal).data['request']['url'],
-                                          },
-                                          file: $(modal).data['file']
+{% macro editFileNote(modal_id) %}
+    <div class="modal fade" id="{{ modal_id }}" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">File Note</h5>
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="noteContentTextarea">Note</label>
+                            <textarea class="form-control"
+                                      id="noteContentTextarea"
+                                      rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button id="noteEditSaveChangeBtn" type="button"
+                            class="btn btn-primary">Save changes
+                    </button>
+                    <script type="module">
+                        document.getElementById("noteEditSaveChangeBtn").addEventListener(
+                            "click",
+                            function () {
+                                const modal = document.getElementById("{{ modal_id }}");
+                                let newNote = Object.assign({}, $(modal).data['note']);
+                                newNote["text"] = document.getElementById('noteContentTextarea').value
+                                modal.dispatchEvent(
+                                    new CustomEvent(
+                                        "accept",
+                                        {
+                                            detail: {
+                                                note: newNote,
+                                                request: {
+                                                    "type": $(modal).data['request']['type'],
+                                                    "url": $(modal).data['request']['url'],
+                                                },
+                                                file: $(modal).data['file']
 
-                                      }
-                                  }
-                              )
-                          )
-                      }
-                  )
-              </script>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-          </div>
+                                            }
+                                        }
+                                    )
+                                )
+                            }
+                        )
+                    </script>
+                    <button type="button" class="btn btn-secondary"
+                            data-dismiss="modal">Cancel
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-{% endmacro%}
+{% endmacro %}
+
+{% macro editFileAnnotation(modal_id, annotation_types_url, saveButtonID="annotationEditSaveChangeBtn") %}
+    <div class="modal fade" id="{{ modal_id }}" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 id="annotationDialogTitle" class="modal-title">File
+                        Annotations</h5>
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label class="mr-sm-2" for="annotationTypeSelect">Type</label>
+                            <select id="annotationTypeSelect"
+                                    class="custom-select">
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="valueContentTextarea"
+                                   hidden>Value</label>
+                            <textarea class="form-control"
+                                      id="valueContentTextarea"
+                                      rows="3"></textarea>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+                    <button id="{{ saveButtonID }}" type="button"
+                            class="btn btn-primary">Add
+                    </button>
+                    <script type="module">
+                        document.getElementById("{{saveButtonID}}").addEventListener(
+                            "click",
+                            function () {
+                                const modal = document.getElementById("{{ modal_id }}");
+                                let newAnnotation = Object.assign({}, $(modal).data['note']);
+                                newAnnotation["text"] = document.getElementById('valueContentTextarea').value
+                                const annotationSelection = document.getElementById('annotationTypeSelect')
+                                newAnnotation["type_id"] = annotationSelection.options[annotationSelection.selectedIndex].value
+                                modal.dispatchEvent(
+                                    new CustomEvent(
+                                        "accept",
+                                        {
+                                            detail: {
+                                                annotationText: newAnnotation,
+                                                request: {
+                                                    "type": $(modal).data['request']['type'],
+                                                    "url": $(modal).data['request']['url'],
+                                                },
+                                                file: $(modal).data['file']
+
+                                            }
+                                        }
+                                    )
+                                )
+                            }
+                        )
+                    </script>
+                    <button type="button" class="btn btn-secondary"
+                            data-dismiss="modal">Cancel
+                    </button>
+                </div>
+                <script type="module">
+                    import {requests} from "{{ url_for('static', filename="js/request.js") }}"
+
+                    let dialogBox = $("#{{ modal_id }}");
+                    function sortAlpha(a, b){
+                        const nameA = a['name'].toUpperCase();
+                        const nameB = b['name'].toUpperCase();
+                        if (nameA < nameB) {
+                            return -1;
+                        }
+                        if (nameA > nameB) {
+                            return 1;
+                        }
+                        return 0;
+                    }
+
+                    function set_options(url, selection, active) {
+                        requests.get(url)
+                            .then(function (resp) {
+                                console.log("success")
+                                selection.empty();
+                                for (const type of JSON.parse(resp)['annotation_types'].sort(sortAlpha)) {
+                                    if (type['active'] === false) {
+                                        continue;
+                                    }
+                                    let newOption = document.createElement("option")
+                                    newOption.setAttribute("value", type['type_id']);
+
+                                    newOption.innerHTML = type['name']
+
+                                    if (active === type['type_id']) {
+                                        newOption.setAttribute("selected", "true");
+                                    }
+                                    selection.append(newOption);
+                                }
+                                console.log(selection);
+                            }).catch(function (reason) {
+                                console.log("Failed" + reason)
+                            }
+                        )
+                    }
+
+                    dialogBox.on("set_mode", (event, mode_type, requestUrl, annotation) => {
+                            let textArea = dialogBox.find('#valueContentTextarea');
+                            let selection = dialogBox.find('#annotationTypeSelect');
+                            let saveButton = dialogBox.find('#{{ saveButtonID }}');
+
+                            switch (mode_type) {
+
+                                case "create":
+                                    set_options("{{ url_for('file_annotation_types') }}", selection);
+                                    textArea.val("");
+                                    saveButton.text("Add")
+                                    break;
+
+                                case "edit":
+                                    textArea.val(annotation['content']);
+                                    set_options("{{ url_for('file_annotation_types') }}", selection, annotation['type']['type_id']);
+                                    saveButton.text("Update")
+                                    break;
+                                {#    TODO: send signals for what this needs to do when ending#}
+                                default:
+                                    throw "invalid mode";
+
+                            }
+                        }
+                    )
+                </script>
+            </div>
+
+        </div>
+    </div>
+{% endmacro %}

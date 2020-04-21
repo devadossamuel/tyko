@@ -685,9 +685,9 @@ class InstantiationFile(AVTables):
         backref="file_annotation_source"
     )
 
-    def _create_notes(self, recurse):
+    def _create_notes(self, resolve_data: bool):
         for file_note in self.notes:
-            if recurse:
+            if resolve_data:
                 yield file_note.serialize()
             else:
                 yield {
@@ -699,9 +699,18 @@ class InstantiationFile(AVTables):
             "id": self.file_id,
             "file_name": self.file_name,
             "generation": self.generation,
-            "notes": list(self._create_notes(recurse))
+            "notes": list(self._create_notes(recurse)),
+            "annotations": list(self._create_annotations(recurse))
         }
 
+    def _create_annotations(self, resolve_data: bool):
+        for annotation in self.annotations:
+            if resolve_data:
+                yield annotation.serialize()
+            else:
+                yield {
+                    "annotation_id": annotation.id
+                }
 
 class FileNotes(AVTables):
     __tablename__ = "file_notes"
@@ -719,6 +728,21 @@ class FileNotes(AVTables):
         }
 
 
+class FileAnnotationType(AVTables):
+
+    __tablename__ = "file_annotation_types"
+    id = db.Column(
+        "type_id", db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column("name", db.Text, nullable=False)
+    active = db.Column("active", db.Boolean, nullable=False, default=True)
+
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+        return {
+            "type_id": self.id,
+            "name": self.name,
+            "active": self.active
+        }
+
 class FileAnnotation(AVTables):
     __tablename__ = "file_annotations"
 
@@ -726,12 +750,21 @@ class FileAnnotation(AVTables):
         "annotation_id", db.Integer, primary_key=True, autoincrement=True)
     file_id = db.Column(db.Integer,
                         db.ForeignKey("instantiation_files.file_id"))
-    annotation_type = db.Column("type", db.Text)
+    type_id = db.Column(db.Integer,
+                               db.ForeignKey("file_annotation_types.type_id"))
+
+    annotation_type = relationship("FileAnnotationType",
+                                   foreign_keys=[type_id])
+
     annotation_content = db.Column("content", db.Text, nullable=False)
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
-        pass
-        # TODO: implement  serialize
+        return {
+            "id": self.id,
+            "type": self.annotation_type.serialize(recurse),
+            "content": self.annotation_content,
+            "file_id": self.file_id
+        }
 
 
 # =============================================================================

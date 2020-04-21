@@ -203,6 +203,7 @@ Feature: database
 Scenario Outline: Create a new media project where a file has a note and an annotation
     Given a database with a collection
     And a new object for the collection with a barcode
+    And annotations for <annotation_type> configured in the database
     When a new <media_type> item with <file_name> with <note> and an annotation of <annotation_type> and <annotation_content> added to the object
     Then the database has 1 CollectionItem records
     And the database has 1 CollectionObject records

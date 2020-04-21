@@ -715,7 +715,16 @@ def new_media_with_file_note(dummy_database, create_new_object, media_type,
     )
     new_file = scheme.InstantiationFile(file_name=file_name)
     new_file.notes.append(scheme.FileNotes(message=note))
-    new_file.annotations.append(scheme.FileAnnotation(annotation_type=annotation_type, annotation_content=annotation_content))
+    annotation_type_enum = dummy_database.query(scheme.FileAnnotationType)\
+        .filter(scheme.FileAnnotationType.name == annotation_type).one()
+
+    new_file.annotations.append(
+        scheme.FileAnnotation(
+            annotation_type=annotation_type_enum,
+            annotation_content=annotation_content
+        )
+    )
+
     new_item.files.append(new_file)
 
     media_table_type = media_type_info[1](item=new_item)
@@ -748,8 +757,13 @@ def file_with_note(dummy_database, file_name, annotation_type,
             .filter(scheme.InstantiationFile.file_name == file_name)
     for file in files:
         if file.file_name == file_name:
-            assert file.annotations[0].annotation_type == annotation_type
+            assert file.annotations[0].annotation_type.name == annotation_type
             assert file.annotations[0].annotation_content == annotation_content
             return
     assert False
 
+
+@given("annotations for <annotation_type> configured in the database")
+def add_file_annotation_type(dummy_database, annotation_type):
+    dummy_database.add(scheme.FileAnnotationType(name=annotation_type))
+    return dummy_database

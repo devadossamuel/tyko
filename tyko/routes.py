@@ -321,6 +321,42 @@ class Routes:
                     "GET"
                 ]
             )
+            self.app.add_url_rule(
+                "/api/file/<int:file_id>/annotations",
+                view_func=tyko.views.files.FileAnnotationsAPI.as_view(
+                    "file_annotations",
+                    provider=self.db_engine
+                ),
+                methods=[
+                    "GET",
+                    "POST"
+                ]
+            )
+            self.app.add_url_rule(
+                "/api/file/<int:file_id>/annotation/<int:annotation_id>",
+                view_func=tyko.views.files.FileAnnotationAPI.as_view(
+                    "file_annotation",
+                    provider=self.db_engine
+                ),
+                methods=[
+                    "PUT",
+                    # "DELETE"
+                ]
+            )
+
+            self.app.add_url_rule(
+                "/api/file/annotation_types",
+                view_func=tyko.views.files.FileAnnotationTypesAPI.as_view(
+                    "file_annotation_types",
+                    provider=self.db_engine
+                ),
+                methods=[
+                    "GET",
+                    "POST"
+                ]
+            )
+
+            # TODO: add url rule for editing file annotation types
 
             self.app.add_url_rule(
                 "/api",

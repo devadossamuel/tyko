@@ -1064,3 +1064,46 @@ def test_update_file_note(server_with_file_note):
     assert update_resp.status_code == 200
     assert json.loads(update_resp.data)["message"] == "New note message"
 
+
+def test_create_and_delete_file_annotation(server_with_object_item_file):
+    server, data = server_with_object_item_file
+
+    file_id = data['file_id']
+    # TODO: Create an annotation type
+    file_annotation_types_url = url_for("file_annotation_types")
+    new_annotation_type_resp = server.post(
+        file_annotation_types_url,
+        data=json.dumps({
+            "text": "Audio Quality"
+
+        }),
+        content_type='application/json'
+    )
+    assert new_annotation_type_resp.status_code == 200
+    new_annotation_type_data = json.loads(new_annotation_type_resp.data)['fileAnnotationType']
+    assert isinstance(new_annotation_type_data["id"], int)
+
+    file_annotations_url = url_for("file_annotations", file_id=file_id)
+    new_annotation_resp = server.post(
+        file_annotations_url,
+        data=json.dumps(
+            {
+                "content": "This file is silly",
+                "type": new_annotation_type_data["id"]
+            }
+        ),
+        content_type='application/json'
+    )
+    assert new_annotation_resp.status_code == 200
+    new_annotation_url = \
+        json.loads(new_annotation_resp.data)['fileAnnotation']['url']['api']
+
+    annotations = \
+        json.loads(server.get(file_annotations_url).data)['annotations']
+
+    assert len(annotations) == 1
+    # del_resp = server.delete(new_note_api_url)
+    # assert del_resp.status_code == 202
+    #
+    # assert len(json.loads(server.get(file_notes_url).data)['notes']) == 0
+
