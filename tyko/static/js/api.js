@@ -27,13 +27,13 @@ const getNotes = () => {
 
 function editNote(apiRoute, noteTypeId, text) {
   if (apiRoute === undefined) {
-    throw('apiRoute is a required field');
+    throw new TypeError('apiRoute is a required field');
   }
   if (noteTypeId === undefined) {
-    throw('noteTypeId is a required field');
+    throw new TypeError('noteTypeId is a required field');
   }
   if (text === undefined) {
-    throw('text is a required field');
+    throw new TypeError('text is a required field');
   }
 
   const data = {
@@ -46,7 +46,7 @@ function editNote(apiRoute, noteTypeId, text) {
 
 function removeNote(apiRoute) {
   if (apiRoute === undefined) {
-    throw('apiRoute is a required field');
+    throw new TypeError('apiRoute is a required field');
   }
   return requests.delete(apiRoute);
 }
@@ -60,14 +60,14 @@ export const notes = {
 
 function addObject(apiRoute, data) {
   if (apiRoute === undefined) {
-    throw('apiRoute is a required field');
+    throw new TypeError('apiRoute is a required field');
   }
   return requests.post(apiRoute, data);
 }
 
 function removeObject(apiRoute) {
   if (apiRoute === undefined) {
-    throw('apiRoute is a required field');
+    throw new TypeError('apiRoute is a required field');
   }
   return requests.delete(apiRoute);
 }
@@ -79,7 +79,7 @@ export const objects = {
 
 function addItem(apiRoute, data) {
   if (apiRoute === undefined) {
-    throw('apiRoute is a required field');
+    throw new TypeError('apiRoute is a required field');
   }
   return requests.post(apiRoute, data);
 }
