@@ -16,8 +16,11 @@ class ItemFilesAPI(views.MethodView):
 
     def get(self, project_id, object_id, item_id) -> flask.Response:
         file_id = request.args.get("id")
+        if self._has_matching_file(project_id, object_id,
+                                   item_id, int(file_id)) is False:
+            raise AttributeError("Record mismatch")
         if file_id is not None:
-            return self.get_by_id(file_id)
+            return self.get_by_id(int(file_id))
         return self.get_all(item_id)
 
     def get_all(self, item_id):
@@ -51,19 +54,53 @@ class ItemFilesAPI(views.MethodView):
         })
 
     def put(self, project_id, object_id, item_id) -> flask.Response:
-        file_id = request.args['id']
+        file_id = int(request.args['id'])
+        if self._has_matching_file(project_id, object_id,
+                                   item_id, file_id) is False:
+            raise AttributeError("Record mismatch")
         json_request = request.get_json()
         return self._data_connector.update(file_id,
                                            changed_data=json_request)
 
     def delete(self, project_id, object_id, item_id) -> flask.Response:
         file_id = int(request.args['id'])
+        if self._has_matching_file(project_id, object_id,
+                                   item_id, file_id) is False:
+
+            raise AttributeError("Record mismatch")
 
         self._data_connector.remove(item_id, file_id)
         res = self._data_connector.delete(file_id)
         if res is True:
             return make_response("", 202)
         return make_response("", 404)
+
+    def _has_matching_file(self,
+                           project_id: int,
+                           object_id: int,
+                           item_id: int,
+                           file_id: int
+                           ) -> bool:
+        """Check if there is a matching file that matches all the ids"""
+
+        project_connector = data_provider.ProjectDataConnector(
+            self._data_provider.db_session_maker)
+        item_connector = data_provider.ItemDataConnector(
+            self._data_provider.db_session_maker)
+
+        project = project_connector.get(project_id, serialize=True)
+
+        for obj in filter(lambda obj: obj['object_id'] == object_id,
+                          project['objects']):
+            for item in filter(lambda i: i['item_id'] == item_id,
+                               obj['items']):
+
+                matching_files = list(
+                    filter(lambda f: f['id'] == file_id, item_connector.get(
+                        item['item_id'], serialize=True)['files']))
+                return len(matching_files) == 1
+
+        return False
 
 
 class FileNotesAPI(views.MethodView):
