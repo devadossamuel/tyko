@@ -329,18 +329,10 @@ class Routes:
                 ),
                 methods=[
                     "GET",
-                    "POST"
-                ]
-            )
-            self.app.add_url_rule(
-                "/api/file/<int:file_id>/annotation/<int:annotation_id>",
-                view_func=tyko.views.files.FileAnnotationAPI.as_view(
-                    "file_annotation",
-                    provider=self.db_engine
-                ),
-                methods=[
+                    "POST",
                     "PUT",
                     "DELETE"
+
                 ]
             )
 

@@ -1143,7 +1143,7 @@ def test_create_and_delete_file_annotation(server_with_object_item_file):
         json.loads(server.get(file_annotations_url).data)['annotations']
 
     assert len(annotations) == 1
-    annotation_url = url_for("file_annotation", file_id=file_id, annotation_id=annotations[0]['id'])
+    annotation_url = url_for("file_annotations", file_id=file_id, id=annotations[0]['id'])
     del_resp = server.delete(annotation_url)
     assert del_resp.status_code == 202
     assert len(json.loads(server.get(file_annotations_url).data)['annotations']) == 0
