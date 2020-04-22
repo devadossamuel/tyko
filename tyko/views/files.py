@@ -82,36 +82,6 @@ class FileAPI(views.MethodView):
         return self._data_connector.update(file_id, changed_data=json_request)
 
 
-class FileNoteAPI(views.MethodView):
-    def __init__(self, provider: DataProvider) -> None:
-        self._data_provider = provider
-        self._data_connector = \
-            data_provider.FilesDataConnector(provider.db_session_maker)
-
-    def get(self, file_id: int, note_id: int) -> flask.Response:
-        dc = data_provider.FileNotesDataConnector(
-            self._data_provider.db_session_maker)
-
-        res = dc.get(note_id, serialize=True)
-        return res
-
-    def delete(self, file_id: int, note_id: int) -> flask.Response:
-        file_record = self._data_connector.remove_note(file_id, note_id)
-        if file_record is True:
-            return make_response("", 202)
-        return make_response("Something went wrong", 500)
-
-    def put(self, file_id: int, note_id: int) -> flask.Response:
-        json_request = request.get_json()
-        changed_data = dict()
-        changed_data['message'] = json_request['message']
-
-        note_record = \
-            self._data_connector.edit_note(file_id, note_id, changed_data)
-
-        return note_record
-
-
 class FileNotesAPI(views.MethodView):
     def __init__(self, provider: DataProvider) -> None:
         self._data_provider = provider
@@ -119,6 +89,19 @@ class FileNotesAPI(views.MethodView):
             data_provider.FilesDataConnector(provider.db_session_maker)
 
     def get(self, file_id: int) -> flask.Response:
+        note_id = request.args.get("id")
+        if note_id is not None:
+            return self.get_one_by_id(file_id, note_id)
+        return self.get_all(file_id)
+
+    def get_one_by_id(self, file_id, note_id):
+        dc = data_provider.FileNotesDataConnector(
+            self._data_provider.db_session_maker)
+
+        res = dc.get(note_id, serialize=True)
+        return res
+
+    def get_all(self, file_id):
         notes = self._data_connector.get(file_id, serialize=True)
         return jsonify({
             "notes": notes['notes'],
@@ -141,15 +124,33 @@ class FileNotesAPI(views.MethodView):
             {
                 "note": {
                     "url": {
-                        "api": url_for("file_note",
+                        "api": url_for("file_notes",
                                        file_id=file_id,
-                                       note_id=new_note['id']
+                                       id=new_note['id']
                                        )
                     },
                     "id": new_note['id']
                 }
             }
         )
+
+    def put(self, file_id: int) -> flask.Response:
+        note_id = request.args["id"]
+        json_request = request.get_json()
+        changed_data = dict()
+        changed_data['message'] = json_request['message']
+
+        note_record = \
+            self._data_connector.edit_note(file_id, note_id, changed_data)
+
+        return note_record
+
+    def delete(self, file_id: int) -> flask.Response:
+        note_id = int(request.args["id"])
+        file_record = self._data_connector.remove_note(file_id, note_id)
+        if file_record is True:
+            return make_response("", 202)
+        return make_response("Something went wrong", 500)
 
 
 class FileAnnotationsAPI(views.MethodView):

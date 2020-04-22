@@ -306,19 +306,9 @@ class Routes:
                 ),
                 methods=[
                     "GET",
-                    "POST"
-                ]
-            )
-            self.app.add_url_rule(
-                "/api/file/<int:file_id>/note/<int:note_id>",
-                view_func=tyko.views.files.FileNoteAPI.as_view(
-                    "file_note",
-                    provider=self.db_engine
-                ),
-                methods=[
+                    "POST",
                     "PUT",
-                    "DELETE",
-                    "GET"
+                    "DELETE"
                 ]
             )
             self.app.add_url_rule(

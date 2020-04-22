@@ -1033,25 +1033,22 @@ def server_with_file_note(server_with_object_item_file):
 
 def test_get_file_note(server_with_file_note):
     server, data = server_with_file_note
-    file_notes_url = url_for("file_note",
-                             project_id=data['project_id'],
-                             object_id=data['object_id'],
+    file_notes_url = url_for("file_notes",
                              file_id=data['file_id'],
-                             note_id=data['note_id']
+                             id=data['note_id']
                              )
     get_resp = server.get(file_notes_url)
     assert get_resp.status_code == 200
     res_data = json.loads(get_resp.data)
     assert res_data['file_id'] == data['file_id']
 
+
 def test_update_file_note(server_with_file_note):
     server, data = server_with_file_note
 
-    file_notes_url = url_for("file_note",
-                             project_id=data['project_id'],
-                             object_id=data['object_id'],
+    file_notes_url = url_for("file_notes",
                              file_id=data['file_id'],
-                             note_id=data['note_id']
+                             id=data['note_id']
                              )
 
     update_resp = server.put(
