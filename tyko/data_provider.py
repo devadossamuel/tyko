@@ -1236,8 +1236,7 @@ class FileAnnotationsConnector(AbsDataProviderConnector):
                 .one()
             if serialize is True:
                 return annotation.serialize()
-            else:
-                return annotation
+            return annotation
         finally:
             session.close()
 
