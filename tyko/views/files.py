@@ -6,17 +6,15 @@ from tyko import data_provider
 from tyko.data_provider import DataProvider
 
 
-
-
 class ItemFilesAPI(views.MethodView):
-    class Decorators:
+    class Decorators:  # pylint: disable=too-few-public-methods
         @classmethod
         def validate(cls, func):
             @functools.wraps(func)
             def wrapper(self, project_id, object_id, item_id):
                 file_id = int(request.args['id'])
 
-                if self._has_matching_file(project_id, object_id,
+                if self._has_matching_file(project_id, object_id,  # noqa: E501 pylint: disable=W0212
                                            item_id, file_id) is False:
                     raise AttributeError("Record mismatch")
                 return func(self, project_id, object_id, item_id)
@@ -205,7 +203,7 @@ class FileNotesAPI(views.MethodView):
 
 
 class FileAnnotationsAPI(views.MethodView):
-    class Decorators:
+    class Decorators:  # pylint: disable=too-few-public-methods
         @classmethod
         def validate(cls, func):
             @functools.wraps(func)
@@ -213,7 +211,7 @@ class FileAnnotationsAPI(views.MethodView):
                 annotation_id = request.args.get('id')
                 if annotation_id:
                     connector = data_provider.FileAnnotationsConnector(
-                        self._data_provider.db_session_maker)
+                        self._data_provider.db_session_maker)  # noqa: E501 pylint: disable=W0212
                     annotation = connector.get(annotation_id, serialize=True)
                     if annotation['file_id'] != file_id:
                         raise AttributeError(
@@ -258,7 +256,7 @@ class FileAnnotationsAPI(views.MethodView):
         })
 
     @Decorators.validate
-    def delete(self, file_id: int) -> flask.Response:
+    def delete(self, file_id: int) -> flask.Response:  # pylint: disable=W0613
         annotation_id = request.args['id']
         connector = data_provider.FileAnnotationsConnector(
             self._data_provider.db_session_maker)
@@ -270,7 +268,7 @@ class FileAnnotationsAPI(views.MethodView):
             "Something went wrong trying to delete file annotation", 500)
 
     @Decorators.validate
-    def put(self, file_id: int) -> flask.Response:
+    def put(self, file_id: int) -> flask.Response:  # pylint: disable=W0613
         annotation_id = request.args["id"]
         json_request = request.get_json()
         changed_data = {
