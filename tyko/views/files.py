@@ -228,9 +228,14 @@ class FileAnnotationTypesAPI(views.MethodView):
             "total": len(all_types)
         })
 
-    def delete(self):
-        pass
-        # todo FileAnnotationTypesAPI delete
+    def delete(self) -> flask.Response:
+        annotation_id = request.args["id"]
+        connector = data_provider.FileAnnotationTypeConnector(
+            self._data_provider.db_session_maker)
+        successful = connector.delete(annotation_id)
+        if successful is True:
+            return make_response("", 202)
+        return make_response("Something went wrong", 500)
 
     def post(self) -> flask.Response:
         json_request = request.get_json()
@@ -238,11 +243,13 @@ class FileAnnotationTypesAPI(views.MethodView):
             data_provider.FileAnnotationTypeConnector(
                 self._data_provider.db_session_maker)
 
-        new_annotation_type_id = \
+        new_annotation_type = \
             annotation_connector.create(text=json_request['text'])
 
         return jsonify({
             "fileAnnotationType": {
-                "id": new_annotation_type_id['type_id'],
+                "id": new_annotation_type['type_id'],
+                "url": url_for("file_annotation_types",
+                               id=new_annotation_type['type_id'])
                 }
         })

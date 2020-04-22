@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import List, Optional
 
 import sqlalchemy
+from sqlalchemy.sql.expression import true
 from sqlalchemy import orm
 from .exceptions import DataError
 from . import scheme
@@ -1268,7 +1269,9 @@ class FileAnnotationsConnector(AbsDataProviderConnector):
         try:
             annotations = []
 
-            for annotation in session.query(scheme.FileAnnotationType):
+            for annotation in session.query(
+                    scheme.FileAnnotationType)\
+                    .filter(scheme.FileAnnotationType.active == true()):
                 if serialize:
                     annotations.append(annotation.serialize())
                 else:
@@ -1340,7 +1343,9 @@ class FileAnnotationTypeConnector(AbsDataProviderConnector):
         session = self.session_maker()
         try:
             new_annotation_type = scheme.FileAnnotationType(
-                name=annotation_message)
+                name=annotation_message,
+                active=True
+            )
 
             session.add(new_annotation_type)
             session.flush()
@@ -1352,9 +1357,25 @@ class FileAnnotationTypeConnector(AbsDataProviderConnector):
             session.close()
 
     def update(self, id, changed_data):
-        # TDOD: FileAnnotationTypeConnector.update()
+        # TODO: FileAnnotationTypeConnector.update()
         pass
 
     def delete(self, id):
-        # TDOD: FileAnnotationTypeConnector.delete()
-        pass
+        """
+        Sets the annotation type to inactive, not really deleting it.
+        Args:
+            id:
+
+        Returns:
+            bool: true if successful
+
+        """
+        session = self.session_maker()
+        try:
+            annotation_type = session.query(scheme.FileAnnotationType) \
+                .filter(scheme.FileAnnotationType.id == id).one()
+            annotation_type.active = False
+            session.commit()
+            return True
+        finally:
+            session.close()

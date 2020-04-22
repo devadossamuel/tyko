@@ -1065,7 +1065,7 @@ def test_update_file_note(server_with_file_note):
     assert json.loads(update_resp.data)["message"] == "New note message"
 
 
-def test_create_file_annotation_types(server_with_object_item_file):
+def test_create_and_delete_file_annotation_types(server_with_object_item_file):
     server, data = server_with_object_item_file
     file_annotation_types_url = url_for("file_annotation_types")
 
@@ -1085,13 +1085,25 @@ def test_create_file_annotation_types(server_with_object_item_file):
         }),
         content_type='application/json'
     )
+
     assert new_annotation_type_resp.status_code == 200
 
-    new_annotation_type_after_adding_data = json.loads(server.get(file_annotation_types_url).data)
+    new_annotation_type_resp_data = \
+        json.loads(new_annotation_type_resp.data)
+
+    new_annotation_type_after_adding_data = \
+        json.loads(server.get(file_annotation_types_url).data)
+
     assert len(new_annotation_type_after_adding_data['annotation_types']) == 1
     assert new_annotation_type_after_adding_data['total'] == 1
     assert new_annotation_type_after_adding_data['annotation_types'][0]["name"] == "Audio Quality"
 
+    file_annotation_type_url = \
+        url_for("file_annotation_types", id=new_annotation_type_resp_data['fileAnnotationType']['id'])
+    resp = server.delete(file_annotation_type_url)
+    assert resp.status_code == 202
+
+    assert json.loads(server.get(file_annotation_types_url).data)['total'] == 0
 
 
 def test_create_and_delete_file_annotation(server_with_object_item_file):

@@ -352,7 +352,8 @@ class Routes:
                 ),
                 methods=[
                     "GET",
-                    "POST"
+                    "POST",
+                    "DELETE"
                 ]
             )
 
