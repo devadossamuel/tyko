@@ -282,21 +282,10 @@ class Routes:
                 ),
                 methods=[
                     "POST",
-                    "GET"
-                ]
-            )
-            self.app.add_url_rule(
-                "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/files/<int:file_id>",  # noqa: E501 pylint: disable=C0301
-                view_func=tyko.views.files.FileAPI.as_view(
-                    "item_file_details",
-                    provider=self.db_engine
-                ),
-                methods=[
                     "GET",
                     "PUT",
                     "DELETE"
                 ]
-
             )
             self.app.add_url_rule(
                 "/api/file/<int:file_id>/note",

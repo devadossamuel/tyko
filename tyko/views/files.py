@@ -11,11 +11,18 @@ class ItemFilesAPI(views.MethodView):
         self._data_connector = \
             data_provider.FilesDataConnector(provider.db_session_maker)
 
-    def get(self, project_id, object_id, item_id) -> flask.Response:
+    def get_by_id(self, file_id):
+        return self._data_connector.get(int(file_id), serialize=True)
 
+    def get(self, project_id, object_id, item_id) -> flask.Response:
+        file_id = request.args.get("id")
+        if file_id is not None:
+            return self.get_by_id(file_id)
+        return self.get_all(item_id)
+
+    def get_all(self, item_id):
         items_dp = data_provider.ItemDataConnector(
             self._data_provider.db_session_maker)
-
         item = items_dp.get(item_id, serialize=True)
         return jsonify({
             "files": item['files'],
@@ -31,11 +38,11 @@ class ItemFilesAPI(views.MethodView):
             generation=json_request.get("generation")
         )['id']
 
-        url = url_for("item_file_details",
+        url = url_for("item_files",
                       project_id=project_id,
                       object_id=object_id,
                       item_id=item_id,
-                      file_id=new_file_id
+                      id=new_file_id
                       )
 
         return jsonify({
@@ -43,43 +50,19 @@ class ItemFilesAPI(views.MethodView):
             "url": url
         })
 
-
-class FileAPI(views.MethodView):
-    def __init__(self, provider: DataProvider) -> None:
-        self._data_provider = provider
-        self._data_connector = \
-            data_provider.FilesDataConnector(provider.db_session_maker)
-
-    def get(self,
-            project_id: int,
-            object_id: int,
-            item_id: int,
-            file_id: int
-            ) -> flask.Response:
-        return self._data_connector.get(file_id, serialize=True)
-
-    def delete(self,
-               project_id: int,
-               object_id: int,
-               item_id: int,
-               file_id: int
-               ) -> flask.Response:
+    def put(self, project_id, object_id, item_id) -> flask.Response:
+        file_id = request.args['id']
+        json_request = request.get_json()
+        return self._data_connector.update(file_id,
+                                           changed_data=json_request)
+    def delete(self, project_id, object_id, item_id) -> flask.Response:
+        file_id = int(request.args['id'])
 
         self._data_connector.remove(item_id, file_id)
         res = self._data_connector.delete(file_id)
         if res is True:
             return make_response("", 202)
         return make_response("", 404)
-
-    def put(self,
-            project_id: int,
-            object_id: int,
-            item_id: int,
-            file_id: int
-            ) -> flask.Response:
-
-        json_request = request.get_json()
-        return self._data_connector.update(file_id, changed_data=json_request)
 
 
 class FileNotesAPI(views.MethodView):

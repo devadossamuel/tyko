@@ -884,11 +884,11 @@ def test_update_file_name(server_with_object_and_item):
         content_type='application/json'
     ).data)['id']
 
-    new_file_route = url_for("item_file_details",
+    new_file_route = url_for("item_files",
                              project_id=project_id,
                              object_id=object_id,
                              item_id=item_id,
-                             file_id=file_id)
+                             id=file_id)
 
     put_res = server_with_object_and_item.put(
         new_file_route,
@@ -942,7 +942,7 @@ def test_create_and_delete_file(server_with_object_and_item):
     assert len(item['files']) == 1
 
     file_id = item['files'][0]['id']
-    new_file_url = url_for("item_file_details", project_id=project_id, object_id=object_id, item_id=item_id, file_id=file_id)
+    new_file_url = url_for("item_files", project_id=project_id, object_id=object_id, item_id=item_id, id=file_id)
     del_resp = server.delete(
         new_file_url
     )

@@ -596,11 +596,11 @@ class FileDetailsFrontend:
         )
         file_details = self._data_connector.get(file_id,
                                                 serialize=True)
-        edit_api_path = url_for("item_file_details",
+        edit_api_path = url_for("item_files",
                                 project_id=project_id,
                                 object_id=object_id,
                                 item_id=item_id,
-                                file_id=file_id)
+                                id=file_id)
 
         return render_template("file_details.html",
                                itemType="File",

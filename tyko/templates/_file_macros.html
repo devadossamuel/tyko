@@ -79,7 +79,7 @@
                                 const fileName = $table.bootstrapTable('getData')[index]['name']
 
                                 function api_url(fileID) {
-                                    const template = dataRoutes['item_file_details'].route
+                                    const template = dataRoutes['item_files'].route
                                     return template
                                         .replace("<int:project_id>", "{{project_id}}")
                                         .replace("<int:object_id>", "{{object_id}}")
