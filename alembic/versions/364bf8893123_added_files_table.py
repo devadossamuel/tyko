@@ -206,84 +206,324 @@ class CollectionItem(Base):
     format_type = orm.relationship("FormatTypes", foreign_keys=[format_type_id])
 
 
+def add_sample_record():
+    connection = op.get_bind()
+    connection.execute('''
+                   INSERT INTO collection (collection_name, department)
+                   VALUES ("Sample collection", "Preservation Department")
+                   ''')
+
+    connection.execute('''
+        INSERT INTO project (project_code, title, current_location)
+        VALUES ("SAMP120", "Sample Project", "Room 425")
+    ''')
+
+    connection.execute('''
+        INSERT INTO object (
+            name, 
+            collection_id, 
+            project_id,
+            barcode, 
+            originals_rec_date, 
+            originals_return_date
+            )
+        VALUES ("Anderson, Jim, 28 March 1998", 
+            (
+                SELECT collection_id 
+                FROM collection 
+                WHERE collection_name = "Sample collection"
+            ), 
+            (
+                SELECT project_id 
+                FROM project 
+                WHERE title = "Sample Project"
+            ),
+            "SAMPLE0002",
+            "2019-10-20",
+            "2019-11-25"
+        )
+    ''')
+
+    connection.execute('''
+            INSERT INTO item (
+                name, 
+                obj_sequence, 
+                object_id
+                )
+            VALUES (
+                "Anderson, Jim, 28 March 1998, Tape 1", 
+                "1", 
+                (
+                    SELECT object_id 
+                    FROM object 
+                    WHERE name = "Anderson, Jim, 28 March 1998"
+                )
+            ) 
+    ''')
+
+    # =========================================================================
+    # Preservation File
+    # =========================================================================
+    connection.execute('''
+        INSERT INTO instantiation_files (
+                file_name, 
+                generation, 
+                item_id
+                )
+            VALUES (
+                "4130178_Box1_AndersonJim_1998Mar28_Tape1_a_96.wav",
+                "Preservation",
+                (
+                    SELECT item_id
+                    FROM item
+                    WHERE name = "Anderson, Jim, 28 March 1998, Tape 1"
+                )
+                
+            )
+    ''')
+    connection.execute('''
+        INSERT INTO file_annotations (
+           file_id, 
+           type_id, 
+           content
+           )
+        VALUES (
+            (
+                SELECT file_id
+                FROM instantiation_files
+                WHERE file_name = "4130178_Box1_AndersonJim_1998Mar28_Tape1_a_96.wav"
+            ),
+            (
+                SELECT type_id 
+                FROM file_annotation_types
+                WHERE name = "Encode Software Name" 
+            ),
+       "Nuendo"
+       )
+       ''')
+    # =========================================================================
+    # Access File
+    # =========================================================================
+
+
+    connection.execute('''
+                INSERT INTO instantiation_files (
+                    file_name, 
+                    generation, 
+                    item_id
+                    )
+                VALUES (
+                    "4130178_Box1_AndersonJim_1998Mar28_Tape1_a.mp3",
+                    "Access",
+                    (
+                        SELECT item_id
+                        FROM item
+                        WHERE name = "Anderson, Jim, 28 March 1998, Tape 1"
+                    )
+
+                )
+    ''')
+
+    connection.execute('''
+        INSERT INTO file_annotations (
+            file_id,
+            type_id,
+            content
+            )
+        VALUES (
+            (
+                SELECT file_id
+                FROM instantiation_files
+                WHERE file_name = "4130178_Box1_AndersonJim_1998Mar28_Tape1_a.mp3"
+            ),
+            (
+                SELECT type_id 
+                FROM file_annotation_types
+                WHERE name = "Encode Software Name" 
+            ),
+            "Wavelab"
+            )
+    ''')
+
+
+def remove_sample_record():
+    connection = op.get_bind()
+    connection.execute('''
+        DELETE FROM collection WHERE collection_name="Sample collection";
+        ''')
+
+    connection.execute('''
+        DELETE FROM project WHERE title="Sample Project";
+        ''')
+
+    connection.execute('''
+        DELETE FROM object WHERE name ="Anderson, Jim, 28 March 1998"
+    ''')
+
+    connection.execute('''
+        DELETE FROM item WHERE name ="Anderson, Jim, 28 March 1998, Tape 1"
+    ''')
+
+    # =========================================================================
+    # Preservation File
+    # =========================================================================
+    connection.execute('''
+            DELETE FROM file_annotations
+            WHERE file_id IN (
+                SELECT instantiation_files.file_id
+                FROM instantiation_files
+                INNER JOIN file_annotations
+                ON (instantiation_files.file_id = file_annotations.file_id)
+                WHERE(file_name ="4130178_Box1_AndersonJim_1998Mar28_Tape1_a_96.wav")
+            )
+        ''')
+
+    connection.execute('''
+        DELETE FROM instantiation_files 
+        WHERE file_name ="4130178_Box1_AndersonJim_1998Mar28_Tape1_a_96.wav"
+    ''')
+
+    # =========================================================================
+    # Access File
+    # =========================================================================
+
+    connection.execute('''
+            DELETE FROM instantiation_files 
+            WHERE file_name ="4130178_Box1_AndersonJim_1998Mar28_Tape1_a.mp3"
+        ''')
+
+    connection.execute('''
+                DELETE FROM file_annotations
+                WHERE file_id IN (
+                    SELECT instantiation_files.file_id
+                    FROM instantiation_files
+                    INNER JOIN file_annotations
+                    ON (instantiation_files.file_id = file_annotations.file_id)
+                    WHERE(file_name = "4130178_Box1_AndersonJim_1998Mar28_Tape1_a.mp3")
+                )
+            ''')
+
+
 def upgrade():
     # ### commands auto generated by Alembic - please adjust! ###
     try:
-        op.create_table('instantiation_files',
-        sa.Column('file_id', sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column('file_name', sa.Text(), nullable=False),
-        sa.Column('source', sa.Text(), nullable=True),
-        sa.Column('generation', sa.Text(), nullable=True),
-        sa.Column('filesize', sa.Integer(), nullable=True),
-        sa.Column('filesize_unit', sa.Text(), nullable=True),
-        sa.Column('item_id', sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(['item_id'], ['item.item_id'], ),
-        sa.PrimaryKeyConstraint('file_id')
-        )
+        upgrade_schema()
+        add_sample_record()
     except sa.exc.OperationalError:
-        op.drop_table('instantiation_files')
+        conn = op.get_bind()
+        inspector = sa.engine.reflection.Inspector.from_engine(conn)
+        tables = inspector.get_table_names()
+        added_tables = [
+            "file_annotations",
+            "file_annotation_types",
+            "file_notes",
+            "instantiation_files",
+        ]
+        for table in added_tables:
+            if table in tables:
+                op.drop_table(table)
         raise
-
-    try:
-        annotation_table = op.create_table('file_annotation_types',
-                        sa.Column('type_id', sa.Integer(), autoincrement=True, nullable=False),
-                        sa.Column('name', sa.Text(), nullable=False),
-                        sa.Column("active", sa.Boolean, nullable=False, default=True),
-                        sa.PrimaryKeyConstraint('type_id')
-                        )
-
-        op.bulk_insert(
-            annotation_table,
-            [
-                {"name": "Source Deck Type"},
-                {"name": "Audio Quality"},
-                {"name": "Encode Software Name"}
-
-            ]
-        )
-    except sa.exc.DatabaseError:
-        op.drop_table('file_annotation_types')
-        raise
-
-    op.create_table('file_annotations',
-    sa.Column('annotation_id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('file_id', sa.Integer(), nullable=True),
-    sa.Column('type_id', sa.Integer(), nullable=False),
-    sa.Column('content', sa.Text(), nullable=False),
-    sa.ForeignKeyConstraint(['file_id'], ['instantiation_files.file_id'], ),
-    sa.ForeignKeyConstraint(['type_id'], ['file_annotation_types.type_id'], ),
-    sa.PrimaryKeyConstraint('annotation_id')
-    )
-
-    op.create_table('file_notes',
-    sa.Column('note_id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('message', sa.Text(), nullable=False),
-    sa.Column('file_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['file_id'], ['instantiation_files.file_id'], ),
-    sa.PrimaryKeyConstraint('note_id')
-    )
-    # #################################333
-    connection = op.get_bind()
-    try:
-        connection.execute('''
-        INSERT INTO instantiation_files (file_name, item_id) 
-        SELECT file_name, item_id 
-        FROM item WHERE file_name is not null;'''
-        )
     except sa.exc.IntegrityError:
         op.drop_table('file_annotations')
         op.drop_table('file_annotation_types')
         op.drop_table('file_notes')
         op.drop_table('instantiation_files')
+        joining_sql = """UPDATE item 
+            SET file_name = (
+                SELECT GROUP_CONCAT(file_name) 
+                FROM instantiation_files 
+                WHERE item.item_id = instantiation_files.item_id
+                GROUP BY source)
+            WHERE EXISTS(
+                SELECT GROUP_CONCAT(file_name)
+                FROM instantiation_files
+                WHERE item.item_id = instantiation_files.item_id
+                GROUP BY source)"""
+        connection = op.get_bind()
+        connection.execute(joining_sql)
         raise
-    with op.batch_alter_table("item") as batch_op:
-        batch_op.drop_column( 'file_name')
 
     # ### end Alembic commands ###
 
 
+def migrate_to_file_tables(connection):
+    connection.execute('''
+    INSERT INTO instantiation_files (file_name, item_id) 
+    SELECT file_name, item_id 
+    FROM item WHERE file_name is not null;'''
+                       )
+    with op.batch_alter_table("item") as batch_op:
+        batch_op.drop_column('file_name')
+
+
+def upgrade_schema():
+    add_new_tables()
+    connection = op.get_bind()
+    migrate_to_file_tables(connection)
+
+
+def add_new_tables():
+    op.create_table('instantiation_files',
+                    sa.Column('file_id', sa.Integer(), autoincrement=True,
+                              nullable=False),
+                    sa.Column('file_name', sa.Text(), nullable=False),
+                    sa.Column('source', sa.Text(), nullable=True),
+                    sa.Column('generation', sa.Text(), nullable=True),
+                    sa.Column('filesize', sa.Integer(), nullable=True),
+                    sa.Column('filesize_unit', sa.Text(), nullable=True),
+                    sa.Column('item_id', sa.Integer(), nullable=True),
+                    sa.ForeignKeyConstraint(['item_id'],
+                                            ['item.item_id'], ),
+                    sa.PrimaryKeyConstraint('file_id')
+                    )
+    annotation_table = op.create_table('file_annotation_types',
+                                       sa.Column('type_id', sa.Integer(),
+                                                 autoincrement=True,
+                                                 nullable=False),
+                                       sa.Column('name', sa.Text(),
+                                                 nullable=False),
+                                       sa.Column("active", sa.Boolean,
+                                                 nullable=False,
+                                                 default=True),
+                                       sa.PrimaryKeyConstraint('type_id')
+                                       )
+    op.bulk_insert(
+        annotation_table,
+        [
+            {"name": "Source Deck Type"},
+            {"name": "Audio Quality"},
+            {"name": "Encode Software Name"}
+
+        ]
+    )
+    
+    op.create_table('file_annotations',
+                    sa.Column('annotation_id', sa.Integer(), autoincrement=True,
+                              nullable=False),
+                    sa.Column('file_id', sa.Integer(), nullable=True),
+                    sa.Column('type_id', sa.Integer(), nullable=False),
+                    sa.Column('content', sa.Text(), nullable=False),
+                    sa.ForeignKeyConstraint(['file_id'],
+                                            ['instantiation_files.file_id'], ),
+                    sa.ForeignKeyConstraint(['type_id'], [
+                        'file_annotation_types.type_id'], ),
+                    sa.PrimaryKeyConstraint('annotation_id')
+                    )
+    
+    op.create_table('file_notes',
+                    sa.Column('note_id', sa.Integer(), autoincrement=True,
+                              nullable=False),
+                    sa.Column('message', sa.Text(), nullable=False),
+                    sa.Column('file_id', sa.Integer(), nullable=True),
+                    sa.ForeignKeyConstraint(['file_id'],
+                                            ['instantiation_files.file_id'], ),
+                    sa.PrimaryKeyConstraint('note_id')
+                    )
+
+
 def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
+    remove_sample_record()
     op.add_column('item', sa.Column('file_name', sa.TEXT(), nullable=True))
     connection = op.get_bind()
     joining_sql = """UPDATE item 
@@ -303,4 +543,5 @@ def downgrade():
     op.drop_table('file_annotations')
     op.drop_table('file_annotation_types')
     op.drop_table('instantiation_files')
+
     ### end Alembic commands ###
