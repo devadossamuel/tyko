@@ -69,23 +69,24 @@ class FileNotesAPI(views.MethodView):
     def __init__(self, provider: DataProvider) -> None:
         self._data_provider = provider
         self._data_connector = \
-            data_provider.FilesDataConnector(provider.db_session_maker)
+            data_provider.FileNotesDataConnector(provider.db_session_maker)
 
     def get(self, file_id: int) -> flask.Response:
         note_id = request.args.get("id")
         if note_id is not None:
-            return self.get_one_by_id(file_id, note_id)
+            return self.get_one_by_id(file_id, int(note_id))
         return self.get_all(file_id)
 
     def get_one_by_id(self, file_id, note_id):
-        dc = data_provider.FileNotesDataConnector(
-            self._data_provider.db_session_maker)
+        if self._file_has_matching_note(file_id, note_id) is False:
+            raise AttributeError(f"File {file_id} has no note with id {note_id}")
 
-        res = dc.get(note_id, serialize=True)
-        return res
+        return self._data_connector.get(note_id, serialize=True)
 
     def get_all(self, file_id):
-        notes = self._data_connector.get(file_id, serialize=True)
+        data_connector = \
+            data_provider.FilesDataConnector(self._data_provider.db_session_maker)
+        notes = data_connector.get(file_id, serialize=True)
         return jsonify({
             "notes": notes['notes'],
             "total": len(notes['notes'])
@@ -98,10 +99,7 @@ class FileNotesAPI(views.MethodView):
             "message": json_request['message']
 
         }
-        note_data_connector = \
-            data_provider.FileNotesDataConnector(
-                self._data_provider.db_session_maker)
-        new_note = note_data_connector.create(**note_data)
+        new_note = self._data_connector.create(**note_data)
 
         return jsonify(
             {
@@ -118,20 +116,30 @@ class FileNotesAPI(views.MethodView):
         )
 
     def put(self, file_id: int) -> flask.Response:
-        note_id = request.args["id"]
+        note_id = int(request.args["id"])
+
+        if self._file_has_matching_note(file_id, note_id) is False:
+            raise AttributeError(f"File {file_id} has no note with id {note_id}")
+
         json_request = request.get_json()
         changed_data = dict()
         changed_data['message'] = json_request['message']
-        note_data_connector = \
-            data_provider.FileNotesDataConnector(
-                self._data_provider.db_session_maker)
+        return self._data_connector.update(note_id, changed_data)
 
-        note_record = note_data_connector.update(note_id, changed_data)
+    def _file_has_matching_note(self, file_id: int, note_id: int) -> bool:
+        provider = data_provider.FilesDataConnector(
+            self._data_provider.db_session_maker)
 
-        return note_record
+        matching_file = provider.get(file_id, serialize=True)
+        for note in matching_file['notes']:
+            if note['id'] == note_id:
+                return True
+        return False
 
     def delete(self, file_id: int) -> flask.Response:
         note_id = int(request.args["id"])
+        if self._file_has_matching_note(file_id, note_id) is False:
+            raise AttributeError(f"File {file_id} has no note with id {note_id}")
 
         note_data_connector = \
             data_provider.FileNotesDataConnector(
