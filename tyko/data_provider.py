@@ -1335,7 +1335,7 @@ class FileAnnotationsConnector(AbsDataProviderConnector):
 class FileAnnotationTypeConnector(AbsDataProviderConnector):
 
     def get(self, id=None, serialize=False):
-        # TDOD: FileAnnotationTypeConnector.get()
+        # TODO: FileAnnotationTypeConnector.get()
         pass
 
     def create(self, *args, **kwargs):
