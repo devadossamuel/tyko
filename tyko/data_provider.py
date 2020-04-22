@@ -704,7 +704,16 @@ class FileNotesDataConnector(AbsDataProviderConnector):
         pass
 
     def delete(self, id):
-        pass
+        session = self.session_maker()
+        try:
+            items_deleted = session.query(scheme.FileNotes). \
+                filter(scheme.FileNotes.id == id).delete()
+            success = items_deleted > 0
+            session.commit()
+            return success
+
+        finally:
+            session.close()
 
 
 class FilesDataConnector(AbsDataProviderConnector):
@@ -775,25 +784,6 @@ class FilesDataConnector(AbsDataProviderConnector):
                     return True
             raise ValueError(f"Item {item_id} does not have a file with an"
                              f" id of {file_id}")
-        finally:
-            session.close()
-
-    def remove_note(self, file_id, note_id):
-        session = self.session_maker()
-        try:
-            file_record = session.query(scheme.InstantiationFile)\
-                .filter(scheme.InstantiationFile.file_id == file_id).one()
-            for note in file_record.notes:
-                if note_id == note.id:
-                    file_record.notes.remove(note)
-                    items_deleted = session.query(scheme.FileNotes).\
-                        filter(scheme.FileNotes.id == note.id).delete()
-                    success = items_deleted > 0
-                    session.commit()
-                    return success
-            raise ValueError(f"File {file_id} does not have a note with an"
-                             f" id of {note_id}")
-
         finally:
             session.close()
 

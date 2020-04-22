@@ -130,7 +130,11 @@ class FileNotesAPI(views.MethodView):
 
     def delete(self, file_id: int) -> flask.Response:
         note_id = int(request.args["id"])
-        file_record = self._data_connector.remove_note(file_id, note_id)
+
+        note_data_connector = \
+            data_provider.FileNotesDataConnector(
+                self._data_provider.db_session_maker)
+        file_record = note_data_connector.delete(note_id)
         if file_record is True:
             return make_response("", 202)
         return make_response("Something went wrong", 500)
