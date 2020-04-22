@@ -5,7 +5,7 @@
     <td>
         <div class="btn-group-sm d-flex justify-content-end" role="group" aria-label="Edit">
             <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
-            <div class="dropdown-menu">
+            <div class="dropdown-menu dropdown-menu-right">
                 <button
                     class="btn btn-secondary btn-sm dropdown-item"
                     data-toggle="modal"
@@ -14,8 +14,7 @@
                     data-dialogtype="edit"
                     data-text="{{ note['text'] }}"
                     data-notetype="{{ note['note_type_id'] }}"
-                    data-apiroute="{{ note_api_route }}"
-                >Edit</button>
+                    data-apiroute="{{ note_api_route }}">Edit</button>
                 <button
                     class="btn btn-secondary btn-danger btn-sm dropdown-item"
                     data-toggle="modal"

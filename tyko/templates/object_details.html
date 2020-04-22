@@ -5,7 +5,7 @@
 {% block sidebar %}
 <div class="btn-group-vertical">
     <button id="btnExportGroupDrop" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Export</button>
-    <div class="dropdown-menu" aria-labelledby="btnExportGroupDrop">
+    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="btnExportGroupDrop">
         <a class="dropdown-item" href="{{ url_for('object_pbcore', id=object['object_id']) }}" download>PBCore</a>
     </div>
 </div>
