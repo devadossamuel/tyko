@@ -16,11 +16,15 @@ def create_pbcore_from_object(object_id: int,
     file_connector = FilesDataConnector(data_provider.db_session_maker)
 
     for item in resulting_object.get("items", []):
+        # The files comibg back aren't complete, get the rest of the metadata
+        # before passing it on to the PBCore template
+        resolved_files = []
+
         for item_file in item.get("files", []):
             file_id = item_file['id']
             res = file_connector.get(file_id, serialize=True)
-            item['files'].remove(item_file)
-            item['files'].append(res)
+            resolved_files.append(res)
+        item['files'] = resolved_files
 
     xml = template.render(
         obj=resulting_object

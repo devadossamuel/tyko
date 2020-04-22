@@ -1,7 +1,7 @@
 
 {%- macro pbcoreInstantiationFile(file) %}
     <pbcoreInstantiation>
-        <instantiationIdentifier annotation="file name">{{ file['name'] }}</instantiationIdentifier>
+        <instantiationIdentifier annotation="file name">{{ file['file_name'] }}</instantiationIdentifier>
         {% if file['generation'] %}
         <instantiationGenerations>{{ file['generation']}}</instantiationGenerations>
         {% endif %}
