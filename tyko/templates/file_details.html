@@ -76,10 +76,9 @@
     const file_id = {{ file['id'] }};
 
     function get_file_annotation_route(routes, file_id, annotationId) {
-      const routeTemplate = routes["file_annotation"]['route']
+      const routeTemplate = routes["file_annotations"]['route']
       return routeTemplate
-        .replace("<int:file_id>", file_id)
-        .replace("<int:annotation_id>", annotationId);
+        .replace("<int:file_id>", file_id).concat(`?id=${annotationId}`);
     }
     const fileAnnotationTable = $("#fileAnnotationTable");
 
@@ -217,7 +216,7 @@
                                                             {% endautoescape %}
                                                             {{note['id'] }}),
                                                         "file": Notes.fileData({{ note['file_id'] }}),
-                                                        "request": Notes.requestData("edit", "{{ url_for('file_note', file_id=note['file_id'], note_id=note['id'])}}")
+                                                        "request": Notes.requestData("edit", "{{ url_for('file_notes', file_id=note['file_id'], id=note['id'])}}")
                                                     }
                                                 })
                                         )
@@ -232,7 +231,7 @@
                                                             {% endautoescape %}
                                                             {{note['id'] }}),
                                                         "file": Notes.fileData({{ note['file_id'] }}),
-                                                        "request": Notes.requestData("remove", "{{ url_for('file_note', file_id=note['file_id'], note_id=note['id'])}}")
+                                                        "request": Notes.requestData("remove", "{{ url_for('file_notes', file_id=note['file_id'], id=note['id'])}}")
                                                     }
                                                 })
                                         )

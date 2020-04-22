@@ -210,7 +210,9 @@ class FileAnnotationsAPI(views.MethodView):
             'content': json_request.get('content'),
             'type_id': int(json_request.get('type_id')),
         }
-        return self._connector.update(annotation_id, changed_data)
+        connector = data_provider.FileAnnotationsConnector(
+            self._data_provider.db_session_maker)
+        return connector.update(annotation_id, changed_data)
 
 
 class FileAnnotationTypesAPI(views.MethodView):
