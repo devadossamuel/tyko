@@ -1,3 +1,4 @@
+import functools
 import flask.wrappers
 from flask import views, request, url_for, jsonify, make_response
 
@@ -5,7 +6,23 @@ from tyko import data_provider
 from tyko.data_provider import DataProvider
 
 
+
+
 class ItemFilesAPI(views.MethodView):
+    class Decorators:
+        @classmethod
+        def validate(cls, func):
+            @functools.wraps(func)
+            def wrapper(self, project_id, object_id, item_id):
+                file_id = int(request.args['id'])
+
+                if self._has_matching_file(project_id, object_id,
+                                           item_id, file_id) is False:
+                    raise AttributeError("Record mismatch")
+                return func(self, project_id, object_id, item_id)
+
+            return wrapper
+
     def __init__(self, provider: DataProvider) -> None:
         self._data_provider = provider
         self._data_connector = \
@@ -14,11 +31,9 @@ class ItemFilesAPI(views.MethodView):
     def get_by_id(self, file_id):
         return self._data_connector.get(int(file_id), serialize=True)
 
-    def get(self, project_id, object_id, item_id) -> flask.Response:
+    @Decorators.validate
+    def get(self, project_id, object_id, item_id) -> flask.Response:  # noqa: E501 pylint: disable=W0613
         file_id = request.args.get("id")
-        if self._has_matching_file(project_id, object_id,
-                                   item_id, int(file_id)) is False:
-            raise AttributeError("Record mismatch")
         if file_id is not None:
             return self.get_by_id(int(file_id))
         return self.get_all(item_id)
@@ -53,21 +68,16 @@ class ItemFilesAPI(views.MethodView):
             "url": url
         })
 
-    def put(self, project_id, object_id, item_id) -> flask.Response:
+    @Decorators.validate
+    def put(self, project_id, object_id, item_id) -> flask.Response:  # noqa: E501 pylint: disable=W0613
         file_id = int(request.args['id'])
-        if self._has_matching_file(project_id, object_id,
-                                   item_id, file_id) is False:
-            raise AttributeError("Record mismatch")
         json_request = request.get_json()
         return self._data_connector.update(file_id,
                                            changed_data=json_request)
 
-    def delete(self, project_id, object_id, item_id) -> flask.Response:
+    @Decorators.validate
+    def delete(self, project_id, object_id, item_id) -> flask.Response:  # noqa: E501 pylint: disable=W0613
         file_id = int(request.args['id'])
-        if self._has_matching_file(project_id, object_id,
-                                   item_id, file_id) is False:
-
-            raise AttributeError("Record mismatch")
 
         self._data_connector.remove(item_id, file_id)
         res = self._data_connector.delete(file_id)
@@ -195,6 +205,23 @@ class FileNotesAPI(views.MethodView):
 
 
 class FileAnnotationsAPI(views.MethodView):
+    class Decorators:
+        @classmethod
+        def validate(cls, func):
+            @functools.wraps(func)
+            def wrapper(self, file_id, *args, **kwargs):
+                annotation_id = request.args.get('id')
+                if annotation_id:
+                    connector = data_provider.FileAnnotationsConnector(
+                        self._data_provider.db_session_maker)
+                    annotation = connector.get(annotation_id, serialize=True)
+                    if annotation['file_id'] != file_id:
+                        raise AttributeError(
+                            "File id does not match annotation id")
+                return func(self, file_id, *args, **kwargs)
+
+            return wrapper
+
     def __init__(self, provider: DataProvider) -> None:
         self._data_provider = provider
 
@@ -208,6 +235,7 @@ class FileAnnotationsAPI(views.MethodView):
             "total": len(res['annotations'])
         })
 
+    @Decorators.validate
     def post(self, file_id: int) -> flask.Response:
         json_request = request.get_json()
         annotation_connector = \
@@ -229,15 +257,11 @@ class FileAnnotationsAPI(views.MethodView):
             },
         })
 
+    @Decorators.validate
     def delete(self, file_id: int) -> flask.Response:
         annotation_id = request.args['id']
         connector = data_provider.FileAnnotationsConnector(
             self._data_provider.db_session_maker)
-
-        annotation = connector.get(annotation_id, serialize=True)
-
-        if annotation['file_id'] != file_id:
-            return make_response("File id does not match annotation id", 400)
 
         successfully_deleted = connector.delete(annotation_id)
         if successfully_deleted is True:
@@ -245,6 +269,7 @@ class FileAnnotationsAPI(views.MethodView):
         return make_response(
             "Something went wrong trying to delete file annotation", 500)
 
+    @Decorators.validate
     def put(self, file_id: int) -> flask.Response:
         annotation_id = request.args["id"]
         json_request = request.get_json()
