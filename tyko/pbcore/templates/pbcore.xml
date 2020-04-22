@@ -23,7 +23,7 @@
         {%- endif %}
         <pbcoreTitle>{{ part['name'] }}</pbcoreTitle>
         {%- for note in part['notes'] %}
-        <pbcoreDescription descriptionType="{{- note['note_type'] if note['note_type']|length else "Note" -}} ">{{ note['text'] }}</pbcoreDescription>
+        <pbcoreAnnotation annotationType="{{- note['note_type'] ~ " note" if note['note_type']|length else "Note" -}} ">{{ note['text'] }}</pbcoreAnnotation>
         {%- else %}
         <pbcoreDescription/>
         {%- endfor %}
@@ -52,7 +52,7 @@
         {% endif -%}
         {#- ===================================== #}
         {%- for object_note in obj['notes'] %}
-        <pbcoreDescription descriptionType="{{- object_note['note_type'] if object_note['note_type']|length else "Note" -}} ">{{ object_note['text'] }}</pbcoreDescription>
+        <pbcoreAnnotation annotationType="{{- object_note['note_type'] ~ " note" if object_note['note_type']|length else "Note" -}} ">{{- object_note['text'] }}</pbcoreAnnotation>
         {% else -%}
         <pbcoreDescription/>
         {% endfor -%}

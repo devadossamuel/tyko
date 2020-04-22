@@ -3,6 +3,25 @@ name: SonarQube
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  eslint:
+    name: ESlint static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - run: npm install -y
+      - run: mkdir -p reports
+      - run: ./node_modules/.bin/eslint -f json -o reports/eslint_report.json tyko/static/js/
+        continue-on-error: true
+      - run : sed -i 's/\/home\/runner\/work\/tyko\/tyko/\/github\/workspace/g' reports/eslint_report.json
+      - name: Upload ESlint report
+        uses: actions/upload-artifact@v1
+        with:
+         name: eslint-report
+         path: reports/eslint_report.json
   jest:
     name: Javascript tests
     runs-on: ubuntu-latest
@@ -138,7 +157,7 @@ jobs:
         path: reports/bandit-report.json
 
   sonarCloudTrigger:
-    needs: [pytest,jest,pylint,bandit]
+    needs: [pytest,jest,pylint,bandit,eslint]
     name: SonarCloud Trigger
     runs-on: ubuntu-latest
     steps:
@@ -154,6 +173,11 @@ jobs:
       with:
         name: jest-coverage
         path: coverage
+    - name: Get ESlint report
+      uses: actions/download-artifact@v1
+      with:
+        name: eslint-report
+        path: reports
     - name: Get Jest xunit report
       uses: actions/download-artifact@v1
       with:

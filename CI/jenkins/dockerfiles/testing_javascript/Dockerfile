@@ -14,5 +14,6 @@ COPY package.json package-lock.json /home/user/
 
 RUN chown user /home/user/package.json
 RUN chown user /home/user/package-lock.json
+RUN echo 'export PATH=$PATH:/home/user/node_modules/.bin' >> /home/user/.bashrc
 USER user
 RUN cd /home/user && npm install -y

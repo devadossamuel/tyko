@@ -10,5 +10,6 @@ RUN pip install --no-cache-dir \
     flake8 \
     coverage \
     pylint \
+    pydocstyle \
     sqlalchemy-stubs \
      -r requirements.txt
