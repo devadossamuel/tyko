@@ -122,9 +122,11 @@ class FileNotesAPI(views.MethodView):
         json_request = request.get_json()
         changed_data = dict()
         changed_data['message'] = json_request['message']
+        note_data_connector = \
+            data_provider.FileNotesDataConnector(
+                self._data_provider.db_session_maker)
 
-        note_record = \
-            self._data_connector.edit_note(file_id, note_id, changed_data)
+        note_record = note_data_connector.update(note_id, changed_data)
 
         return note_record
 

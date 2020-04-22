@@ -701,7 +701,17 @@ class FileNotesDataConnector(AbsDataProviderConnector):
             session.close()
 
     def update(self, id, changed_data):
-        pass
+        session = self.session_maker()
+        try:
+            note_record = session.query(scheme.FileNotes) \
+                .filter(scheme.FileNotes.id == id).one()
+
+            if "message" in changed_data:
+                note_record.message = changed_data['message']
+            session.commit()
+            return note_record.serialize()
+        finally:
+            session.close()
 
     def delete(self, id):
         session = self.session_maker()
@@ -787,28 +797,28 @@ class FilesDataConnector(AbsDataProviderConnector):
         finally:
             session.close()
 
-    def edit_note(self, file_id, note_id, changed_data):
-        session = self.session_maker()
-        try:
-            note_record = session.query(scheme.FileNotes)\
-                .join(scheme.InstantiationFile) \
-                .filter(scheme.InstantiationFile.file_id == file_id)\
-                .filter(scheme.FileNotes.id == note_id).one()
-
-            if "message" in changed_data:
-                note_record.message = changed_data['message']
-
-            # for note in file_record.notes:
-            #     if note_id == note.id:
-            session.commit()
-            return note_record.serialize()
-            #         return note
-            # else:
-            #     raise ValueError(
-            #         f"File {file_id} does not have a note with an"
-            #         f" id of {note_id}")
-        finally:
-            session.close()
+    # def edit_note(self, file_id, note_id, changed_data):
+    #     session = self.session_maker()
+    #     try:
+    #         note_record = session.query(scheme.FileNotes)\
+    #             .join(scheme.InstantiationFile) \
+    #             .filter(scheme.InstantiationFile.file_id == file_id)\
+    #             .filter(scheme.FileNotes.id == note_id).one()
+    #
+    #         if "message" in changed_data:
+    #             note_record.message = changed_data['message']
+    #
+    #         # for note in file_record.notes:
+    #         #     if note_id == note.id:
+    #         session.commit()
+    #         return note_record.serialize()
+    #         #         return note
+    #         # else:
+    #         #     raise ValueError(
+    #         #         f"File {file_id} does not have a note with an"
+    #         #         f" id of {note_id}")
+    #     finally:
+    #         session.close()
 
 
 class ItemDataConnector(AbsNotesConnector):
