@@ -55,6 +55,7 @@ class ItemFilesAPI(views.MethodView):
         json_request = request.get_json()
         return self._data_connector.update(file_id,
                                            changed_data=json_request)
+
     def delete(self, project_id, object_id, item_id) -> flask.Response:
         file_id = int(request.args['id'])
 
@@ -79,13 +80,16 @@ class FileNotesAPI(views.MethodView):
 
     def get_one_by_id(self, file_id, note_id):
         if self._file_has_matching_note(file_id, note_id) is False:
-            raise AttributeError(f"File {file_id} has no note with id {note_id}")
+            raise AttributeError(
+                f"File {file_id} has no note with id {note_id}")
 
         return self._data_connector.get(note_id, serialize=True)
 
     def get_all(self, file_id):
         data_connector = \
-            data_provider.FilesDataConnector(self._data_provider.db_session_maker)
+            data_provider.FilesDataConnector(
+                self._data_provider.db_session_maker)
+
         notes = data_connector.get(file_id, serialize=True)
         return jsonify({
             "notes": notes['notes'],
@@ -119,7 +123,8 @@ class FileNotesAPI(views.MethodView):
         note_id = int(request.args["id"])
 
         if self._file_has_matching_note(file_id, note_id) is False:
-            raise AttributeError(f"File {file_id} has no note with id {note_id}")
+            raise AttributeError(
+                f"File {file_id} has no note with id {note_id}")
 
         json_request = request.get_json()
         changed_data = dict()
@@ -139,7 +144,8 @@ class FileNotesAPI(views.MethodView):
     def delete(self, file_id: int) -> flask.Response:
         note_id = int(request.args["id"])
         if self._file_has_matching_note(file_id, note_id) is False:
-            raise AttributeError(f"File {file_id} has no note with id {note_id}")
+            raise AttributeError(
+                f"File {file_id} has no note with id {note_id}")
 
         note_data_connector = \
             data_provider.FileNotesDataConnector(
@@ -147,7 +153,8 @@ class FileNotesAPI(views.MethodView):
         file_record = note_data_connector.delete(note_id)
         if file_record is True:
             return make_response("", 202)
-        return make_response("Something went wrong", 500)
+        return make_response("Something went wrong when trying to remove note",
+                             500)
 
 
 class FileAnnotationsAPI(views.MethodView):
@@ -198,7 +205,8 @@ class FileAnnotationsAPI(views.MethodView):
         successfully_deleted = connector.delete(annotation_id)
         if successfully_deleted is True:
             return make_response("", 202)
-        return make_response("Something went wrong", 500)
+        return make_response(
+            "Something went wrong trying to delete file annotation", 500)
 
     def put(self, file_id: int) -> flask.Response:
         annotation_id = request.args["id"]
@@ -232,7 +240,8 @@ class FileAnnotationTypesAPI(views.MethodView):
         successful = connector.delete(annotation_id)
         if successful is True:
             return make_response("", 202)
-        return make_response("Something went wrong", 500)
+        return make_response("Something went wrong trying to remove file "
+                             "annotation type", 500)
 
     def post(self) -> flask.Response:
         json_request = request.get_json()
