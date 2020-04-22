@@ -17,9 +17,9 @@
 {%- macro pbcorePart(part) %}
     <pbcorePart>
         {% if part['medusa_uuid'] is not none -%}
-        <pbcoreIdentifier source="medusa_uuid">{{ part['medusa_uuid'] }}</pbcoreIdentifier>
+        <pbcoreIdentifier source="{{ identifier_source }}" annotation="medusa_uuid">{{ part['medusa_uuid'] }}</pbcoreIdentifier>
         {% else -%}
-        <pbcoreIdentifier source=""/>
+        <pbcoreIdentifier source="{{ identifier_source }}"/>
         {%- endif %}
         <pbcoreTitle>{{ part['name'] }}</pbcoreTitle>
         {%- for note in part['notes'] %}
@@ -39,10 +39,10 @@
                   https://raw.githubusercontent.com/WGBH/PBCore_2.1/master/pbcore-2.1.xsd">
     <pbcoreDescriptionDocument>
         {#- ========= pbcoreIdentifiers ========= #}
-        <pbcoreIdentifier source="TYKO-OBJECT-ID">{{ obj['object_id'] }}</pbcoreIdentifier>
+        <pbcoreIdentifier source="{{ identifier_source }}" annotation="TYKO-OBJECT-ID">{{ obj['object_id'] }}</pbcoreIdentifier>
 
         {%- if obj['barcode'] is not none -%}
-            <pbcoreIdentifier source="BARCODE">{{ obj['barcode'] }}</pbcoreIdentifier>
+            <pbcoreIdentifier source="{{ identifier_source }}" annotation="Barcode">{{ obj['barcode'] }}</pbcoreIdentifier>
         {% endif -%}
 
         {#- ============ pbcoreTitle ============ #}

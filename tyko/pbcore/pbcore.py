@@ -27,7 +27,8 @@ def create_pbcore_from_object(object_id: int,
         item['files'] = resolved_files
 
     xml = template.render(
-        obj=resulting_object
+        obj=resulting_object,
+        identifier_source="University of Illinois at Urbana-Champaign"
     )
 
     return xml
