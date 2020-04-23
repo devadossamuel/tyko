@@ -8,7 +8,7 @@ from sqlalchemy.exc import OperationalError
 from .database import init_database
 from .exceptions import DataError
 from .data_provider import DataProvider, get_schema_version
-from .scheme import ALEMBIC_VERSION
+from .schema import ALEMBIC_VERSION
 from .routes import Routes
 
 

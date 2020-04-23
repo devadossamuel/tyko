@@ -501,8 +501,7 @@ class ObjectFrontend(ProjectComponentDetailFrontend):
         return render_template(template, **new_context)
 
 
-# TODO: Typo
-class CollectiontFrontend(FrontendEntity):
+class CollectionFrontend(FrontendEntity):
     def __init__(self, provider: data_provider.DataProvider) -> None:
         super().__init__(provider)
 

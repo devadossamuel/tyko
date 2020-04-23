@@ -4,39 +4,39 @@ from typing import Dict, Tuple, Any, Type
 import sqlalchemy as db
 from sqlalchemy.orm.session import sessionmaker
 
-from tyko import scheme
+from tyko import schema
 
 
 def init_database(engine) -> None:
     # if engine.dialect.has_table(engine, "audio_video"):
     #     return
     print("Creating all tables")
-    scheme.AVTables.metadata.create_all(bind=engine)
+    schema.AVTables.metadata.create_all(bind=engine)
     initial_session = sessionmaker(bind=engine)
     session = initial_session()
     if not engine.dialect.has_table(engine, "alembic_version"):
         version_table = db.Table(
-            "alembic_version", scheme.AVTables.metadata,
+            "alembic_version", schema.AVTables.metadata,
             db.Column("version_num", db.String(length=32), primary_key=True)
         )
-        scheme.AVTables.metadata.create_all(bind=engine)
+        schema.AVTables.metadata.create_all(bind=engine)
         set_version_sql = \
-            version_table.insert().values(version_num=scheme.ALEMBIC_VERSION)  # noqa: E501 pylint: disable=E1120
+            version_table.insert().values(version_num=schema.ALEMBIC_VERSION)  # noqa: E501 pylint: disable=E1120
         session.execute(set_version_sql)
 
     session.commit()
 
-    for i in session.query(scheme.NoteTypes):
+    for i in session.query(schema.NoteTypes):
         session.delete(i)
     _populate_note_type_table(session)
 
-    for i in session.query(scheme.FormatTypes):
+    for i in session.query(schema.FormatTypes):
         session.delete(i)
 
     _populate_format_types_table(session)
 
     _populate_starting_project_status(
-        session, project_status_table=scheme.ProjectStatus)
+        session, project_status_table=schema.ProjectStatus)
 
     session.commit()
     session.close()
@@ -50,16 +50,16 @@ def init_database(engine) -> None:
 
 def _populate_note_type_table(session):
     print("Populating NoteTypes Table")
-    for note_type, note_metadata in scheme.note_types.items():
+    for note_type, note_metadata in schema.note_types.items():
         note_id = note_metadata[0]
 
-        new_note_type = scheme.NoteTypes(name=note_type, id=note_id)
+        new_note_type = schema.NoteTypes(name=note_type, id=note_id)
         session.add(new_note_type)
 
 
 def _populate_starting_project_status(
         session,
-        project_status_table: Type[scheme.ProjectStatus]) -> None:
+        project_status_table: Type[schema.ProjectStatus]) -> None:
 
     print("Populating {} Table".format(project_status_table.__tablename__))
     statuses = ['In progress', "Complete", "No work done"]
@@ -70,10 +70,10 @@ def _populate_starting_project_status(
 
 def _populate_format_types_table(session):
     print("Populating project_status_type Table")
-    for format_type, format_metadata in scheme.format_types.items():
+    for format_type, format_metadata in schema.format_types.items():
         format_id = format_metadata[0]
 
-        new_format_type = scheme.FormatTypes(name=format_type, id=format_id)
+        new_format_type = schema.FormatTypes(name=format_type, id=format_id)
         session.add(new_format_type)
 
 
@@ -82,12 +82,12 @@ def validate_enumerated_tables(engine):
     valid = True
 
     if not validate_enumerate_table_data(
-            engine, scheme.FormatTypes, scheme.format_types):
+            engine, schema.FormatTypes, schema.format_types):
 
         valid = False
 
     if not validate_enumerate_table_data(
-            engine, scheme.NoteTypes, scheme.note_types):
+            engine, schema.NoteTypes, schema.note_types):
 
         valid = False
 
@@ -96,7 +96,7 @@ def validate_enumerated_tables(engine):
 
 
 def validate_enumerate_table_data(engine,
-                                  sql_table_type: Type[scheme.AVTables],
+                                  sql_table_type: Type[schema.AVTables],
                                   expected_table: Dict[str, Tuple[int, Any]]
                                   ) -> bool:
 
@@ -125,7 +125,7 @@ def validate_enumerate_table_data(engine,
 def validate_tables(engine):
 
     expected_table_names = []
-    for k in scheme.AVTables.metadata.tables.keys():
+    for k in schema.AVTables.metadata.tables.keys():
         expected_table_names.append(k)
 
     valid = True
