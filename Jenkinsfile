@@ -700,6 +700,7 @@ pipeline {
                                     sshCommand remote: remote, command: "mv ./package/tyko-${props.Version}/* ./package/"
                                     sshPut remote: remote, from: 'deploy', into: './package/'
                                     sshPut remote: remote, from: 'database', into: './package/'
+                                    sshPut remote: remote, from: 'alembic', into: './alembic/'
 
                                     sshCommand remote: remote, command: """cd package &&
         docker-compose -f deploy/docker-compose.yml -p tyko build ${SERVER_COLOR}_api ${SERVER_COLOR}_db &&
