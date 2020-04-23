@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import List, Optional
 
 import sqlalchemy
+from sqlalchemy.sql.expression import true
 from sqlalchemy import orm
 from .exceptions import DataError
 from . import scheme
@@ -659,33 +660,172 @@ class ObjectDataConnector(AbsNotesConnector):
         return new_data
 
 
+class FileNotesDataConnector(AbsDataProviderConnector):
+
+    def get(self, id=None, serialize=False):
+        session = self.session_maker()
+        try:
+            if id is not None:
+                all_notes = \
+                    session.query(scheme.FileNotes).filter(
+                        scheme.FileNotes.id == id).all()
+            else:
+                all_notes = \
+                    session.query(scheme.CollectionObject).filter(
+                        scheme.CollectionObject.project is not None).all()
+
+            if serialize:
+                serialized_notes = []
+                for notes in all_notes:
+                    serialized_notes.append(
+                        notes.serialize(True)
+                    )
+
+                all_notes = serialized_notes
+            if id is not None:
+                return all_notes[0]
+
+            return all_notes
+        finally:
+            session.close()
+
+    def create(self, *args, **kwargs):
+        session = self.session_maker()
+        try:
+            new_note = scheme.FileNotes(file_id=kwargs['file_id'],
+                                        message=kwargs['message'])
+            session.add(new_note)
+            session.commit()
+            return new_note.serialize()
+        finally:
+            session.close()
+
+    def update(self, id, changed_data):
+        session = self.session_maker()
+        try:
+            note_record = session.query(scheme.FileNotes) \
+                .filter(scheme.FileNotes.id == id).one()
+
+            if "message" in changed_data:
+                note_record.message = changed_data['message']
+            session.commit()
+            return note_record.serialize()
+        finally:
+            session.close()
+
+    def delete(self, id):
+        session = self.session_maker()
+        try:
+            items_deleted = session.query(scheme.FileNotes). \
+                filter(scheme.FileNotes.id == id).delete()
+            success = items_deleted > 0
+            session.commit()
+            return success
+
+        finally:
+            session.close()
+
+
+class FilesDataConnector(AbsDataProviderConnector):
+    def get(self, id=None, serialize=False):
+        session = self.session_maker()
+        try:
+            matching_file = session.query(scheme.InstantiationFile)\
+                .filter(scheme.InstantiationFile.file_id == id).one()
+            if serialize is True:
+                res = matching_file.serialize(recurse=True)
+                return res
+
+            return matching_file
+        finally:
+            session.close()
+
+    def create(self, item_id, *args, **kwargs):
+        name = kwargs['file_name']
+        generation = kwargs['generation']
+        session = self.session_maker()
+        try:
+            matching_item = session.query(scheme.CollectionItem)\
+                .filter(scheme.CollectionItem.id == item_id).one()
+            new_file = scheme.InstantiationFile(file_name=name)
+
+            if generation is not None:
+                new_file.generation = generation
+
+            matching_item.files.append(new_file)
+            session.flush()
+            session.commit()
+            return new_file.serialize()
+        finally:
+            session.close()
+
+    def update(self, id, changed_data):
+        session = self.session_maker()
+        try:
+            matching_file = session.query(scheme.InstantiationFile) \
+                .filter(scheme.InstantiationFile.file_id == id).one()
+            if "file_name" in changed_data:
+                matching_file.file_name = changed_data['file_name']
+            if "generation" in changed_data:
+                matching_file.generation = changed_data['generation']
+            session.commit()
+            return matching_file.serialize()
+        finally:
+            session.close()
+
+    def delete(self, id: int):
+        session = self.session_maker()
+        try:
+            items_deleted = session.query(scheme.InstantiationFile)\
+                .filter(scheme.InstantiationFile.file_id == id).delete()
+            session.commit()
+            return items_deleted > 0
+        finally:
+            session.close()
+
+    def remove(self, item_id: int, file_id: int):
+        session = self.session_maker()
+        try:
+            item = session.query(scheme.CollectionItem)\
+                .filter(scheme.CollectionItem.id == item_id).one()
+            for f in item.files:
+                if f.file_id == file_id:
+                    item.files.remove(f)
+                    return True
+            raise ValueError(f"Item {item_id} does not have a file with an"
+                             f" id of {file_id}")
+        finally:
+            session.close()
+
+
 class ItemDataConnector(AbsNotesConnector):
 
     def get(self, id=None, serialize=False):
         session = self.session_maker()
+        try:
+            if id:
+                all_collection_item = session.query(scheme.CollectionItem)\
+                    .filter(scheme.CollectionItem.id == id)\
+                    .all()
+            else:
+                all_collection_item = \
+                    session.query(scheme.CollectionItem).all()
 
-        if id:
-            all_collection_item = session.query(scheme.CollectionItem)\
-                .filter(scheme.CollectionItem.id == id)\
-                .all()
-        else:
-            all_collection_item = \
-                session.query(scheme.CollectionItem).all()
+            if serialize:
+                serialized_all_collection_item = []
 
-        if serialize:
-            serialized_all_collection_item = []
+                for collection_item in all_collection_item:
+                    serialized_all_collection_item.append(
+                        collection_item.serialize())
 
-            for collection_item in all_collection_item:
-                serialized_all_collection_item.append(
-                    collection_item.serialize())
+                all_collection_item = serialized_all_collection_item
 
-            all_collection_item = serialized_all_collection_item
-        session.close()
+            if id is not None:
+                return all_collection_item[0]
 
-        if id is not None:
-            return all_collection_item[0]
-
-        return all_collection_item
+            return all_collection_item
+        finally:
+            session.close()
 
     def add_note(self, item_id: int, note_text: str, note_type_id: int):
         session = self.session_maker()
@@ -713,15 +853,18 @@ class ItemDataConnector(AbsNotesConnector):
         format_type = session.query(scheme.FormatTypes)\
             .filter(scheme.FormatTypes.id == format_id).one()
 
-        file_name = kwargs.get("file_name")
         medusa_uuid = kwargs.get("medusa_uuid")
         new_item = scheme.CollectionItem(
             name=name,
-            file_name=file_name,
             medusa_uuid=medusa_uuid,
             format_type=format_type
         )
+        for instance_file in kwargs.get("files", []):
+            new_file = \
+                scheme.InstantiationFile(file_name=instance_file['name'])
 
+            new_item.files.append(new_file)
+        # new_item.files.append(f)
         session.add(new_item)
         session.commit()
         new_item_id = new_item.id
@@ -735,9 +878,6 @@ class ItemDataConnector(AbsNotesConnector):
         if item:
             if "name" in changed_data:
                 item.name = changed_data['name']
-
-            if "file_name" in changed_data:
-                item.file_name = changed_data["file_name"]
 
             if "medusa_uuid" in changed_data:
                 item.medusa_uuid = changed_data["medusa_uuid"]
@@ -1085,3 +1225,133 @@ def get_schema_version(db_engine: sqlalchemy.engine.Engine) -> Optional[str]:
     if results is None:
         return None
     return results.version_num
+
+
+class FileAnnotationsConnector(AbsDataProviderConnector):
+    def get_single_annotations(self, annotation_id, serialize):
+        session = self.session_maker()
+        try:
+            annotation = session.query(scheme.FileAnnotation)\
+                .filter(scheme.FileAnnotation.id == annotation_id)\
+                .one()
+            if serialize is True:
+                return annotation.serialize()
+            return annotation
+        finally:
+            session.close()
+
+    def get_all_annotations(self, serialize):
+        session = self.session_maker()
+        try:
+            annotations = []
+
+            for annotation in session.query(
+                    scheme.FileAnnotationType)\
+                    .filter(scheme.FileAnnotationType.active == true()):
+                if serialize:
+                    annotations.append(annotation.serialize())
+                else:
+                    annotations.append(annotation)
+            return annotations
+        finally:
+            session.close()
+
+    def get(self, id=None, serialize=False):
+        if id is None:
+            return self.get_all_annotations(serialize)
+        return self.get_single_annotations(id, serialize)
+
+    def create(self, *args, **kwargs):
+        file_id = kwargs['file_id']
+        content = kwargs['content']
+        annotation_type_id = kwargs['annotation_type_id']
+        session = self.session_maker()
+        try:
+            new_data = scheme.FileAnnotation(file_id=file_id,
+                                             annotation_content=content,
+                                             type_id=annotation_type_id)
+            session.add(new_data)
+            session.flush()
+            session.refresh(new_data)
+            annotation_id = new_data.id
+            session.commit()
+            return annotation_id
+        finally:
+            session.close()
+
+    def update(self, id, changed_data):
+        session = self.session_maker()
+        try:
+            annotation = session.query(scheme.FileAnnotation)\
+                .filter(scheme.FileAnnotation.id == id)\
+                .one()
+
+            if "content" in changed_data:
+                annotation.annotation_content = changed_data['content']
+            if "type_id" in changed_data:
+                annotation.type_id = changed_data['type_id']
+            session.commit()
+            return annotation.serialize()
+        finally:
+            session.close()
+
+    def delete(self, id):
+        session = self.session_maker()
+        try:
+            items_deleted = session.query(scheme.FileAnnotation)\
+                .filter(scheme.FileAnnotation.id == id)\
+                .delete()
+            session.commit()
+            session.close()
+            return items_deleted > 0
+        finally:
+            session.close()
+
+
+class FileAnnotationTypeConnector(AbsDataProviderConnector):
+
+    def get(self, id=None, serialize=False):
+        # TODO: FileAnnotationTypeConnector.get()
+        pass
+
+    def create(self, *args, **kwargs):
+        annotation_message = kwargs['text']
+        session = self.session_maker()
+        try:
+            new_annotation_type = scheme.FileAnnotationType(
+                name=annotation_message,
+                active=True
+            )
+
+            session.add(new_annotation_type)
+            session.flush()
+            session.refresh(new_annotation_type)
+            session.commit()
+            return new_annotation_type.serialize()
+
+        finally:
+            session.close()
+
+    def update(self, id, changed_data):
+        # TODO: FileAnnotationTypeConnector.update()
+        pass
+
+    def delete(self, id):
+        """
+        Sets the annotation type to inactive, not really deleting it.
+        Args:
+            id:
+
+        Returns:
+            bool: true if successful
+
+        """
+        session = self.session_maker()
+        try:
+            annotation_type = session.query(scheme.FileAnnotationType) \
+                .filter(scheme.FileAnnotationType.id == id).one()
+            annotation_type.active = False
+            session.commit()
+            return True
+        finally:
+            session.close()

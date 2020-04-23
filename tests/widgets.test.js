@@ -25,8 +25,8 @@ describe('Testing text widget', ()=> {
     test("The default state to contain the field text and an edit button", ()=>{
         const root = document.getElementById("sample");
         const contentElement = root.querySelector("#content");
-        const paragraphElement = contentElement.firstChild;
-        expect(paragraphElement.innerHTML).toBe("Sample text");
+        // const paragraphElement = contentElement.firstChild;
+        expect(contentElement.innerText).toBe("Sample text");
     });
 
     test("After swapping state is edit", ()=>{

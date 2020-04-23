@@ -3,34 +3,35 @@
     <td >{{ note['note_type'] }}</td>
     <td>{{ note['text'] }}</td>
     <td>
-        <button
-            class="btn btn-secondary btn-sm"
-            data-toggle="modal"
-            data-target="#noteEditor"
-            data-title="Edit Note"
-            data-dialogtype="edit"
-            data-text="{{ note['text'] }}"
-            data-notetype="{{ note['note_type_id'] }}"
-            data-apiroute="{{ note_api_route }}"
-        >Edit</button>
-    </td>
-    <td>
-        <button
-            class="btn btn-secondary btn-danger btn-sm"
-            data-toggle="modal"
-            data-target="#noteRemoveConfirm"
-            data-title="Remove Note"
-            data-text="{{ note['text'] }}"
-            data-apiroute="{{ note_api_route }}">
-            Remove
-        </button>
+        <div class="btn-group-sm d-flex justify-content-end" role="group" aria-label="Edit">
+            <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+            <div class="dropdown-menu dropdown-menu-right">
+                <button
+                    class="btn btn-secondary btn-sm dropdown-item"
+                    data-toggle="modal"
+                    data-target="#noteEditor"
+                    data-title="Edit Note"
+                    data-dialogtype="edit"
+                    data-text="{{ note['text'] }}"
+                    data-notetype="{{ note['note_type_id'] }}"
+                    data-apiroute="{{ note_api_route }}">Edit</button>
+                <button
+                    class="btn btn-secondary btn-danger btn-sm dropdown-item"
+                    data-toggle="modal"
+                    data-target="#noteRemoveConfirm"
+                    data-title="Remove Note"
+                    data-text="{{ note['text'] }}"
+                    data-apiroute="{{ note_api_route }}">
+                    Remove
+                </button>
+            </div>
+        </div>
     </td>
 </tr>
 {% endmacro %}
 
 {% macro notes_new_button_row(note_api_route) %}
 <tr>
-    <td></td>
     <td></td>
     <td></td>
     <td>
@@ -49,17 +50,18 @@
 </tr>
 {% endmacro %}
 
-{% macro note_editor_events(apiPath, valid_note_types) %}
+{% macro note_editor(apiPath, valid_note_types) %}
+    {% include "edit_note.html" %}
 <script type="module">
- import {notes} from "{{url_for('static', filename="js/api.js")}}"
- $(document).ready(function () {
-     {%- for note_name, note_id in valid_note_types %}
-         $("#noteTypeSelect").append(new Option("{{ note_name }}", "{{note_id}}"));
-     {%- endfor %}
+    import {setupModalWindow, newNote, editNote, removeNote} from "{{url_for('static', filename='js/noteModal.js')}}"
+    import {notes} from "{{url_for('static', filename="js/api.js")}}"
+    $(document).ready(function () {
+        {%- for note_name, note_id in valid_note_types %}
+            $("#noteTypeSelect").append(new Option("{{ note_name }}", "{{note_id}}"));
+        {%- endfor %}
 
-     $('#noteRemoveConfirm').on('show.bs.modal', function (event) {
-         setup_confirm_note_removal_modal(
-                $(event.relatedTarget),
+        $('#noteRemoveConfirm').on('show.bs.modal', function (event) {
+            removeNote(
                 $(this),
                 $(event.relatedTarget).data("apiroute"),
                 notes.removeNote
@@ -69,13 +71,13 @@
         $('#noteEditor').on('show.bs.modal', function (event) {
             const button = $(event.relatedTarget);
             const modal = $(this);
-            setup_modal_window(modal, button);
+            setupModalWindow(modal, button);
             switch (button.data('dialogtype')) {
                 case "edit":
-                    setup_edit(button, modal, notes.editNote);
+                    editNote(button, modal, notes.editNote);
                     break;
                 case "new":
-                    setup_new_note(button, modal, "{{ apiPath }}", notes.addNote);
+                    newNote(modal, "{{ apiPath }}", notes.addNote);
                     break;
             }
         });
@@ -84,7 +86,7 @@
 {% endmacro %}
 
 {% macro metadata_table() %}
-<table class="table">
+<table class="table table-sm">
     <caption hidden>Metadata</caption>
     <thead hidden>
         <tr>
@@ -99,26 +101,40 @@
 {% endmacro %}
 
 {% macro notes_table(notes, api_path) %}
-<table class="table">
-    <caption hidden>Notes</caption>
-    {% if notes|length > 0 %}
-    <thead>
-        <tr>
-            <th scope="col">Type</th>
-            <th class="col-sm-3" id="noteMessageColumnHeader">Message</th>
-            <th scope="col">Edit</th>
-            <th scope="col">Remove</th>
-        </tr>
-    </thead>
-    {% endif %}
-    <tbody>
-    {%- for note in notes -%}
-        {{ caller(note) }}
-    {% endfor %}
-    {{notes_new_button_row(api_path)}}
-    </tbody>
-
-</table>
+<div class="flex-column">
+    <div>
+        <table class="table table-sm">
+            <caption hidden>Notes</caption>
+            {% if notes|length > 0 %}
+            <thead>
+                <tr>
+                    <th scope="col">Type</th>
+                    <th class="col-sm-3" id="noteMessageColumnHeader">Message</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            {% endif %}
+            <tbody>
+            {%- for note in notes -%}
+                {{ caller(note) }}
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <div class="btn-group float-right" role="group">
+                <button
+                    class="btn btn-primary btn-sm"
+                    data-toggle="modal"
+                    data-target="#noteEditor"
+                    data-title="Create New Note"
+                    data-dialogtype="new"
+                    data-source="{{ note_api_route }}">
+                    Add
+                </button>
+        </div>
+    </div>
+</div>
 {% endmacro %}
 
 {% macro list_header(title) %}

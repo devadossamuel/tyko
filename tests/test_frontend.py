@@ -9,7 +9,6 @@ import pytest
 import tyko
 import tyko.database
 from tyko import frontend
-from xml.dom.minidom import parseString
 
 
 @pytest.fixture()
@@ -105,6 +104,76 @@ def test_view_web_more(app):
         more_page_resp = server.get("/more")
         assert more_page_resp.status_code == 200
 
+def test_view_web_file(app):
+    with app.test_client() as server:
+        new_collection_id = json.loads(server.post(
+            "/api/collection/",
+            data=json.dumps(
+                {
+                    "collection_name": "My dummy collection",
+                    "department": "preservation",
+                }
+            ),
+            content_type='application/json'
+        ).data)['id']
+
+        new_project_id = json.loads(server.post(
+            "/api/project/",
+            data=json.dumps(
+                {
+                    "title": "my dumb project",
+                }
+            ),
+            content_type='application/json'
+        ).data)['id']
+        new_object_url = url_for("project_add_object",
+                                 project_id=new_project_id)
+
+        new_object_id = json.loads(server.post(
+            new_object_url,
+            data=json.dumps({
+                "name": "My dummy object",
+                "barcode": "12345",
+                "collectionId": new_collection_id
+            }),
+            content_type='application/json'
+        ).data)['object']['object_id']
+        new_item_url = url_for("project_object_add_item",
+                               project_id=new_project_id,
+                               object_id=new_object_id
+                               )
+
+        new_item_id = json.loads(server.post(
+            new_item_url,
+            data=json.dumps({
+                "name": "dummy object",
+                "format_id": 2
+            }),
+            content_type='application/json'
+        ).data)['item']['item_id']
+        new_file_url = url_for("project_object_item_add_file",
+                               project_id=new_project_id,
+                               object_id=new_object_id,
+                               item_id=new_item_id
+                               )
+
+        file_id = json.loads(server.post(
+            new_file_url,
+            data=json.dumps({
+                "file_name": "my_dumb_audio.wav",
+            }),
+            content_type='application/json'
+        ).data)['id']
+        file_page_resp = server.get(
+            url_for("page_file_details",
+                    project_id=new_project_id,
+                    object_id=new_object_id,
+                    item_id=new_item_id,
+                    file_id=file_id)
+        )
+        assert file_page_resp.status_code == 200
+
+
 
 def test_view_web_item(app):
     with app.test_client() as server:
@@ -136,7 +205,11 @@ def test_view_web_item(app):
             data=json.dumps(
                 {
                     "name": "My dummy item",
-                    "file_name": "dummy.txt",
+                    "files": [
+                        {
+                            "name": "dummy.txt"
+                        }
+                    ],
                     "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4",
                     "format_id": 1
                 }
@@ -154,16 +227,6 @@ def test_view_web_item(app):
                 item_id=new_item_data['item_id'])
         )
         assert resulting_webpage.status_code == 200
-        data = str(resulting_webpage.data, encoding="utf-8")
-        assert "My dummy item" in data
-
-        resulting_webpage_from_on_own = server.get(
-            url_for(
-                "page_item_details",
-                item_id=new_item_data['item_id']
-            )
-        )
-        assert resulting_webpage_from_on_own.status_code == 200
 
 
 @pytest.fixture()

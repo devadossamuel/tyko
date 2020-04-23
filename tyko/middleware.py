@@ -12,6 +12,7 @@ from flask import jsonify, make_response, abort, request, url_for
 from . import data_provider as dp
 from . import pbcore
 from .exceptions import DataError
+from .views import files
 
 CACHE_HEADER = "private, max-age=0"
 
@@ -142,7 +143,7 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
                 new_item_data = {
                     "name": request_data["name"],
                     "format_id": request_data["format_id"],
-                    "file_name": request_data.get("file_name"),
+                    "files": request_data.get("files", [])
 
                 }
             except KeyError as e:
@@ -613,9 +614,9 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
 class ItemMiddlwareEntity(AbsMiddlwareEntity):
     WRITABLE_FIELDS = [
         "name",
-        "file_name",
         "medusa_uuid",
-        "obj_sequence"
+        "obj_sequence",
+        "files"
     ]
 
     def __init__(self, data_provider) -> None:
@@ -703,6 +704,11 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
             }
         )
 
+    def add_file(self, project_id, object_id, item_id):
+        return files.ItemFilesAPI(self._data_provider).post(project_id,
+                                                            object_id,
+                                                            item_id)
+
     def add_note(self, item_id):
         data = request.get_json()
         try:
@@ -726,11 +732,11 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
         data = request.get_json()
         name = data['name']
         format_id = data['format_id']
-        file_name = data.get('file_name')
         medusa_uuid = data.get("medusa_uuid")
+
         new_item_id = self._data_connector.create(
             name=name,
-            file_name=file_name,
+            files=data.get("files", []),
             medusa_uuid=medusa_uuid,
             format_id=format_id
         )

@@ -1,0 +1,339 @@
+{% extends "panel_details.html" %}
+{% from "_macros.html" import notes_table_row, notes_table, metadata_table %}
+{% import  "_details_macros.html" as widgets%}
+{% import  "dialog_boxes.html" as dialog %}
+
+{% block main_details %}
+    {%  call widgets.card("Details", "my-1 h-100")  %}
+        {%  call metadata_table() %}
+            <tr>
+                {{widgets.metadata_text_edit_widget("File Name", file['file_name'], 'file_name', api_path)}}
+            </tr>
+            <tr>
+                {{ widgets.metadata_select_edit_widget("Generation",
+                                                       file['generation'],
+                                                       options=[
+                                                        {
+                                                            "value": "Access",
+                                                            "text": "Access"
+                                                        },
+                                                        {
+                                                            "value": "Preservation",
+                                                            "text": "Preservation"
+                                                        },
+                                                        ],
+                                                       field_key='generation',
+                                                       update_api_path=api_path) }}
+            </tr>
+        {% endcall %}
+    {% endcall %}
+{% endblock %}
+
+{% block secondary_details %}
+    {% call widgets.card("Annotations", "my-1")  %}
+        <script>var editAnnotationEvent = new Event("editAnnotation")</script>
+        <table id="fileAnnotationTable" class="table table-sm">
+            <caption hidden>File Annotations</caption>
+            <thead hidden>
+                <tr>
+                    <th scope="col">Type</th>
+                    <th scope="col">Content</th>
+                    <th scope="col">Edit</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for annotation in file['annotations'] %}
+                    <tr>
+                        <td>{{ annotation['type']['name'] }}</td>
+                        <td>{{ annotation['content'] }}</td>
+                        <td>
+                            <button type="button"
+                                    class="btn btn-sm btn-secondary dropdown-toggle"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false"></button>
+                            <div class="dropdown-menu">
+                                <button class="dropdown-item btn-sm"
+                                        onclick='document.getElementById("fileAnnotationTable").dispatchEvent(new CustomEvent("editAnnotation", {"detail": {"annotation": {{ annotation|tojson }} }}))'>
+                                    Edit</button>
+                                <button class="dropdown-item btn-sm btn-danger"
+                                        onclick='document.getElementById("fileAnnotationTable").dispatchEvent(new CustomEvent("removeAnnotation", {"detail": {"annotation": {{ annotation|tojson }} }}))'>
+                                    Remove</button>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="card-footer bg-transparent">
+            <button id="addAnnotationsBtn" class="btn btn-primary float-right btn-sm">Add</button>
+        </div>
+    {% endcall %}
+<script type="module">
+    import {routes} from "{{ url_for('static', filename="js/api.js") }}"
+    import {requests} from "{{ url_for('static', filename="js/request.js") }}"
+    const all_routes = routes.all_routes("{{ url_for('list_routes') }}");
+    const file_id = {{ file['id'] }};
+
+    function get_file_annotation_route(routes, file_id, annotationId) {
+      const routeTemplate = routes["file_annotations"]['route']
+      return routeTemplate
+        .replace("<int:file_id>", file_id).concat(`?id=${annotationId}`);
+    }
+    const fileAnnotationTable = $("#fileAnnotationTable");
+
+    const removeAnnotationDialog = $('#removeAnnotationsModal');
+    const annotationDialog = $('#editAnnotationsModal');
+    removeAnnotationDialog.on("accept", function(event, annotation) {
+      console.log(annotation);
+      all_routes.then((routes)=> {
+        const remove_route = get_file_annotation_route(routes, annotation['file_id'], annotation["id"]);
+        requests.delete(remove_route).then(function() {
+          console.log("Success");
+          location.reload();
+        }).catch(function(res) {
+          alert("FAILEd to remove " + res['statusText']);
+        });
+      });
+
+    })
+    fileAnnotationTable.on('removeAnnotation', function (event) {
+      const annotation = event.detail['annotation']
+      all_routes.then((routes)=> {
+        removeAnnotationDialog.trigger("confirm", [annotation]);
+      });
+    });
+
+    fileAnnotationTable.on('editAnnotation', function (event) {
+        const annotation = event.detail['annotation']
+        all_routes.then((routes)=> {
+            annotationDialog.trigger("set_mode",
+                [
+                    "edit",
+                    get_file_annotation_route(routes, file_id, annotation["id"]),
+                    annotation,
+
+                ]
+            );
+            annotationDialog.modal('show');
+        });
+    })
+
+
+    const addAnnotationBtn = $('#addAnnotationsBtn');
+
+    addAnnotationBtn.on('click', function () {
+        all_routes.then((routes)=>{
+            const routeTemplate = routes["file_annotations"]['route']
+            const requestUrl = routeTemplate.replace("<int:file_id>", file_id)
+            annotationDialog.trigger("set_mode",
+                    [
+                        "create",
+                        requestUrl
+                    ]);
+            annotationDialog.modal('show');
+            }
+        )
+    });
+    annotationDialog.on("accept", function (event) {
+        console.log("Accepted")
+        const request = event.detail["request"];
+        console.log("request type " + request['type']);
+        console.log("request url " + request['url']);
+
+        const annotation = event.detail["annotation"];
+        console.log("annotation text " + annotation['text']);
+        console.log("annotation id " + annotation['type_id']);
+        switch (request['type']) {
+            case "create":
+              requests.post(request['url'], annotation)
+                .then(function() {
+                  annotationDialog.modal('hide');
+                  location.reload();
+                }).catch(function(res) {
+                  alert("Creating new record failed" + res["statusText"]);
+                  console.error(res["responseText"]);
+              })
+              break;
+            case "edit":
+                console.log("editing exisiting record")
+                requests.put(request['url'], annotation)
+                    .then(function() {
+                      annotationDialog.modal('hide');
+                      location.reload();
+                }).catch(function(res) {
+                  alert("Updating record failed" + res["statusText"]);
+                  console.error(res["responseText"]);
+              })
+              break;
+            default:
+              throw "invalid type";
+        }
+    })
+
+
+</script>
+    {{ dialog.editFileAnnotation("editAnnotationsModal", url_for('file_annotation_types')) }}
+    {{ dialog.confirmRemoveAnnotation("removeAnnotationsModal") }}
+    {% call widgets.card("Notes", "my-1")  %}
+            <ul id="notesList" class="list-group list-group-flush">
+            {% for note in file['notes'] %}
+                <li class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                        <div>
+
+                        {{ note['message'] }}
+                        </div>
+                    <div>
+                        <div class="btn-group" role="group" aria-label="Edit">
+                            <button type="button"
+                                    class="btn btn-sm btn-secondary dropdown-toggle"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false"></button>
+                            <div class="dropdown-menu">
+                                <button class="btn btn-secondary btn-sm dropdown-item"
+                                        id="noteEditButton{{ loop.index }}">
+                                    Edit
+                                </button>
+                                <button class="btn btn-danger btn-sm dropdown-item"
+                                        id="noteRemoveButton{{ loop.index }}">
+                                    Remove
+                                </button>
+                                <script type="module">
+                                    function encode(d){
+                                        let t = document.createElement('div');
+                                        t.innerText = t.innerContent = d;
+                                        return t.innerHTML;
+                                    }
+                                    document.getElementById("noteEditButton{{ loop.index }}").addEventListener('click', function () {
+                                        document.getElementById("notesList").dispatchEvent(
+                                            new CustomEvent("editNote", {
+                                                    detail: {
+                                                        "note": Notes.noteData(
+                                                            {% autoescape false %}
+                                                            "{{ note['message'] }}",
+                                                            {% endautoescape %}
+                                                            {{note['id'] }}),
+                                                        "file": Notes.fileData({{ note['file_id'] }}),
+                                                        "request": Notes.requestData("edit", "{{ url_for('file_notes', file_id=note['file_id'], id=note['id'])}}")
+                                                    }
+                                                })
+                                        )
+                                    })
+                                    document.getElementById("noteRemoveButton{{ loop.index }}").addEventListener('click', function () {
+                                        document.getElementById("notesList").dispatchEvent(
+                                            new CustomEvent("removeNote", {
+                                                    detail: {
+                                                        "note": Notes.noteData(
+                                                            {% autoescape false %}
+                                                            "{{ note['message'] }}",
+                                                            {% endautoescape %}
+                                                            {{note['id'] }}),
+                                                        "file": Notes.fileData({{ note['file_id'] }}),
+                                                        "request": Notes.requestData("remove", "{{ url_for('file_notes', file_id=note['file_id'], id=note['id'])}}")
+                                                    }
+                                                })
+                                        )
+                                    })
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+            </ul>
+        <script type="application/javascript" src="{{ url_for('static', filename='js/notes.js') }}"></script>
+        <script type="module">
+            import {files} from "{{ url_for('static', filename='js/api.js') }}"
+            const removeModal = document.getElementById("removeNoteModal");
+            removeModal.addEventListener("accept", function (event) {
+                    files.removeNote(
+                        event.detail['request']['url']).then(function () {
+                            location.reload();
+                        }).catch(function (res) {
+                            alert("Failed to edit note");
+                        })
+                    $(removeModal).modal('hide');
+            });
+            const editModal = document.getElementById("editNoteModal");
+            editModal.addEventListener("accept", function (event) {
+                    switch (event.detail['request']['type']) {
+                        case "edit":
+                            files.editNote(
+                                event.detail['request']['url'],
+                                {
+                                    "message": event.detail['note']["text"]
+                                }).then(function () {
+                                    location.reload();
+                                }).catch(function (res) {
+                                    alert("Failed to edit note");
+                                })
+                            break;
+                        case "create":
+                            files.addNote(
+                                event.detail['request']['url'],
+                                {
+                                    "message": event.detail['note']["text"]
+                                }).then(function () {
+                                    location.reload();
+                                }).catch(function (res) {
+                                    alert("Failed to create note");
+                                })
+
+                            break;
+                        default:
+                            throw "INvalide type";
+
+                    }
+                    $(editModal).modal("hide");
+                });
+            document.getElementById("notesList").addEventListener("removeNote", function (event) {
+                console.log("request remove");
+                const modal = $('#removeNoteModal');
+                modal.find('#noteContent').text(event.detail['note']['text']);
+                modal.data['note'] = event.detail['note'];
+                modal.data['file'] = event.detail['file'];
+                modal.data['request'] = event.detail['request'];
+                modal.modal('show');
+            });
+            document.getElementById("notesList").addEventListener("editNote", function (event) {
+                const modal = $('#editNoteModal');
+
+                modal.data['note'] = event.detail['note'];
+                modal.data['file'] = event.detail['file'];
+                modal.data['request'] = Notes.requestData("edit", event.detail['request']['url']);
+                modal.find('#noteEditSaveChangeBtn').text("Apply changes");
+                modal.find('#noteContentTextarea').text(event.detail['note']['text']);
+                modal.modal('show');
+            })
+        </script>
+        {# ============================= MODALS ============================= #}
+        {{ dialog.confirmRemoveFileNote("removeNoteModal") }}
+        {{ dialog.editFileNote("editNoteModal") }}
+
+
+        <div class="card-footer bg-transparent">
+             <button id="newNoteBtn" class="btn btn-primary btn-sm float-right">Add</button>
+            <script type="module">
+                document.getElementById('newNoteBtn').addEventListener('click', function (event) {
+                    const modal = $('#editNoteModal');
+                    modal.find('#noteContentTextarea').val("");
+                    modal.data['file'] = Notes.fileData({{ file['id'] }});
+
+                    modal.data['request'] = Notes.requestData(
+                        "create",
+                        "{{ url_for('file_notes', file_id=file['id'] ) }}"
+                    );
+
+                    modal.data['note'] = Notes.noteData(null, null);
+                    modal.find('#noteEditSaveChangeBtn').text("Create");
+                    modal.modal('show');
+                });
+
+            </script>
+        </div>
+    {% endcall %}
+
+{% endblock %}

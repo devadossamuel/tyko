@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% from "_macros.html" import note_editor_events %}
+{% from "_macros.html" import note_editor %}
 {% from "_details_macros.html" import breadcrumbs_widget %}
 {%- block content -%}
     <div class="container-fluid">
@@ -14,7 +14,7 @@
         <div class="row onePadding">
             <div class="col-md-12 col-sm-12">
                 <div class="container">
-                    <div class="table-responsive">
+                    <div class="table table-sm">
                         {% block detail_table %}
 
                         {% endblock %}
@@ -52,66 +52,4 @@
             </div>
         </div>
     </div>
-    {% include "edit_note.html" %}
-
-{% endblock %}
-
-
-{%- block scripts %}
-    {{ super() }}
-    <script>
-    function setup_edit(button, modal, promise){
-            const noteId = button.data('notetype');
-            modal.find('#noteTypeSelect').val(noteId);
-            modal.find('#saveNoteButton').unbind('click').bind('click',
-            function () {
-                const noteApiRoute = button.data('apiroute');
-                const noteTypeId = modal.find('#noteTypeSelect').val();
-                const noteText = modal.find('#message-text').val();
-                promise(noteApiRoute, noteTypeId, noteText)
-                    .then(function (data) {
-                        console.log("success");
-                        location.reload();
-                    }).catch(function (data) {
-                        alert("Failed: " + data.responseText);
-                        console.log("Failed");
-                    });
-            });
-        }
-
-    function setup_new_note(button, modal, apiPath, promise) {
-        modal.find('#saveNoteButton').unbind('click').bind('click',
-        function (){
-            const noteTypeId = modal.find('#noteTypeSelect').val();
-            const noteText = modal.find('#message-text').val();
-            promise(apiPath, noteTypeId, noteText)
-                .then(function () {
-                    console.log("success");
-                    location.reload();
-                }).catch(function (data) {
-                    alert("Failed: " + data.responseText);
-                    console.log("Failed")
-                })
-        });
-    }
-    function setup_modal_window(modal, button){
-        modal.find('.modal-title').text(button.data("title"));
-        modal.find('#message-text').val(button.data('text'));
-    }
-    function setup_confirm_note_removal_modal(button, modal, apiroute, promise){
-        modal.find('#confirmRemoveNoteButton').unbind('click').bind('click',
-            function () {
-                promise(apiroute)
-                    .then(function () {
-                        console.log("success");
-                        location.reload();
-                    }).catch(function (data) {
-                        alert("Failed: " + data.responseText);
-                        console.log("Failed");
-                    });
-
-            });
-    }
-
-    </script>
 {% endblock %}

@@ -6,7 +6,7 @@ import sqlalchemy as db
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
 
-ALEMBIC_VERSION: str = "a6f912f5e00f"
+ALEMBIC_VERSION: str = "364bf8893123"
 
 SerializedData = \
     Union[int, str, List['SerializedData'], None, Dict[str, 'SerializedData']]
@@ -252,10 +252,8 @@ class CollectionObject(AVTables):
         if self.collection is not None:
             if recurse is True:
                 return self.collection.serialize()
-            else:
-                return None
-        else:
             return None
+        return None
 
     def get_items(self, recurse):
         def sorter(collection_items: List[CollectionItem]):
@@ -294,8 +292,6 @@ class CollectionItem(AVTables):
     id = db.Column("item_id", db.Integer, primary_key=True, autoincrement=True)
 
     name = db.Column("name", db.Text)
-    #
-    file_name = db.Column("file_name", db.Text)
     medusa_uuid = db.Column("medusa_uuid", db.Text)
 
     collection_object_id = db.Column("object_id",
@@ -318,13 +314,26 @@ class CollectionItem(AVTables):
                                db.ForeignKey("format_types.format_id"))
 
     format_type = relationship("FormatTypes", foreign_keys=[format_type_id])
+    files = relationship("InstantiationFile", backref="file_source")
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         notes = [note.serialize() for note in self.notes]
+        files = []
+        for file_ in self.files:
+            if recurse is True:
+                files.append(file_.serialize(recurse=True))
+            else:
+                files.append({
+                    "name": file_.file_name,
+                    "id": file_.file_id,
+                    "generation": file_.generation
+
+                })
+
         data: Dict[str, SerializedData] = {
             "item_id": self.id,
             "name": self.name,
-            "file_name": self.file_name,
+            "files": files,
             "medusa_uuid": self.medusa_uuid,
             "obj_sequence": self.obj_sequence,
             "parent_object_id": self.collection_object_id,
@@ -650,6 +659,117 @@ class VendorTransfer(AVTables):
         }
 
 
+class InstantiationFile(AVTables):
+    __tablename__ = "instantiation_files"
+
+    file_id = db.Column(
+        "file_id", db.Integer, primary_key=True, autoincrement=True)
+
+    file_name = db.Column("file_name", db.Text, nullable=False)
+
+    source = db.Column("source", db.Text,
+                       default="University of Illinois library",
+                       nullable=False)
+
+    generation = db.Column("generation", db.Text)
+
+    filesize = db.Column("filesize", db.Integer)
+    filesize_unit = db.Column("filesize_unit", db.Text)
+    item_id = db.Column(db.Integer, db.ForeignKey("item.item_id"))
+    notes = relationship(
+        "FileNotes",
+        backref="file_note_source"
+    )
+    annotations = relationship(
+        "FileAnnotation",
+        backref="file_annotation_source"
+    )
+
+    def _create_notes(self, resolve_data: bool):
+        for file_note in self.notes:
+            if resolve_data:
+                yield file_note.serialize()
+            else:
+                yield {
+                    "note_id": file_note.id
+                }
+
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+        return {
+            "id": self.file_id,
+            "file_name": self.file_name,
+            "generation": self.generation,
+            "notes": list(self._create_notes(recurse)),
+            "annotations": list(self._create_annotations(recurse))
+        }
+
+    def _create_annotations(self, resolve_data: bool):
+        for annotation in self.annotations:
+            if resolve_data:
+                yield annotation.serialize()
+            else:
+                yield {
+                    "annotation_id": annotation.id
+                }
+
+
+class FileNotes(AVTables):
+    __tablename__ = "file_notes"
+    id = db.Column(
+        "note_id", db.Integer, primary_key=True, autoincrement=True)
+    message = db.Column("message", db.Text, nullable=False)
+    file_id = db.Column(db.Integer,
+                        db.ForeignKey("instantiation_files.file_id"))
+
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+        return {
+            "id": self.id,
+            "message": self.message,
+            "file_id": self.file_id,
+        }
+
+
+class FileAnnotationType(AVTables):
+
+    __tablename__ = "file_annotation_types"
+    id = db.Column(
+        "type_id", db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column("name", db.Text, nullable=False)
+    active = db.Column("active", db.Boolean, nullable=False, default=True)
+
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+        return {
+            "type_id": self.id,
+            "name": self.name,
+            "active": self.active
+        }
+
+
+class FileAnnotation(AVTables):
+    __tablename__ = "file_annotations"
+
+    id = db.Column(
+        "annotation_id", db.Integer, primary_key=True, autoincrement=True)
+    file_id = db.Column(db.Integer,
+                        db.ForeignKey("instantiation_files.file_id"))
+
+    type_id = db.Column(db.Integer,
+                        db.ForeignKey("file_annotation_types.type_id"))
+
+    annotation_type = relationship("FileAnnotationType",
+                                   foreign_keys=[type_id])
+
+    annotation_content = db.Column("content", db.Text, nullable=False)
+
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+        return {
+            "id": self.id,
+            "type": self.annotation_type.serialize(recurse),
+            "content": self.annotation_content,
+            "file_id": self.file_id
+        }
+
+
 # =============================================================================
 # Enumerated tables
 # =============================================================================
@@ -660,6 +780,7 @@ class VendorTransfer(AVTables):
 #
 # Add to the bottom of this list, For compatibility reasons, do not
 # edit existing value ids
+
 
 note_types = {
     "Inspection": (1, ),

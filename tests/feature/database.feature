@@ -200,3 +200,17 @@ Feature: database
     And a new OpenReel item is created
     Then all the OpenReel items in the database can be serialized
 
+Scenario Outline: Create a new media project where a file has a note and an annotation
+    Given a database with a collection
+    And a new object for the collection with a barcode
+    And annotations for <annotation_type> configured in the database
+    When a new <media_type> item with <file_name> with <note> and an annotation of <annotation_type> and <annotation_content> added to the object
+    Then the database has 1 CollectionItem records
+    And the database has 1 CollectionObject records
+    And the database has item record with the <file_name> that contains a note that reads <note>
+    And the database has item record with the <file_name> that contains a <annotation_type> annotation containing <annotation_content>
+
+    Examples:
+    | media_type   |  file_name    | note         | annotation_type      | annotation_content       |
+    | open reel    |  myfile.wav   | sample note  | Encode Software Name | Wavelab                  |
+    | film         |  myfilm.mkv   | another note | Video Capture Card   | AJA KONA LHe Plus HD-SDI |

@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% import  "_details_macros.html" as widgets%}
+{% block content %}
+{% if show_bread_crumb %}
+        {{widgets.breadcrumbs_widget(breadcrumbs)}}
+    {% endif %}
+<div class="d-flex bd-highlight">
+
+    <div class="p-2 w-100 bd-highlight">
+        <div class="row">
+            <div class="col">
+                {% block main_details %}
+                {% endblock %}
+            </div>
+            <div class="col">
+                {% block secondary_details %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+
+{% if show_sidebar %}
+    <div class="p-2 flex-shrink-1 bd-highlight">
+    {% block sidebar %}
+
+    {% endblock %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

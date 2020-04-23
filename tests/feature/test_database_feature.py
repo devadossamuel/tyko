@@ -232,12 +232,15 @@ def new_item(dummy_database, new_collection, new_project, staff_contact,
 
     collection_item = scheme.CollectionItem(
         name=SAMPLE_ITEM_NAME,
-        file_name=SAMPLE_FILE,
+        # file_name=SAMPLE_FILE,
         medusa_uuid=SAMPLE_MEDUSA_ID,
         collection_object=create_new_object,
         obj_sequence=SAMPLE_OBJ_SEQUENCE,
         format_type=format_type
 
+    )
+    collection_item.files.append(
+        scheme.InstantiationFile(file_name=SAMPLE_FILE)
     )
 
     return collection_item
@@ -362,11 +365,14 @@ def add_new_item_to_object(dummy_database, create_new_object, media_type,
 
     new_item = scheme.CollectionItem(
         name=SAMPLE_ITEM_NAME,
-        file_name=file_name,
+        # file_name=file_name,
         medusa_uuid=SAMPLE_MEDUSA_ID,
         obj_sequence=SAMPLE_OBJ_SEQUENCE,
         format_type=format_type
 
+    )
+    new_item.files.append(
+        scheme.InstantiationFile(file_name=file_name)
     )
 
     media_table_type = media_type_info[1](item=new_item)
@@ -379,14 +385,17 @@ def add_new_item_to_object(dummy_database, create_new_object, media_type,
 @then("the database has item record with the <file_name> and has a "
        "corresponding <media_type> record with the same item id")
 def has_a_record_with_media_item(dummy_database, file_name, media_type):
-    collection_items = dummy_database.query(scheme.CollectionItem)
-    collection_item = collection_items.filter(
-        scheme.CollectionItem.file_name == file_name).one()
 
-    assert collection_item.file_name == file_name
+    item_file = dummy_database.query(scheme.InstantiationFile)\
+        .join(scheme.CollectionItem)\
+        .filter(scheme.InstantiationFile.file_name == file_name).one()
+    assert item_file.file_name == file_name
 
     media_types = dummy_database.query(scheme.FormatTypes)
 
+    collection_item = dummy_database.query(scheme.CollectionItem) \
+        .join(scheme.InstantiationFile) \
+        .filter(scheme.InstantiationFile.file_name == file_name).one()
     media_format = media_types.filter(scheme.FormatTypes.id ==
                                       collection_item.format_type_id).one()
 
@@ -405,7 +414,9 @@ def new_open_reel(dummy_database, create_new_object, date_recorded,
 
     new_item = scheme.CollectionItem(
         name=SAMPLE_ITEM_NAME,
-        file_name=file_name
+    )
+    new_item.files.append(
+        scheme.InstantiationFile(file_name=file_name)
     )
 
     open_reel = scheme.OpenReel(
@@ -415,7 +426,8 @@ def new_open_reel(dummy_database, create_new_object, date_recorded,
         base=base
 
     )
-
+    new_file_instance = scheme.InstantiationFile(file_name=file_name)
+    new_item.files.append(new_file_instance)
     create_new_object.items.append(new_item)
     dummy_database.add(open_reel)
     dummy_database.add(new_item)
@@ -425,9 +437,12 @@ def new_open_reel(dummy_database, create_new_object, date_recorded,
 @then("the database has item record with the <file_name>")
 def database_has_item_record_w_filename(dummy_database, file_name):
     collection_items = dummy_database.query(scheme.CollectionItem)
-    collection_item = collection_items.filter(
-        scheme.CollectionItem.file_name == file_name).one()
-    assert collection_item.file_name == file_name
+    for collection_item in collection_items:
+        for file_instance in collection_item.files:
+            if file_instance.file_name == file_name:
+                assert True
+                return
+    assert False, "No file matched {}".format(file_name)
 
 
 @then("the database has open reel record with a <tape_size> sized tape")
@@ -672,3 +687,83 @@ def new_open_reel(dummy_database):
     new_reel = scheme.OpenReel(item_id=new_open_reel_item.id, track_count="2")
     dummy_database.add(new_reel)
     dummy_database.commit()
+
+
+@scenario("database.feature", "Create a new media project where a file has a note and an annotation")
+def test_file_note():
+    pass
+
+
+@when("a new <media_type> item with <file_name> with <note> and an annotation of <annotation_type> and <annotation_content> added to the object")
+def new_media_with_file_note(dummy_database, create_new_object, media_type,
+                             file_name, note,
+                             annotation_type, annotation_content):
+    media_type_info = scheme.format_types.get(media_type)
+    assert media_type_info is not None, "No table for {}".format(media_type)
+
+    all_format_types = dummy_database.query(scheme.FormatTypes)
+    format_type = all_format_types.filter(
+        scheme.FormatTypes.name == media_type
+    ).one()
+
+    new_item = scheme.CollectionItem(
+        name=SAMPLE_ITEM_NAME,
+        medusa_uuid=SAMPLE_MEDUSA_ID,
+        obj_sequence=SAMPLE_OBJ_SEQUENCE,
+        format_type=format_type
+
+    )
+    new_file = scheme.InstantiationFile(file_name=file_name)
+    new_file.notes.append(scheme.FileNotes(message=note))
+    annotation_type_enum = dummy_database.query(scheme.FileAnnotationType)\
+        .filter(scheme.FileAnnotationType.name == annotation_type).one()
+
+    new_file.annotations.append(
+        scheme.FileAnnotation(
+            annotation_type=annotation_type_enum,
+            annotation_content=annotation_content
+        )
+    )
+
+    new_item.files.append(new_file)
+
+    media_table_type = media_type_info[1](item=new_item)
+    create_new_object.items.append(new_item)
+    dummy_database.add(create_new_object)
+    dummy_database.add(media_table_type)
+    dummy_database.commit()
+
+
+@then("the database has item record with the <file_name> that contains a note "
+      "that reads <note>")
+def file_with_note(dummy_database, file_name, note):
+    files = \
+        dummy_database.query(scheme.InstantiationFile)\
+            .filter(scheme.InstantiationFile.file_name == file_name)
+    for file in files:
+        if file.file_name == file_name:
+            assert file.notes[0].message == note
+            return
+    assert False
+
+
+@then("the database has item record with the <file_name> that contains "
+      "a <annotation_type> annotation containing <annotation_content>")
+def file_with_note(dummy_database, file_name, annotation_type,
+                   annotation_content):
+
+    files = \
+        dummy_database.query(scheme.InstantiationFile)\
+            .filter(scheme.InstantiationFile.file_name == file_name)
+    for file in files:
+        if file.file_name == file_name:
+            assert file.annotations[0].annotation_type.name == annotation_type
+            assert file.annotations[0].annotation_content == annotation_content
+            return
+    assert False
+
+
+@given("annotations for <annotation_type> configured in the database")
+def add_file_annotation_type(dummy_database, annotation_type):
+    dummy_database.add(scheme.FileAnnotationType(name=annotation_type))
+    return dummy_database

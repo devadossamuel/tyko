@@ -132,7 +132,11 @@ test_data_read = [
         "item", {
             "name": "my stupid new item",
             # "barcode": "8umb",
-            "file_name": "stupid.mov",
+            "files": [
+                {
+                    "name": "stupid.mov"
+                }
+            ],
             "format_id": 1
         }
     ),
@@ -172,6 +176,8 @@ def test_create_and_read2(data_type, data_value):
         data_object = read_resp_data[data_type]
 
         for k, v in data_value.items():
+            if k == "files" and isinstance(v, list):
+                continue
             assert data_object[k] == v
 
 

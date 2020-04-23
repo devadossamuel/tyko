@@ -1,12 +1,18 @@
 # pylint: disable=invalid-name, not-an-iterable
 
 from dataclasses import dataclass, field
-from typing import Any, List
+from typing import Any, List, Iterator, Tuple, Callable
 from flask import jsonify, render_template, views
 
+import tyko.views.files
 from . import middleware
 from .data_provider import DataProvider
 from . import frontend
+from .views.object_item import ObjectItemNotesAPI, ObjectItemAPI
+from .views.object_item import ItemAPI
+from .views.project import ProjectNotesAPI, ProjectAPI
+from .views.project_object import ProjectObjectAPI, ObjectApi, \
+    ProjectObjectNotesAPI
 
 
 @dataclass
@@ -33,82 +39,6 @@ class EntityPage:
 _all_entities = set()
 
 
-class ProjectNotesAPI(views.MethodView):
-
-    def __init__(self, project: middleware.ProjectMiddlwareEntity) -> None:
-        super().__init__()
-        self._project = project
-
-    def put(self, project_id, note_id):
-        return self._project.update_note(project_id, note_id)
-
-    def delete(self, project_id, note_id):
-        return self._project.remove_note(project_id, note_id)
-
-
-class ProjectObjectAPI(views.MethodView):
-    def __init__(self, project: middleware.ProjectMiddlwareEntity) -> None:
-        self._project = project
-
-    def delete(self, project_id, object_id):
-        return self._project.remove_object(project_id, object_id)
-
-
-class ObjectApi(views.MethodView):
-    def __init__(self,
-                 object_middleware: middleware.ObjectMiddlwareEntity) -> None:
-
-        self._object_middleware = object_middleware
-
-    def delete(self, object_id: int):
-        return self._object_middleware.delete(id=object_id)
-
-    def get(self, object_id: int):
-        return self._object_middleware.get(id=object_id)
-
-    def put(self, object_id: int):
-        return self._object_middleware.update(id=object_id)
-
-
-class ProjectAPI(views.MethodView):
-    def __init__(self, project: middleware.ProjectMiddlwareEntity) -> None:
-        self._project = project
-
-    def put(self, project_id: int):
-        return self._project.update(project_id)
-
-    def delete(self, project_id: int):
-        return self._project.delete(id=project_id)
-
-    def get(self, project_id: int):
-        return self._project.get(id=project_id)
-
-
-class ProjectObjectNotesAPI(views.MethodView):
-
-    def __init__(self,
-                 project_object: middleware.ObjectMiddlwareEntity) -> None:
-
-        self._project_object = project_object
-
-    def delete(self, project_id, object_id, note_id):  # pylint: disable=W0613
-        return self._project_object.remove_note(object_id, note_id)
-
-    def put(self, project_id, object_id, note_id):  # pylint: disable=W0613
-        return self._project_object.update_note(object_id, note_id)
-
-
-class ObjectItemNotesAPI(views.MethodView):
-    def __init__(self, item: middleware.ItemMiddlwareEntity) -> None:
-        self._item = item
-
-    def put(self, project_id, object_id, item_id, note_id):  # noqa: E501 pylint: disable=W0613,C0301
-        return self._item.update_note(item_id, note_id)
-
-    def delete(self, project_id, object_id, item_id, note_id):  # noqa: E501  pylint: disable=W0613,C0301
-        return self._item.remove_note(item_id, note_id)
-
-
 class NotesAPI(views.MethodView):
     def __init__(self,
                  notes_middleware: middleware.NotestMiddlwareEntity) -> None:
@@ -122,20 +52,6 @@ class NotesAPI(views.MethodView):
 
     def put(self, note_id: int):
         return self._middleware.update(id=note_id)
-
-
-class ItemAPI(views.MethodView):
-    def __init__(self, item: middleware.ItemMiddlwareEntity) -> None:
-        self._item = item
-
-    def put(self, item_id):
-        return self._item.update(id=item_id)
-
-    def get(self, item_id):
-        return self._item.get(id=item_id)
-
-    def delete(self, item_id):
-        return self._item.delete(id=item_id)
 
 
 class CollectionsAPI(views.MethodView):
@@ -152,15 +68,6 @@ class CollectionsAPI(views.MethodView):
 
     def delete(self, collection_id: int):
         return self._collection.delete(id=collection_id)
-
-
-class ObjectItemAPI(views.MethodView):
-    def __init__(self, parent: middleware.ObjectMiddlwareEntity) -> None:
-        self._parent_object = parent
-
-    def delete(self, project_id, object_id, item_id):  # noqa: E501  pylint: disable=W0613,C0301
-        return self._parent_object.remove_item(object_id=object_id,
-                                               item_id=item_id)
 
 
 class Routes:
@@ -333,7 +240,12 @@ class Routes:
                 lambda project_id, object_id, item_id: item.add_note(item_id),
                 methods=["POST"]
             )
-
+            self.app.add_url_rule(
+                "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/file",  # noqa: E501 pylint: disable=C0301
+                "project_object_item_add_file",
+                item.add_file,
+                methods=["POST"]
+            )
             self.app.add_url_rule(
                 "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/notes/<int:note_id>",  # noqa: E501 pylint: disable=C0301
                 view_func=ObjectItemNotesAPI.as_view(
@@ -346,7 +258,7 @@ class Routes:
                 "/api/item/<int:item_id>",
                 view_func=ItemAPI.as_view(
                     "item",
-                    item=item),
+                    provider=self.db_engine),
                 methods=[
                     "GET",
                     "PUT",
@@ -362,6 +274,61 @@ class Routes:
                     "DELETE"
                 ]
             )
+            self.app.add_url_rule(
+                "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/files",  # noqa: E501 pylint: disable=C0301
+                view_func=tyko.views.files.ItemFilesAPI.as_view(
+                    "item_files",
+                    provider=self.db_engine
+                ),
+                methods=[
+                    "POST",
+                    "GET",
+                    "PUT",
+                    "DELETE"
+                ]
+            )
+            self.app.add_url_rule(
+                "/api/file/<int:file_id>/note",
+                view_func=tyko.views.files.FileNotesAPI.as_view(
+                    "file_notes",
+                    provider=self.db_engine
+                ),
+                methods=[
+                    "GET",
+                    "POST",
+                    "PUT",
+                    "DELETE"
+                ]
+            )
+            self.app.add_url_rule(
+                "/api/file/<int:file_id>/annotations",
+                view_func=tyko.views.files.FileAnnotationsAPI.as_view(
+                    "file_annotations",
+                    provider=self.db_engine
+                ),
+                methods=[
+                    "GET",
+                    "POST",
+                    "PUT",
+                    "DELETE"
+
+                ]
+            )
+
+            self.app.add_url_rule(
+                "/api/file/annotation_types",
+                view_func=tyko.views.files.FileAnnotationTypesAPI.as_view(
+                    "file_annotation_types",
+                    provider=self.db_engine
+                ),
+                methods=[
+                    "GET",
+                    "POST",
+                    "DELETE"
+                ]
+            )
+
+            # TODO: add url rule for editing file annotation types
 
             self.app.add_url_rule(
                 "/api",
@@ -512,6 +479,7 @@ class Routes:
         )
 
         if self.app:
+            # TODO: Make frontend route generator into a generator function
             for rule in static_web_routes:
                 self.app.add_url_rule(rule.rule, rule.method,
                                       rule.view_function)
@@ -528,6 +496,21 @@ class Routes:
                     self.app.add_url_rule(rule.rule, rule.method,
                                           rule.view_function)
 
+            for route, route_name, func in get_frontend_page_routes(
+                    self.mw.data_provider):
+
+                self.app.add_url_rule(route, route_name, func)
+
+
+def get_frontend_page_routes(data_prov) -> Iterator[Tuple[str, str, Callable]]:
+    # TODO: add frontend routes to here
+
+    file_details = frontend.FileDetailsFrontend(data_prov)
+    yield (
+        "/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/files/<int:file_id>",  # noqa: E501 pylint: disable=C0301
+        "page_file_details",
+        file_details.display_details)
+
 
 def page_formats(middleware_source):
     formats = middleware_source.get_formats(serialize=False)
@@ -543,6 +526,7 @@ def list_routes(app):
     results = []
     for rt in app.url_map.iter_rules():
         results.append({
+            "endpoint": rt.endpoint,
             "methods": list(rt.methods),
             "route": str(rt)
         })
