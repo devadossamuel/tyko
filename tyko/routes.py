@@ -36,9 +36,6 @@ class EntityPage:
     routes: List[Route] = field(default_factory=list)
 
 
-_all_entities = set()
-
-
 @dataclass
 class UrlRule:
     rule: str
@@ -98,165 +95,117 @@ class Routes:
                     defaults=url_rule.defaults
                 )
 
-    def init_website_routes(self):
-        about_page = frontend.AboutPage()
-        index_page = frontend.IndexPage()
-        more_page = frontend.MoreMenuPage()
-        new_collection_page = frontend.NewCollectionForm()
+    def _page_routes(self, data_prov) -> Iterator[Tuple[str, str, Callable]]:
+        file_details = frontend.FileDetailsFrontend(data_prov)
+        yield (
+            "/project/<int:project_id>/object/<int:object_id>/item"
+            "/<int:item_id>/files/<int:file_id>",
+            "page_file_details",
+            file_details.display_details)
 
-        static_web_routes = [
-            Route("/", "page_index", index_page.render_page),
-            Route("/about", "page_about", about_page.render_page),
-            Route("/more", "page_more", more_page.render_page),
-            Route("/collection/new", "form_new_collection",
-                  new_collection_page.render_page),
-            ]
-
-        simple_pages = []
-
-        entity_pages = [
-            EntityPage(
-                "Formats",
-                "page_formats",
-                routes=[
-                    Route(
-                        "/format",
-                        "page_formats",
-                        lambda: page_formats(self.mw)
-                    ),
-                ]),
-
-            EntityPage(
-                "Objects",
-                "page_object",
-                routes=[
-                    Route(
-                        "/object",
-                        "page_object",
-                        lambda: frontend.ObjectFrontend(
-                            self.mw.data_provider).list()
-                    ),
-                    Route(
-                        "/object/<int:object_id>",
-                        "page_object_details",
-                        lambda object_id: frontend.ObjectFrontend(
-                            self.mw.data_provider).display_details(
-                                object_id, show_bread_crumb=False)
-                    ),
-                ]),
-            EntityPage(
-                "Items",
-                "page_item",
-                routes=[
-                    Route(
-                        "/item",
-                        "page_item",
-                        lambda: frontend.ItemFrontend(
-                            self.mw.data_provider).list()
-                    ),
-                    Route(
-                        "/item/<string:item_id>",
-                        "page_item_details",
-                        lambda item_id: frontend.ItemFrontend(
-                            self.mw.data_provider).display_details(
-                                item_id, show_bread_crumb=False)
-                    ),
-                ]),
-            EntityPage(
-                "Collections",
-                "page_collections",
-                routes=[
-                    Route(
-                        "/collection",
-                        "page_collections",
-                        lambda: frontend.CollectionFrontend(
-                            self.mw.data_provider).list()
-                    ),
-                    Route(
-                        "/collection/<string:collection_id>",
-                        "page_collection_details",
-                        lambda collection_id: frontend.CollectionFrontend(
-                            self.mw.data_provider).display_details(
-                                collection_id)
-                    ),
-                ]),
-        ]
-        for simple_page in simple_pages:
-            entity_pages.append(
-                EntityPage(
-                    simple_page.entity_title,
-                    simple_page.entity_list_page_name,
-                    routes=[
-                        Route(
-                            rule=simple_page.entity_rule,
-                            method=simple_page.entity_list_page_name,
-                            view_function=simple_page.list,
-                        )
-                    ]
-                )
-            )
-        project_page = EntityPage(
-            "Projects",
-            "page_project",
-            routes=[
-                Route(
-                    "/project",
-                    "page_projects",
-                    frontend.ProjectFrontend(self.mw.data_provider).list
-                ),
-                Route(
-                    "/project/<int:project_id>",
-                    "page_project_details",
-                    lambda project_id: frontend.ProjectFrontend(
-                        self.mw.data_provider).display_details(
-                            project_id,
-                            show_bread_crumb=True)
-                ),
-                Route(
-                    "/project/<int:project_id>/object/<int:object_id>",
-                    "page_project_object_details",
-                    lambda project_id, object_id: frontend.ObjectFrontend(
-                        self.mw.data_provider).display_details(
-                            object_id, show_bread_crumb=True)
-                ),
-                Route(
-                    "/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>",  # noqa: E501 pylint: disable=C0301
-                    "page_project_object_item_details",
-                    lambda project_id, object_id, item_id:
-                    frontend.ItemFrontend(
-                        self.mw.data_provider).display_details(
-                            item_id,
-                            project_id=project_id,
-                            object_id=object_id,
-                            show_bread_crumb=True)
-                ),
-                Route(
-                    "/project/create/",
-                    "page_project_new",
-                    frontend.ProjectFrontend(self.mw.data_provider).create
-                )
-            ]
+        yield (
+            "/format",
+            "page_formats",
+            lambda: page_formats(self.mw)
         )
 
+        index_page = frontend.IndexPage()
+        yield (
+            "/",
+            "page_index",
+            index_page.render_page
+        )
+
+        about_page = frontend.AboutPage()
+        yield (
+            "/about",
+            "page_about",
+            about_page.render_page
+        )
+
+        more_page = frontend.MoreMenuPage()
+        yield (
+            "/more",
+            "page_more",
+            more_page.render_page
+        )
+
+        new_collection_page = frontend.NewCollectionForm()
+        yield (
+            "/collection/new",
+            "form_new_collection",
+            new_collection_page.render_page
+        )
+
+        yield from self._project_pages(data_prov)
+        yield from self._collections_pages(data_prov)
+        yield from self._object_pages(data_prov)
+        yield from self._item_pages(data_prov)
+
+    @staticmethod
+    def _collections_pages(data_prov):
+        collection_frontent = frontend.CollectionFrontend(data_prov)
+
+        yield (
+            "/collection",
+            "page_collections",
+            collection_frontent.list
+        )
+
+        yield (
+            "/collection/<string:collection_id>",
+            "page_collection_details",
+            collection_frontent.display_details
+        )
+
+    @staticmethod
+    def _project_pages(data_prov):
+        project_frontend = frontend.ProjectFrontend(data_prov)
+
+        yield (
+            "/project/create/",
+            "page_project_new",
+            project_frontend.create
+        )
+
+        yield (
+            "/project",
+            "page_projects",
+            project_frontend.list
+        )
+
+        yield (
+            "/project/<int:project_id>",
+            "page_project_details",
+            lambda project_id: project_frontend.display_details(
+                project_id,
+                show_bread_crumb=True)
+        )
+
+        yield (
+            "/project/<int:project_id>/object/<int:object_id>",
+            "page_project_object_details",
+            lambda project_id, object_id: project_frontend.display_details(
+                object_id,
+                show_bread_crumb=True)
+        )
+
+        yield (
+            "/project/<int:project_id>/object/<int:object_id>/item"
+            "/<int:item_id>",
+            "page_project_object_item_details",
+            lambda project_id, object_id, item_id:
+            project_frontend.display_details(
+                item_id,
+                project_id=project_id,
+                object_id=object_id,
+                show_bread_crumb=True)
+        )
+
+    def init_website_routes(self):
         if self.app:
-            for rule in static_web_routes:
-                self.app.add_url_rule(rule.rule, rule.method,
-                                      rule.view_function)
-            for rule in project_page.routes:
-                self.app.add_url_rule(rule.rule,
-                                      rule.method,
-                                      rule.view_function)
-
-            for entity in entity_pages:
-                for rule in entity.routes:
-                    _all_entities.add((entity.entity_type,
-                                       entity.entity_list_page))
-
-                    self.app.add_url_rule(rule.rule, rule.method,
-                                          rule.view_function)
-
-            for route, route_name, func in get_frontend_page_routes(
-                    self.mw.data_provider):
+            for route, route_name, func in \
+                    self._page_routes(self.mw.data_provider):
 
                 self.app.add_url_rule(route, route_name, func)
 
@@ -546,15 +495,38 @@ class Routes:
             defaults={"app": self.app}
         )
 
+    @staticmethod
+    def _object_pages(data_prov):
+        object_frontend = frontend.ObjectFrontend(data_prov)
 
-def get_frontend_page_routes(data_prov) -> Iterator[Tuple[str, str, Callable]]:
-    # TODO: add frontend routes to here
+        yield (
+            "/object/<int:object_id>",
+            "page_object_details",
+            lambda object_id: object_frontend.display_details(
+                object_id, show_bread_crumb=False)
+        )
 
-    file_details = frontend.FileDetailsFrontend(data_prov)
-    yield (
-        "/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/files/<int:file_id>",  # noqa: E501 pylint: disable=C0301
-        "page_file_details",
-        file_details.display_details)
+        yield (
+            "/object",
+            "page_object",
+            object_frontend.list
+        )
+
+    @staticmethod
+    def _item_pages(data_prov):
+        item_pages = frontend.ItemFrontend(data_prov)
+        yield (
+            "/item",
+            "page_item",
+            item_pages.list
+        )
+
+        yield (
+            "/item/<string:item_id>",
+            "page_item_details",
+            lambda item_id: item_pages.display_details(item_id,
+                                                       show_bread_crumb=False)
+        )
 
 
 def page_formats(middleware_source):
@@ -562,8 +534,7 @@ def page_formats(middleware_source):
     return render_template(
         "formats.html",
         selected_menu_item="formats",
-        formats=formats,
-        entities=_all_entities
+        formats=formats
     )
 
 
