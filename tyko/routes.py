@@ -1,7 +1,7 @@
 # pylint: disable=invalid-name, not-an-iterable
 
 from dataclasses import dataclass, field
-from typing import Any, List, Iterator, Tuple, Callable
+from typing import Any, List, Iterator, Tuple, Callable, Optional, Union
 from flask import jsonify, render_template, views
 
 import tyko.views.files
@@ -37,6 +37,15 @@ class EntityPage:
 
 
 _all_entities = set()
+
+
+@dataclass
+class UrlRule:
+    rule: str
+    endpoint: Optional[str] = None
+    view_func: Optional[Union[views.View, Callable]] = None
+    methods: List[str] = field(default_factory=lambda: ["GET"])
+    defaults: Optional[dict] = None
 
 
 class NotesAPI(views.MethodView):
@@ -80,263 +89,14 @@ class Routes:
     def init_api_routes(self) -> None:
 
         if self.app:
-            project = middleware.ProjectMiddlwareEntity(self.db_engine)
-            collection = middleware.CollectionMiddlwareEntity(self.db_engine)
-            item = middleware.ItemMiddlwareEntity(self.db_engine)
-            notes = middleware.NotestMiddlwareEntity(self.db_engine)
-
-            project_object = middleware.ObjectMiddlwareEntity(self.db_engine)
-            api_entities = [
-                APIEntity("Projects", rules=[
-                    Route("/api/project", "projects",
-                          lambda serialize=True: project.get(serialize)),
-                    Route("/api/project/", "add_project",
-                          project.create,
-                          methods=["POST"]),
-                    ]),
-                APIEntity("Collection", rules=[
-                    Route("/api/collection", "collections",
-                          lambda serialize=True: collection.get(serialize)),
-                    Route("/api/collection/", "add_collection",
-                          collection.create,
-                          methods=["POST"]),
-                    ]),
-                APIEntity("Formats", rules=[
-                    Route("/api/format", "formats",
-                          self.mw.get_formats
-                          ),
-                    Route("/api/format/<string:id>", "format_by_id",
-                          self.mw.get_formats_by_id
-                          ),
-                    ]),
-                APIEntity("Item", rules=[
-                    Route("/api/item", "items",
-                          lambda serialize=True: item.get(serialize),
-                          methods=["GET"]),
-                    Route("/api/item/", "add_item",
-                          item.create,
-                          methods=["POST"]),
-                    ]),
-                APIEntity("Object", rules=[
-                    Route("/api/object", "objects",
-                          lambda serialize=True: project_object.get(serialize),
-                          methods=["GET"]
-                          ),
-                    Route("/api/object/<int:id>-pbcore.xml",
-                          "object_pbcore",
-                          lambda id: project_object.pbcore(id=id)
-                          ),
-                    Route("/api/object/", "add_object",
-                          project_object.create,
-                          methods=["POST"]),
-                    ]),
-                APIEntity("Notes", rules=[
-                    Route("/api/notes", "notes",
-                          lambda serialize=True: notes.get(serialize),
-                          methods=["GET"]),
-                    Route("/api/notes/", "add_note",
-                          notes.create,
-                          methods=["POST"]),
-                    ])
-
-            ]
-
-            for entity in api_entities:
-                for rule in entity.rules:
-                    self.app.add_url_rule(rule.rule, rule.method,
-                                          rule.view_function,
-                                          methods=rule.methods)
-
-            self.app.add_url_rule(
-                "/api/project/<string:project_id>/notes",
-                "project_add_note",
-                project.add_note,
-                methods=["POST"]
-            )
-            self.app.add_url_rule(
-                "/api/project/<int:project_id>",
-                "project",
-                view_func=ProjectAPI.as_view("projects", project=project),
-                methods=["GET", "PUT", "DELETE"]
-            )
-
-            self.app.add_url_rule(
-                "/api/object/<int:object_id>",
-                view_func=ObjectApi.as_view("object",
-                                            object_middleware=project_object),
-                methods=[
-                    "GET",
-                    "DELETE",
-                    "PUT"
-                ]
-            )
-            self.app.add_url_rule(
-                "/api/project/<int:project_id>/object",
-                "project_add_object",
-                project.add_object,
-                methods=["POST"]
-            )
-
-            self.app.add_url_rule(
-                "/api/project/<int:project_id>/object/<int:object_id>",
-                "project_object",
-                view_func=ProjectObjectAPI.as_view("project_objects",
-                                                   project=project),
-                methods=["DELETE"]
-            )
-            self.app.add_url_rule(
-                "/api/project/<int:project_id>/object/<int:object_id>/item",
-                "project_object_add_item",
-                lambda project_id, object_id: project_object.add_item(
-                    project_id=project_id, object_id=object_id),
-                methods=["POST"],
-            )
-
-            self.app.add_url_rule(
-                "/api/project/<int:project_id>/notes/<int:note_id>",
-                view_func=ProjectNotesAPI.as_view("project_notes",
-                                                  project=project),
-                methods=["PUT", "DELETE"]
-            )
-            self.app.add_url_rule(
-                "/api/project/<int:project_id>/object/<int:object_id>/notes",
-                "project_object_add_note",
-                project_object.add_note,
-                methods=["POST"]
-            )
-
-            self.app.add_url_rule(
-                "/api/collection/<int:collection_id>",
-                view_func=CollectionsAPI.as_view(
-                    "collection",
-                    collection=collection),
-                methods=[
-                    "GET",
-                    "PUT",
-                    "DELETE"
-                ]
-            )
-            self.app.add_url_rule(
-                "/api/note/<int:note_id>",
-                view_func=NotesAPI.as_view(
-                    "note",
-                    notes_middleware=notes),
-                methods=[
-                    "GET",
-                    "PUT",
-                    "DELETE"
-                ]
-            )
-            self.app.add_url_rule(
-                "/api/project/<int:project_id>/object/<int:object_id>/notes/<int:note_id>",  # noqa: E501 pylint: disable=C0301
-                view_func=ProjectObjectNotesAPI.as_view(
-                    "object_notes",
-                    project_object=project_object),
-                methods=["PUT", "DELETE"]
-            )
-            self.app.add_url_rule(
-                "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/notes",  # noqa: E501 pylint: disable=C0301
-                "project_object_item_add_note",
-                lambda project_id, object_id, item_id: item.add_note(item_id),
-                methods=["POST"]
-            )
-            self.app.add_url_rule(
-                "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/file",  # noqa: E501 pylint: disable=C0301
-                "project_object_item_add_file",
-                item.add_file,
-                methods=["POST"]
-            )
-            self.app.add_url_rule(
-                "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/notes/<int:note_id>",  # noqa: E501 pylint: disable=C0301
-                view_func=ObjectItemNotesAPI.as_view(
-                    "item_notes",
-                    item=item),
-                methods=["PUT", "DELETE"]
-            )
-
-            self.app.add_url_rule(
-                "/api/item/<int:item_id>",
-                view_func=ItemAPI.as_view(
-                    "item",
-                    provider=self.db_engine),
-                methods=[
-                    "GET",
-                    "PUT",
-                    "DELETE"
-                ]
-            )
-            self.app.add_url_rule(
-                "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>",  # noqa: E501 pylint: disable=C0301
-                view_func=ObjectItemAPI.as_view(
-                    "object_item",
-                    parent=project_object),
-                methods=[
-                    "DELETE"
-                ]
-            )
-            self.app.add_url_rule(
-                "/api/project/<int:project_id>/object/<int:object_id>/item/<int:item_id>/files",  # noqa: E501 pylint: disable=C0301
-                view_func=tyko.views.files.ItemFilesAPI.as_view(
-                    "item_files",
-                    provider=self.db_engine
-                ),
-                methods=[
-                    "POST",
-                    "GET",
-                    "PUT",
-                    "DELETE"
-                ]
-            )
-            self.app.add_url_rule(
-                "/api/file/<int:file_id>/note",
-                view_func=tyko.views.files.FileNotesAPI.as_view(
-                    "file_notes",
-                    provider=self.db_engine
-                ),
-                methods=[
-                    "GET",
-                    "POST",
-                    "PUT",
-                    "DELETE"
-                ]
-            )
-            self.app.add_url_rule(
-                "/api/file/<int:file_id>/annotations",
-                view_func=tyko.views.files.FileAnnotationsAPI.as_view(
-                    "file_annotations",
-                    provider=self.db_engine
-                ),
-                methods=[
-                    "GET",
-                    "POST",
-                    "PUT",
-                    "DELETE"
-
-                ]
-            )
-
-            self.app.add_url_rule(
-                "/api/file/annotation_types",
-                view_func=tyko.views.files.FileAnnotationTypesAPI.as_view(
-                    "file_annotation_types",
-                    provider=self.db_engine
-                ),
-                methods=[
-                    "GET",
-                    "POST",
-                    "DELETE"
-                ]
-            )
-
-            # TODO: add url rule for editing file annotation types
-
-            self.app.add_url_rule(
-                "/api",
-                "list_routes",
-                list_routes,
-                methods=["get"],
-                defaults={"app": self.app}
-            )
+            for url_rule in self.get_api_routes():
+                self.app.add_url_rule(
+                    url_rule.rule,
+                    endpoint=url_rule.endpoint,
+                    view_func=url_rule.view_func,
+                    methods=url_rule.methods,
+                    defaults=url_rule.defaults
+                )
 
     def init_website_routes(self):
         about_page = frontend.AboutPage()
@@ -479,7 +239,6 @@ class Routes:
         )
 
         if self.app:
-            # TODO: Make frontend route generator into a generator function
             for rule in static_web_routes:
                 self.app.add_url_rule(rule.rule, rule.method,
                                       rule.view_function)
@@ -500,6 +259,292 @@ class Routes:
                     self.mw.data_provider):
 
                 self.app.add_url_rule(route, route_name, func)
+
+    def get_api_project_routes(self) -> Iterator[UrlRule]:
+        project = middleware.ProjectMiddlwareEntity(self.db_engine)
+        yield UrlRule(
+            rule="/api/project/",
+            endpoint="add_project",
+            view_func=project.create,
+            methods=['POST']
+        )
+
+        yield UrlRule(
+            rule="/api/project/<string:project_id>/notes",
+            endpoint="project_add_note",
+            view_func=project.add_note,
+            methods=["POST"]
+
+        )
+
+        yield UrlRule(
+            rule="/api/project",
+            endpoint="projects",
+            view_func=lambda serialize=True: project.get(serialize)
+        )
+
+        yield UrlRule(
+            rule="/api/project/<int:project_id>",
+            endpoint="project",
+            view_func=ProjectAPI.as_view("projects", project=project),
+            methods=["GET", "PUT", "DELETE"]
+        )
+
+        yield UrlRule(
+            rule="/api/project/<int:project_id>/object",
+            endpoint="project_add_object",
+            view_func=project.add_object,
+            methods=["POST"]
+        )
+
+        yield UrlRule(
+            rule="/api/project/<int:project_id>/object/<int:object_id>",
+            endpoint="project_object",
+            view_func=ProjectObjectAPI.as_view("project_objects",
+                                               project=project),
+            methods=["DELETE"]
+        )
+
+        yield UrlRule(
+            "/api/project/<int:project_id>/notes/<int:note_id>",
+            view_func=ProjectNotesAPI.as_view("project_notes",
+                                              project=project),
+            methods=["PUT", "DELETE"]
+        )
+
+    def get_api_object_routes(self) -> Iterator[UrlRule]:
+        project_object = middleware.ObjectMiddlwareEntity(self.db_engine)
+
+        yield UrlRule(
+            rule="/api/object/<int:object_id>",
+            view_func=ObjectApi.as_view("object",
+                                        object_middleware=project_object),
+            methods=[
+                "GET",
+                "DELETE",
+                "PUT"
+            ]
+        )
+
+        yield UrlRule(
+            "/api/project/<int:project_id>/object/<int:object_id>/item",
+            "project_object_add_item",
+            lambda project_id, object_id: project_object.add_item(
+                project_id=project_id, object_id=object_id),
+            methods=["POST"]
+
+        )
+
+        yield UrlRule(
+            "/api/project/<int:project_id>/object/<int:object_id>/notes",
+            endpoint="project_object_add_note",
+            view_func=project_object.add_note,
+            methods=["POST"]
+        )
+
+        yield UrlRule(
+            "/api/project/<int:project_id>/object/<int:object_id>/notes"
+            "/<int:note_id>",
+            view_func=ProjectObjectNotesAPI.as_view(
+                "object_notes", project_object=project_object),
+            methods=["PUT", "DELETE"]
+        )
+
+        yield UrlRule(
+            rule="/api/object/",
+            endpoint="add_object",
+            view_func=project_object.create,
+            methods=["POST"]
+        )
+
+        yield UrlRule(
+            rule="/api/object/<int:id>-pbcore.xml",
+            endpoint="object_pbcore",
+            view_func=project_object.pbcore,
+        )
+
+        yield UrlRule(
+            rule="/api/object",
+            endpoint="objects",
+            view_func=lambda serialize=True: project_object.get(serialize),
+        )
+
+        yield UrlRule(
+            "/api/project/<int:project_id>/object/<int:object_id>/item"
+            "/<int:item_id>",
+            view_func=ObjectItemAPI.as_view(
+                "object_item",
+                parent=project_object),
+            methods=[
+                "DELETE"
+            ]
+        )
+
+    def get_api_item_routes(self) -> Iterator[UrlRule]:
+
+        item = middleware.ItemMiddlwareEntity(self.db_engine)
+
+        yield UrlRule(
+            rule="/api/project/<int:project_id>/object/<int:object_id>"
+                 "/item/<int:item_id>/notes",
+            endpoint="project_object_item_add_note",
+            view_func=lambda project_id, object_id, item_id: item.add_note(
+                item_id),
+            methods=["POST"]
+        )
+
+        yield UrlRule(
+            "/api/item/<int:item_id>",
+            view_func=ItemAPI.as_view(
+                "item",
+                provider=self.db_engine),
+            methods=[
+                "GET",
+                "PUT",
+                "DELETE"
+            ]
+        )
+
+        yield UrlRule(
+            "/api/project/<int:project_id>/object/<int:object_id>/item/<int"
+            ":item_id>/files",
+            view_func=tyko.views.files.ItemFilesAPI.as_view(
+                "item_files",
+                provider=self.db_engine
+            ),
+            methods=["POST", "GET", "PUT", "DELETE"]
+        )
+
+        yield UrlRule(
+            "/api/project/<int:project_id>/object/<int:object_id>/item"
+            "/<int:item_id>/file",
+            "project_object_item_add_file",
+            item.add_file,
+            methods=["POST"]
+        )
+
+        yield UrlRule(
+            "/api/item/",
+            endpoint="add_item",
+            view_func=item.create,
+            methods=["POST"]
+        )
+
+        yield UrlRule(
+            "/api/item",
+            endpoint="items",
+            view_func=lambda serialize=True: item.get(serialize)
+        )
+
+        yield UrlRule(
+            "/api/project/<int:project_id>/object/<int:object_id>/item"
+            "/<int:item_id>/notes/<int:note_id>",
+            view_func=ObjectItemNotesAPI.as_view(
+                "item_notes",
+                item=item),
+            methods=["PUT", "DELETE"]
+        )
+
+    def get_api_file_routes(self):
+        # TODO: add url rule for editing file annotation types
+        yield UrlRule(
+            "/api/file/<int:file_id>/annotations",
+            view_func=tyko.views.files.FileAnnotationsAPI.as_view(
+                "file_annotations",
+                provider=self.db_engine
+            ),
+            methods=["GET", "POST", "PUT", "DELETE"]
+        )
+
+        yield UrlRule(
+            "/api/file/annotation_types",
+            view_func=tyko.views.files.FileAnnotationTypesAPI.as_view(
+                "file_annotation_types",
+                provider=self.db_engine
+            ),
+            methods=["GET", "POST", "DELETE"]
+        )
+
+        yield UrlRule(
+            "/api/file/<int:file_id>/note",
+            view_func=tyko.views.files.FileNotesAPI.as_view(
+                "file_notes", provider=self.db_engine
+            ),
+            methods=["GET", "POST", "PUT", "DELETE"]
+        )
+
+    def get_api_notes_routes(self) -> Iterator[UrlRule]:
+        notes = middleware.NotestMiddlwareEntity(self.db_engine)
+        yield UrlRule(
+            "/api/note/<int:note_id>",
+            view_func=NotesAPI.as_view(
+                "note",
+                notes_middleware=notes),
+            methods=["GET", "PUT", "DELETE"]
+        )
+        yield UrlRule(
+            rule="/api/notes/",
+            endpoint="add_note",
+            view_func=notes.create,
+            methods=["POST"]
+        )
+
+        yield UrlRule(
+            rule="/api/notes",
+            endpoint="notes",
+            view_func=lambda serialize=True: notes.get(serialize),
+        )
+
+    def get_api_collection_routes(self) -> Iterator[UrlRule]:
+        collection = middleware.CollectionMiddlwareEntity(self.db_engine)
+        yield UrlRule(
+            "/api/collection/<int:collection_id>",
+            view_func=CollectionsAPI.as_view(
+                "collection", collection=collection),
+            methods=["GET", "PUT", "DELETE"]
+        )
+
+        yield UrlRule(
+            rule="/api/collection/",
+            endpoint="add_collection",
+            view_func=collection.create,
+            methods=["POST"]
+        )
+
+        yield UrlRule(
+            rule="/api/collection",
+            endpoint="collections",
+            view_func=lambda serialize=True: collection.get(serialize)
+        )
+
+    def get_api_format_routes(self) -> Iterator[UrlRule]:
+        yield UrlRule(
+            rule="/api/format",
+            endpoint="formats",
+            view_func=self.mw.get_formats
+        )
+        yield UrlRule(
+            rule="/api/format/<int:id>",
+            endpoint="format_by_id",
+            view_func=self.mw.get_formats_by_id
+        )
+
+    def get_api_routes(self) -> Iterator[UrlRule]:
+        yield from self.get_api_project_routes()
+        yield from self.get_api_object_routes()
+        yield from self.get_api_item_routes()
+        yield from self.get_api_file_routes()
+        yield from self.get_api_notes_routes()
+        yield from self.get_api_collection_routes()
+        yield from self.get_api_format_routes()
+
+        yield UrlRule(
+            "/api",
+            "list_routes",
+            list_routes,
+            methods=["get"],
+            defaults={"app": self.app}
+        )
 
 
 def get_frontend_page_routes(data_prov) -> Iterator[Tuple[str, str, Callable]]:
