@@ -1,39 +1,46 @@
 class absMetadataWidget {
-    constructor(element, fieldName, fieldText) {
-        this.element = element;
+  constructor(element, fieldName, fieldText) {
+    this.element = element;
 
-        this._data = {
-            "fieldText": fieldText,
-            "fieldName": fieldName
-        };
-        this.options = [];
-        this.editButtonId = `${fieldName}EditButton`;
+    this._data = {
+      'fieldText': fieldText,
+      'fieldName': fieldName,
+    };
+    this.options = [];
+    this.editButtonId = `${fieldName}EditButton`;
+  }
+
+  get widgetType() {
+    throw new Error('You have to implement the method widgetType!');
+  }
+
+  stateName() {
+    return this._state._type;
+  }
+
+  swap() {
+    this._state.swap();
+    this.draw();
+  }
+
+  draw() {
+    this._state.draw(this.element, this._data);
+  }
+
+  set onEdited(value) {
+    this._onEdited = value;
+  }
+
+  get onEdited() {
+    if (this._onEdited == null) {
+      throw `${this.constructor.name}.onEdited(data) not set`;
     }
-    get widgetType() {
-        throw new Error('You have to implement the method widgetType!');
-    }
-    stateName() {
-        return this._state._type;
-    }
-    swap(){
-        this._state.swap();
-        this.draw();
-    }
-    draw(){
-        this._state.draw(this.element, this._data)
-    }
-    set onEdited(value){
-        this._onEdited = value;
-    }
-    get onEdited(){
-        if (this._onEdited == null){
-            throw `${this.constructor.name}.onEdited(data) not set`
-        }
-        return this._onEdited;
-    }
-    get state(){
-        return this._state._type;
-    }
+    return this._onEdited;
+  }
+
+  get state() {
+    return this._state._type;
+  }
 }
 
 class WidgetState{
@@ -44,24 +51,27 @@ class WidgetState{
         this._parent = parentClass;
     }
     newRoot() {
-        let newRow = document.createElement("div");
+        const newRow = document.createElement("div");
         newRow.setAttribute("class", "d-flex");
 
         return newRow
 
     }
     confirmChangesGroup() {
-        let confirmationButtons = document.createElement("div");
+        const confirmationButtons = document.createElement("div");
         confirmationButtons.setAttribute("class", "input-group-append input-group-sm");
         return confirmationButtons;
     }
     newColumn(id, parent, colClass="col") {
         let newColumnSection = document.createElement("div");
 
-        newColumnSection.setAttribute("class", colClass);
-        newColumnSection.setAttribute("id", id);
-        return newColumnSection;
-    }
+  newColumn(id, parent, colClass = 'col') {
+    const newColumnSection = document.createElement('div');
+
+    newColumnSection.setAttribute('class', colClass);
+    newColumnSection.setAttribute('id', id);
+    return newColumnSection;
+  }
 }
 class WidgetEditState extends WidgetState{
     constructor(parentClass) {
@@ -93,18 +103,18 @@ class WidgetEditState extends WidgetState{
         this.cancel(this._parent)
     }
     newRoot(rootId){
-        let newRoot =  document.createElement("div");
+        const newRoot =  document.createElement("div");
         newRoot.setAttribute("id", rootId);
         newRoot.setAttribute("class", "input-group input-group-sm");
         return newRoot;
     }
     newInputLabel(id){
-        let newLabel = document.createElement("label");
+        const newLabel = document.createElement("label");
         newLabel.setAttribute("for", id);
         return newLabel
     }
     newInput(id, text, type){
-        let newInputElement = document.createElement("input");
+        const newInputElement = document.createElement("input");
         newInputElement.setAttribute("id", id);
         newInputElement.setAttribute("value", text);
         newInputElement.setAttribute("type", type);
@@ -113,7 +123,7 @@ class WidgetEditState extends WidgetState{
     }
 
     confirmChangesGroup() {
-        let confirmationButtons = document.createElement("div");
+        const confirmationButtons = document.createElement("div");
         confirmationButtons.setAttribute("class", "input-group-append input-group-sm");
         return confirmationButtons;
     }
@@ -123,7 +133,7 @@ class WidgetEditState extends WidgetState{
 
         const parent = this._parent;
 
-        let confirmButton = document.createElement("button");
+        const confirmButton = document.createElement("button");
         confirmButton.innerText = "Confirm";
         confirmButton.setAttribute("class", "btn btn-sm btn-outline-primary");
         confirmButton.setAttribute("id", confirmButtonId);
@@ -135,7 +145,7 @@ class WidgetEditState extends WidgetState{
 
         confirmationButtons.appendChild(confirmButton);
 
-        let cancelButton = document.createElement("button");
+        const cancelButton = document.createElement("button");
         cancelButton.innerText = "Cancel";
         cancelButton.setAttribute("class", "btn btn-outline-danger");
 
@@ -167,11 +177,11 @@ class ViewWidget extends WidgetState{
     draw(element, data){
         element.innerHTML = "";
         let newRoot = this.newRoot();
-        let newContent = this.newColumn("content", newRoot, "align-self-stretch");
+        const newContent = this.newColumn("content", newRoot, "align-self-stretch");
         newContent.innerText = data['fieldText'];
         newRoot.appendChild(newContent);
 
-        let editCol = this.newColumn("editFunction", newRoot, "col");
+        const editCol = this.newColumn("editFunction", newRoot, "col");
         editCol.appendChild(this.newEditButton());
         newRoot.appendChild(editCol);
         element.appendChild(newRoot);
@@ -182,7 +192,7 @@ class ViewWidget extends WidgetState{
 
 
     newEditButton() {
-        let newButton = document.createElement("button");
+        const newButton = document.createElement("button");
         newButton.setAttribute("class", "btn btn-sm btn-secondary btn-sm float-right");
         newButton.setAttribute("id", this._parent.editButtonId);
 
@@ -212,7 +222,7 @@ class NumberPickerWidget extends WidgetEditState{
     }
 
     _newNumberPicker(fieldName, value=null) {
-        let inputElement = document.createElement("input");
+        const inputElement = document.createElement("input");
         inputElement.setAttribute("class", "form-control");
         inputElement.setAttribute("type", "number");
         inputElement.setAttribute("name", fieldName);
@@ -265,7 +275,7 @@ class SelectDateWidget extends WidgetEditState {
     }
     _new_date_picker(value){
 
-        let datePicker = document.createElement("input");
+        const datePicker = document.createElement("input");
         datePicker.setAttribute("class", "form-control");
         datePicker.setAttribute("value", value);
         $(datePicker).datepicker(
@@ -293,7 +303,7 @@ class SelectEditWidget extends WidgetEditState {
         const inputId = `input${data['fieldName']}`;
         newRoot.appendChild(this.newInputLabel(inputId));
 
-        let inputElement = this._newSelect(this._parent.options, data['fieldText'], data['fieldName']);
+        const inputElement = this._newSelect(this._parent.options, data['fieldText'], data['fieldName']);
 
         newRoot.appendChild(inputElement);
         const confirmButtonID = `${data['fieldName']}ConfirmButton`;
@@ -304,11 +314,11 @@ class SelectEditWidget extends WidgetEditState {
 
     _newSelect(options, selected, fieldName) {
         const selectionId = `${fieldName}Select`;
-        let inputElement = document.createElement("select");
+        const inputElement = document.createElement("select");
         inputElement.setAttribute("id", selectionId);
         inputElement.setAttribute("class", "form-control");
         options.forEach(option =>{
-            let optionElement = document.createElement("option");
+            const optionElement = document.createElement("option");
             optionElement.innerText = option.text;
             optionElement.setAttribute("value", option.value);
             if( option.text === selected){

@@ -119,8 +119,8 @@ export const files = {
 export const routes = {
   'all_routes': (baseURL) => {
     return requests.get(baseURL).then(function(result) {
-      let d = JSON.parse(result);
-      let dataRoutes = {};
+      const d = JSON.parse(result);
+      const dataRoutes = {};
       for (let i = 0; i < d.length; i++) {
         dataRoutes[d[i].endpoint.toString()] = d[i];
       }
