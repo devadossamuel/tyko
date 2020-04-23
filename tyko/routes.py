@@ -409,13 +409,13 @@ class Routes:
                     Route(
                         "/collection",
                         "page_collections",
-                        lambda: frontend.CollectiontFrontend(
+                        lambda: frontend.CollectionFrontend(
                             self.mw.data_provider).list()
                     ),
                     Route(
                         "/collection/<string:collection_id>",
                         "page_collection_details",
-                        lambda collection_id: frontend.CollectiontFrontend(
+                        lambda collection_id: frontend.CollectionFrontend(
                             self.mw.data_provider).display_details(
                                 collection_id)
                     ),
