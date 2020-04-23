@@ -62,7 +62,6 @@
 
         $('#noteRemoveConfirm').on('show.bs.modal', function (event) {
             removeNote(
-                $(event.relatedTarget),
                 $(this),
                 $(event.relatedTarget).data("apiroute"),
                 notes.removeNote
@@ -78,7 +77,7 @@
                     editNote(button, modal, notes.editNote);
                     break;
                 case "new":
-                    newNote(button, modal, "{{ apiPath }}", notes.addNote);
+                    newNote(modal, "{{ apiPath }}", notes.addNote);
                     break;
             }
         });
