@@ -53,21 +53,10 @@ class WidgetState {
   }
 
   newRoot() {
-    let newRow = document.createElement('div');
+    const newRow = document.createElement('div');
     newRow.setAttribute('class', 'd-flex');
-class WidgetState{
-    draw(element, data){
-        throw new Error('You have to implement the draw method!');
-    }
-    constructor(parentClass) {
-        this._parent = parentClass;
-    }
-    newRoot() {
-        const newRow = document.createElement("div");
-        newRow.setAttribute("class", "d-flex");
 
     return newRow;
-
   }
 
   confirmChangesGroup() {
