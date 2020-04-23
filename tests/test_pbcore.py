@@ -12,7 +12,7 @@ from lxml import etree
 import tyko
 import tyko.exceptions
 import tyko.database
-from tyko import pbcore, data_provider, scheme
+from tyko import pbcore, data_provider, schema
 
 PBCORE_XSD_URL = "https://raw.githubusercontent.com/PBCore-AV-Metadata/PBCore_2.1/master/pbcore-2.1.xsd"
 if os.path.exists("pbcore-2.1.xsd"):

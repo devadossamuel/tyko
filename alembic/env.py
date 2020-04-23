@@ -21,7 +21,7 @@ fileConfig(config.config_file_name)
 parent_dir = os.path.abspath(os.getcwd())
 sys.path.append(parent_dir)
 
-from tyko.scheme import AVTables
+from tyko.schema import AVTables
 target_metadata = AVTables.metadata
 
 # other values from the config, defined by the needs of env.py,

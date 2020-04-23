@@ -8,7 +8,7 @@ import sqlalchemy
 from sqlalchemy.sql.expression import true
 from sqlalchemy import orm
 from .exceptions import DataError
-from . import scheme
+from . import schema
 from . import database
 
 DATE_FORMAT = '%Y-%m-%d'
@@ -39,8 +39,8 @@ class AbsDataProviderConnector(metaclass=abc.ABCMeta):
 class AbsNotesConnector(AbsDataProviderConnector, ABC):  # noqa: E501 pylint: disable=abstract-method
     @staticmethod
     def get_note_type(session, note_type_id):
-        note_types = session.query(scheme.NoteTypes) \
-            .filter(scheme.NoteTypes.id == note_type_id) \
+        note_types = session.query(schema.NoteTypes) \
+            .filter(schema.NoteTypes.id == note_type_id) \
             .all()
 
         if len(note_types) == 0:
@@ -49,7 +49,7 @@ class AbsNotesConnector(AbsDataProviderConnector, ABC):  # noqa: E501 pylint: di
 
     @classmethod
     def new_note(cls, session, text: str, note_type_id: int):
-        new_note = scheme.Note(
+        new_note = schema.Note(
             text=text,
             note_type=cls.get_note_type(session, note_type_id)
         )
@@ -62,12 +62,12 @@ class ProjectDataConnector(AbsNotesConnector):
     def get(self, id=None, serialize=False):
         session = self.session_maker()
         if id:
-            all_projects = session.query(scheme.Project)\
-                .filter(scheme.Project.id == id)\
+            all_projects = session.query(schema.Project)\
+                .filter(schema.Project.id == id)\
                 .all()
 
         else:
-            all_projects = session.query(scheme.Project).all()
+            all_projects = session.query(schema.Project).all()
 
         if serialize is True:
             serialized_projects = []
@@ -83,7 +83,7 @@ class ProjectDataConnector(AbsNotesConnector):
 
         return all_projects
 
-    def get_all_project_status(self) -> List[scheme.ProjectStatus]:
+    def get_all_project_status(self) -> List[schema.ProjectStatus]:
         """Get the list of all possible statuses that a project can be
 
         Returns:
@@ -92,13 +92,13 @@ class ProjectDataConnector(AbsNotesConnector):
         """
         session = self.session_maker()
         try:
-            return session.query(scheme.ProjectStatus).all()
+            return session.query(schema.ProjectStatus).all()
         finally:
             session.close()
 
     def get_project_status_by_name(self, name: str,
                                    create_if_not_exists: bool = False
-                                   ) -> scheme.ProjectStatus:
+                                   ) -> schema.ProjectStatus:
         """ Check if an existing status exists and if so, return that, if not
         and create_if_not_exists is false throw an DataError exception
 
@@ -108,15 +108,15 @@ class ProjectDataConnector(AbsNotesConnector):
         """
         session = self.session_maker()
         try:
-            names = session.query(scheme.ProjectStatus)\
-                .filter(scheme.ProjectStatus.name == name).all()
+            names = session.query(schema.ProjectStatus)\
+                .filter(schema.ProjectStatus.name == name).all()
 
             if len(names) > 1:
                 raise DataError(
                     "Database contained multiple matches for {}".format(name))
             if len(names) == 0:
                 if create_if_not_exists is True:
-                    new_project_status = scheme.ProjectStatus(name=name)
+                    new_project_status = schema.ProjectStatus(name=name)
                     session.add(new_project_status)
                     return new_project_status
 
@@ -136,7 +136,7 @@ class ProjectDataConnector(AbsNotesConnector):
         session = self.session_maker()
 
         try:
-            new_project = scheme.Project(
+            new_project = schema.Project(
                 title=title,
                 project_code=project_code,
                 current_location=current_location,
@@ -165,8 +165,8 @@ class ProjectDataConnector(AbsNotesConnector):
 
             session.commit()
             new_project = \
-                session.query(scheme.Project).filter(
-                    scheme.Project.id == project_id).one()
+                session.query(schema.Project).filter(
+                    schema.Project.id == project_id).one()
 
             new_project_data = new_project.serialize()
         finally:
@@ -184,16 +184,16 @@ class ProjectDataConnector(AbsNotesConnector):
                 note.text = changed_data['text']
             if "note_type_id" in changed_data:
 
-                note_type = session.query(scheme.NoteTypes).filter(
-                    scheme.NoteTypes.id == changed_data['note_type_id']).one()
+                note_type = session.query(schema.NoteTypes).filter(
+                    schema.NoteTypes.id == changed_data['note_type_id']).one()
 
                 if note_type is not None:
                     note.note_type = note_type
 
             session.commit()
             new_project = \
-                session.query(scheme.Project).filter(
-                    scheme.Project.id == project_id).one()
+                session.query(schema.Project).filter(
+                    schema.Project.id == project_id).one()
 
             return new_project.serialize()
         finally:
@@ -236,8 +236,8 @@ class ProjectDataConnector(AbsNotesConnector):
             session.commit()
             session.close()
 
-            updated_project = session.query(scheme.Project)\
-                .filter(scheme.Project.id == id)\
+            updated_project = session.query(schema.Project)\
+                .filter(schema.Project.id == id)\
                 .one()
 
         return updated_project.serialize()
@@ -245,8 +245,8 @@ class ProjectDataConnector(AbsNotesConnector):
     def delete(self, id):
         if id:
             session = self.session_maker()
-            items_deleted = session.query(scheme.Project)\
-                .filter(scheme.Project.id == id)\
+            items_deleted = session.query(schema.Project)\
+                .filter(schema.Project.id == id)\
                 .delete()
 
             session.commit()
@@ -257,7 +257,7 @@ class ProjectDataConnector(AbsNotesConnector):
     def get_note_types(self):
         session = self.session_maker()
         try:
-            return session.query(scheme.NoteTypes).all()
+            return session.query(schema.NoteTypes).all()
         finally:
             session.close()
 
@@ -283,8 +283,8 @@ class ProjectDataConnector(AbsNotesConnector):
                 )
 
             session.commit()
-            return session.query(scheme.Project) \
-                .filter(scheme.Project.id == project_id) \
+            return session.query(schema.Project) \
+                .filter(schema.Project.id == project_id) \
                 .one().serialize()
         finally:
             session.close()
@@ -316,8 +316,8 @@ class ProjectDataConnector(AbsNotesConnector):
                 if child_object.id == object_id:
                     project.objects.remove(child_object)
                     session.commit()
-                    return session.query(scheme.Project) \
-                        .filter(scheme.Project.id == project_id) \
+                    return session.query(schema.Project) \
+                        .filter(schema.Project.id == project_id) \
                         .one().serialize()
             raise DataError(
                 message="Project id {} contains no object with an"
@@ -329,8 +329,8 @@ class ProjectDataConnector(AbsNotesConnector):
 
     @staticmethod
     def _get_project(session, project_id):
-        projects = session.query(scheme.Project).filter(
-            scheme.Project.id == project_id).all()
+        projects = session.query(schema.Project).filter(
+            schema.Project.id == project_id).all()
 
         if len(projects) == 0:
             raise DataError(
@@ -354,15 +354,15 @@ class ObjectDataConnector(AbsNotesConnector):
         try:
             if id is not None:
                 all_collection_object = \
-                    session.query(scheme.CollectionObject).filter(
-                        scheme.CollectionObject.id == id).all()
+                    session.query(schema.CollectionObject).filter(
+                        schema.CollectionObject.id == id).all()
                 if len(all_collection_object) == 0:
                     raise DataError(
                         message="Unable to find object: {}".format(id))
             else:
                 all_collection_object = \
-                    session.query(scheme.CollectionObject).filter(
-                        scheme.CollectionObject.project is not None).all()
+                    session.query(schema.CollectionObject).filter(
+                        schema.CollectionObject.project is not None).all()
         except sqlalchemy.exc.DatabaseError as e:
             raise DataError(message="Unable to find object: {}".format(e))
 
@@ -384,7 +384,7 @@ class ObjectDataConnector(AbsNotesConnector):
     def create(self, *args, **kwargs):
         name = kwargs["name"]
         data = self.get_data(kwargs)
-        new_object = scheme.CollectionObject(
+        new_object = schema.CollectionObject(
             name=name,
         )
         if 'originals_rec_date' in data:
@@ -395,8 +395,8 @@ class ObjectDataConnector(AbsNotesConnector):
             new_object.barcode = barcode
         session = self.session_maker()
         if "collection_id" in kwargs and kwargs['collection_id'] is not None:
-            collection = session.query(scheme.Collection).filter(
-                scheme.Collection.id == kwargs['collection_id']).one()
+            collection = session.query(schema.Collection).filter(
+                schema.Collection.id == kwargs['collection_id']).one()
 
             if collection is None:
                 raise ValueError("Not a valid collection")
@@ -422,8 +422,8 @@ class ObjectDataConnector(AbsNotesConnector):
                     collection_object.barcode = changed_data['barcode']
 
                 if "collection_id" in changed_data:
-                    collection = session.query(scheme.Collection)\
-                        .filter(scheme.Collection.id ==
+                    collection = session.query(schema.Collection)\
+                        .filter(schema.Collection.id ==
                                 changed_data['collection_id'])\
                         .one()
 
@@ -445,8 +445,8 @@ class ObjectDataConnector(AbsNotesConnector):
                 session.add(collection_object)
                 session.commit()
 
-                updated_object = session.query(scheme.CollectionObject)\
-                    .filter(scheme.CollectionObject.id == id)\
+                updated_object = session.query(schema.CollectionObject)\
+                    .filter(schema.CollectionObject.id == id)\
                     .one()
                 return updated_object.serialize()
 
@@ -457,8 +457,8 @@ class ObjectDataConnector(AbsNotesConnector):
         if id:
             session = self.session_maker()
 
-            items_deleted = session.query(scheme.CollectionObject)\
-                .filter(scheme.CollectionObject.id == id).delete()
+            items_deleted = session.query(schema.CollectionObject)\
+                .filter(schema.CollectionObject.id == id).delete()
 
             success = items_deleted > 0
             session.commit()
@@ -468,7 +468,7 @@ class ObjectDataConnector(AbsNotesConnector):
     def get_note_types(self):
         session = self.session_maker()
         try:
-            return session.query(scheme.NoteTypes).all()
+            return session.query(schema.NoteTypes).all()
         finally:
             session.close()
 
@@ -484,8 +484,8 @@ class ObjectDataConnector(AbsNotesConnector):
             )
             session.commit()
 
-            new_object = session.query(scheme.CollectionObject) \
-                .filter(scheme.CollectionObject.id == object_id) \
+            new_object = session.query(schema.CollectionObject) \
+                .filter(schema.CollectionObject.id == object_id) \
                 .one()
 
             return new_object.serialize()
@@ -496,8 +496,8 @@ class ObjectDataConnector(AbsNotesConnector):
     def remove_note(self, object_id, note_id):
         session = self.session_maker()
         try:
-            objects = session.query(scheme.CollectionObject).filter(
-                scheme.CollectionObject.id == object_id).all()
+            objects = session.query(schema.CollectionObject).filter(
+                schema.CollectionObject.id == object_id).all()
 
             if len(objects) == 0:
                 raise DataError(
@@ -530,8 +530,8 @@ class ObjectDataConnector(AbsNotesConnector):
                 )
 
             session.commit()
-            return session.query(scheme.CollectionObject) \
-                .filter(scheme.CollectionObject.id == object_id) \
+            return session.query(schema.CollectionObject) \
+                .filter(schema.CollectionObject.id == object_id) \
                 .one().serialize()
         finally:
             session.close()
@@ -546,16 +546,16 @@ class ObjectDataConnector(AbsNotesConnector):
                 note.text = changed_data['text']
             if "note_type_id" in changed_data:
 
-                note_type = session.query(scheme.NoteTypes).filter(
-                    scheme.NoteTypes.id == changed_data['note_type_id']).one()
+                note_type = session.query(schema.NoteTypes).filter(
+                    schema.NoteTypes.id == changed_data['note_type_id']).one()
 
                 if note_type is not None:
                     note.note_type = note_type
 
             session.commit()
             new_object = \
-                session.query(scheme.CollectionObject).filter(
-                    scheme.CollectionObject.id == object_id).one()
+                session.query(schema.CollectionObject).filter(
+                    schema.CollectionObject.id == object_id).one()
 
             return new_object.serialize()
         finally:
@@ -563,8 +563,8 @@ class ObjectDataConnector(AbsNotesConnector):
 
     @staticmethod
     def _get_object(object_id, session):
-        collection_object = session.query(scheme.CollectionObject) \
-            .filter(scheme.CollectionObject.id == object_id) \
+        collection_object = session.query(schema.CollectionObject) \
+            .filter(schema.CollectionObject.id == object_id) \
             .all()
         if len(collection_object) == 0:
             raise ValueError("Not a valid object")
@@ -607,18 +607,18 @@ class ObjectDataConnector(AbsNotesConnector):
                 )
             matching_object.items.remove(matching_item)
             session.commit()
-            return session.query(scheme.CollectionObject) \
-                .filter(scheme.CollectionObject.id == object_id) \
+            return session.query(schema.CollectionObject) \
+                .filter(schema.CollectionObject.id == object_id) \
                 .one().serialize()
 
         finally:
             session.close()
 
     @staticmethod
-    def _find_item(item_id, session) -> scheme.CollectionItem:
+    def _find_item(item_id, session) -> schema.CollectionItem:
         matching_items = \
-            session.query(scheme.CollectionItem).filter(
-                scheme.CollectionItem.id == item_id).all()
+            session.query(schema.CollectionItem).filter(
+                schema.CollectionItem.id == item_id).all()
 
         if len(matching_items) == 0:
             raise DataError(
@@ -632,10 +632,10 @@ class ObjectDataConnector(AbsNotesConnector):
         return matching_items[0]
 
     @staticmethod
-    def _find_object(object_id, session) -> scheme.CollectionObject:
+    def _find_object(object_id, session) -> schema.CollectionObject:
         matching_objects = \
-            session.query(scheme.CollectionObject).filter(
-                scheme.CollectionObject.id == object_id).all()
+            session.query(schema.CollectionObject).filter(
+                schema.CollectionObject.id == object_id).all()
 
         if len(matching_objects) == 0:
             raise DataError(
@@ -667,12 +667,12 @@ class FileNotesDataConnector(AbsDataProviderConnector):
         try:
             if id is not None:
                 all_notes = \
-                    session.query(scheme.FileNotes).filter(
-                        scheme.FileNotes.id == id).all()
+                    session.query(schema.FileNotes).filter(
+                        schema.FileNotes.id == id).all()
             else:
                 all_notes = \
-                    session.query(scheme.CollectionObject).filter(
-                        scheme.CollectionObject.project is not None).all()
+                    session.query(schema.CollectionObject).filter(
+                        schema.CollectionObject.project is not None).all()
 
             if serialize:
                 serialized_notes = []
@@ -692,7 +692,7 @@ class FileNotesDataConnector(AbsDataProviderConnector):
     def create(self, *args, **kwargs):
         session = self.session_maker()
         try:
-            new_note = scheme.FileNotes(file_id=kwargs['file_id'],
+            new_note = schema.FileNotes(file_id=kwargs['file_id'],
                                         message=kwargs['message'])
             session.add(new_note)
             session.commit()
@@ -703,8 +703,8 @@ class FileNotesDataConnector(AbsDataProviderConnector):
     def update(self, id, changed_data):
         session = self.session_maker()
         try:
-            note_record = session.query(scheme.FileNotes) \
-                .filter(scheme.FileNotes.id == id).one()
+            note_record = session.query(schema.FileNotes) \
+                .filter(schema.FileNotes.id == id).one()
 
             if "message" in changed_data:
                 note_record.message = changed_data['message']
@@ -716,8 +716,8 @@ class FileNotesDataConnector(AbsDataProviderConnector):
     def delete(self, id):
         session = self.session_maker()
         try:
-            items_deleted = session.query(scheme.FileNotes). \
-                filter(scheme.FileNotes.id == id).delete()
+            items_deleted = session.query(schema.FileNotes). \
+                filter(schema.FileNotes.id == id).delete()
             success = items_deleted > 0
             session.commit()
             return success
@@ -730,8 +730,8 @@ class FilesDataConnector(AbsDataProviderConnector):
     def get(self, id=None, serialize=False):
         session = self.session_maker()
         try:
-            matching_file = session.query(scheme.InstantiationFile)\
-                .filter(scheme.InstantiationFile.file_id == id).one()
+            matching_file = session.query(schema.InstantiationFile)\
+                .filter(schema.InstantiationFile.file_id == id).one()
             if serialize is True:
                 res = matching_file.serialize(recurse=True)
                 return res
@@ -745,9 +745,9 @@ class FilesDataConnector(AbsDataProviderConnector):
         generation = kwargs['generation']
         session = self.session_maker()
         try:
-            matching_item = session.query(scheme.CollectionItem)\
-                .filter(scheme.CollectionItem.id == item_id).one()
-            new_file = scheme.InstantiationFile(file_name=name)
+            matching_item = session.query(schema.CollectionItem)\
+                .filter(schema.CollectionItem.id == item_id).one()
+            new_file = schema.InstantiationFile(file_name=name)
 
             if generation is not None:
                 new_file.generation = generation
@@ -762,8 +762,8 @@ class FilesDataConnector(AbsDataProviderConnector):
     def update(self, id, changed_data):
         session = self.session_maker()
         try:
-            matching_file = session.query(scheme.InstantiationFile) \
-                .filter(scheme.InstantiationFile.file_id == id).one()
+            matching_file = session.query(schema.InstantiationFile) \
+                .filter(schema.InstantiationFile.file_id == id).one()
             if "file_name" in changed_data:
                 matching_file.file_name = changed_data['file_name']
             if "generation" in changed_data:
@@ -776,8 +776,8 @@ class FilesDataConnector(AbsDataProviderConnector):
     def delete(self, id: int):
         session = self.session_maker()
         try:
-            items_deleted = session.query(scheme.InstantiationFile)\
-                .filter(scheme.InstantiationFile.file_id == id).delete()
+            items_deleted = session.query(schema.InstantiationFile)\
+                .filter(schema.InstantiationFile.file_id == id).delete()
             session.commit()
             return items_deleted > 0
         finally:
@@ -786,8 +786,8 @@ class FilesDataConnector(AbsDataProviderConnector):
     def remove(self, item_id: int, file_id: int):
         session = self.session_maker()
         try:
-            item = session.query(scheme.CollectionItem)\
-                .filter(scheme.CollectionItem.id == item_id).one()
+            item = session.query(schema.CollectionItem)\
+                .filter(schema.CollectionItem.id == item_id).one()
             for f in item.files:
                 if f.file_id == file_id:
                     item.files.remove(f)
@@ -804,12 +804,12 @@ class ItemDataConnector(AbsNotesConnector):
         session = self.session_maker()
         try:
             if id:
-                all_collection_item = session.query(scheme.CollectionItem)\
-                    .filter(scheme.CollectionItem.id == id)\
+                all_collection_item = session.query(schema.CollectionItem)\
+                    .filter(schema.CollectionItem.id == id)\
                     .all()
             else:
                 all_collection_item = \
-                    session.query(scheme.CollectionItem).all()
+                    session.query(schema.CollectionItem).all()
 
             if serialize:
                 serialized_all_collection_item = []
@@ -837,8 +837,8 @@ class ItemDataConnector(AbsNotesConnector):
             )
             session.commit()
 
-            new_item = session.query(scheme.CollectionItem) \
-                .filter(scheme.CollectionItem.id == item_id) \
+            new_item = session.query(schema.CollectionItem) \
+                .filter(schema.CollectionItem.id == item_id) \
                 .one()
 
             return new_item.serialize()
@@ -850,18 +850,18 @@ class ItemDataConnector(AbsNotesConnector):
         session = self.session_maker()
         name = kwargs["name"]
         format_id = int(kwargs["format_id"])
-        format_type = session.query(scheme.FormatTypes)\
-            .filter(scheme.FormatTypes.id == format_id).one()
+        format_type = session.query(schema.FormatTypes)\
+            .filter(schema.FormatTypes.id == format_id).one()
 
         medusa_uuid = kwargs.get("medusa_uuid")
-        new_item = scheme.CollectionItem(
+        new_item = schema.CollectionItem(
             name=name,
             medusa_uuid=medusa_uuid,
             format_type=format_type
         )
         for instance_file in kwargs.get("files", []):
             new_file = \
-                scheme.InstantiationFile(file_name=instance_file['name'])
+                schema.InstantiationFile(file_name=instance_file['name'])
 
             new_item.files.append(new_file)
         # new_item.files.append(f)
@@ -889,8 +889,8 @@ class ItemDataConnector(AbsNotesConnector):
 
             session.add(item)
             session.commit()
-            updated_item = session.query(scheme.CollectionItem)\
-                .filter(scheme.CollectionItem.id == id)\
+            updated_item = session.query(schema.CollectionItem)\
+                .filter(schema.CollectionItem.id == id)\
                 .one()
         return updated_item.serialize()
 
@@ -898,8 +898,8 @@ class ItemDataConnector(AbsNotesConnector):
         if id:
             session = self.session_maker()
 
-            items_deleted = session.query(scheme.CollectionItem)\
-                .filter(scheme.CollectionItem.id == id).delete()
+            items_deleted = session.query(schema.CollectionItem)\
+                .filter(schema.CollectionItem.id == id).delete()
 
             success = items_deleted > 0
             session.commit()
@@ -912,14 +912,14 @@ class ItemDataConnector(AbsNotesConnector):
     def get_note_types(self):
         session = self.session_maker()
         try:
-            return session.query(scheme.NoteTypes).all()
+            return session.query(schema.NoteTypes).all()
         finally:
             session.close()
 
     @staticmethod
     def _get_item(item_id, session):
-        collection_items = session.query(scheme.CollectionItem) \
-            .filter(scheme.CollectionItem.id == item_id) \
+        collection_items = session.query(schema.CollectionItem) \
+            .filter(schema.CollectionItem.id == item_id) \
             .all()
         if len(collection_items) == 0:
             raise ValueError("Not a valid item")
@@ -929,8 +929,8 @@ class ItemDataConnector(AbsNotesConnector):
     def remove_note(self, item_id, note_id):
         session = self.session_maker()
         try:
-            collection_items = session.query(scheme.CollectionItem).filter(
-                scheme.CollectionItem.id == item_id).all()
+            collection_items = session.query(schema.CollectionItem).filter(
+                schema.CollectionItem.id == item_id).all()
 
             if len(collection_items) == 0:
                 raise DataError(
@@ -964,8 +964,8 @@ class ItemDataConnector(AbsNotesConnector):
                 )
 
             session.commit()
-            return session.query(scheme.CollectionItem) \
-                .filter(scheme.CollectionItem.id == item_id) \
+            return session.query(schema.CollectionItem) \
+                .filter(schema.CollectionItem.id == item_id) \
                 .one().serialize()
         finally:
             session.close()
@@ -980,16 +980,16 @@ class ItemDataConnector(AbsNotesConnector):
                 note.text = changed_data['text']
             if "note_type_id" in changed_data:
 
-                note_type = session.query(scheme.NoteTypes).filter(
-                    scheme.NoteTypes.id == changed_data['note_type_id']).one()
+                note_type = session.query(schema.NoteTypes).filter(
+                    schema.NoteTypes.id == changed_data['note_type_id']).one()
 
                 if note_type is not None:
                     note.note_type = note_type
 
             session.commit()
             new_item = \
-                session.query(scheme.CollectionItem).filter(
-                    scheme.CollectionItem.id == item_id).one()
+                session.query(schema.CollectionItem).filter(
+                    schema.CollectionItem.id == item_id).one()
             return new_item.serialize()
 
         finally:
@@ -1008,12 +1008,12 @@ class CollectionDataConnector(AbsDataProviderConnector):
     def get(self, id=None, serialize=False):
         session = self.session_maker()
         if id:
-            all_collections = session.query(scheme.Collection)\
-                .filter(scheme.Collection.id == id)\
+            all_collections = session.query(schema.Collection)\
+                .filter(schema.Collection.id == id)\
                 .all()
         else:
             all_collections = \
-                session.query(scheme.Collection).all()
+                session.query(schema.Collection).all()
 
         if serialize:
             serialized_collections = []
@@ -1033,7 +1033,7 @@ class CollectionDataConnector(AbsDataProviderConnector):
         department = kwargs.get("department")
         record_series = kwargs.get("record_series")
 
-        new_collection = scheme.Collection(
+        new_collection = schema.Collection(
             collection_name=collection_name,
             department=department,
             record_series=record_series
@@ -1066,8 +1066,8 @@ class CollectionDataConnector(AbsDataProviderConnector):
 
             session.add(collection)
             session.commit()
-            updated_collection = session.query(scheme.Collection)\
-                .filter(scheme.Collection.id == id)\
+            updated_collection = session.query(schema.Collection)\
+                .filter(schema.Collection.id == id)\
                 .one()
         return updated_collection.serialize()
 
@@ -1075,8 +1075,8 @@ class CollectionDataConnector(AbsDataProviderConnector):
         if id:
             session = self.session_maker()
 
-            collections_deleted = session.query(scheme.Collection)\
-                .filter(scheme.Collection.id == id).delete()
+            collections_deleted = session.query(schema.Collection)\
+                .filter(schema.Collection.id == id).delete()
 
             success = collections_deleted > 0
             session.commit()
@@ -1089,12 +1089,12 @@ class NotesDataConnector(AbsDataProviderConnector):
     def get(self, id=None, serialize=False):
         session = self.session_maker()
         if id:
-            all_notes = session.query(scheme.Note) \
-                .filter(scheme.Note.id == id) \
+            all_notes = session.query(schema.Note) \
+                .filter(schema.Note.id == id) \
                 .all()
         else:
             all_notes = \
-                session.query(scheme.Note).all()
+                session.query(schema.Note).all()
 
         if serialize:
             serialized_notes = []
@@ -1130,7 +1130,7 @@ class NotesDataConnector(AbsDataProviderConnector):
         note_types_id = kwargs.get("note_types_id")
         text = kwargs.get("text")
 
-        new_note = scheme.Note(
+        new_note = schema.Note(
             text=text,
             note_type_id=note_types_id
 
@@ -1152,8 +1152,8 @@ class NotesDataConnector(AbsDataProviderConnector):
                 note.text = changed_data['text']
 
             if 'note_type_id' in changed_data:
-                note_types = session.query(scheme.NoteTypes).filter(
-                    scheme.NoteTypes.id == changed_data['note_type_id'])
+                note_types = session.query(schema.NoteTypes).filter(
+                    schema.NoteTypes.id == changed_data['note_type_id'])
 
                 note_type = note_types.one()
                 note.note_type = note_type
@@ -1162,16 +1162,16 @@ class NotesDataConnector(AbsDataProviderConnector):
             session.commit()
             session.close()
 
-            updated_note = session.query(scheme.Note) \
-                .filter(scheme.Note.id == id) \
+            updated_note = session.query(schema.Note) \
+                .filter(schema.Note.id == id) \
                 .one()
         return updated_note.serialize()
 
     def delete(self, id):
         if id:
             session = self.session_maker()
-            items_deleted = session.query(scheme.Note) \
-                .filter(scheme.Note.id == id) \
+            items_deleted = session.query(schema.Note) \
+                .filter(schema.Note.id == id) \
                 .delete()
             session.commit()
             session.close()
@@ -1194,11 +1194,11 @@ class DataProvider:
             session = self.db_session_maker()
 
             if id:
-                all_formats = session.query(scheme.FormatTypes)\
-                    .filter(scheme.FormatTypes.id == id)\
+                all_formats = session.query(schema.FormatTypes)\
+                    .filter(schema.FormatTypes.id == id)\
                     .all()
             else:
-                all_formats = session.query(scheme.FormatTypes).all()
+                all_formats = session.query(schema.FormatTypes).all()
             session.close()
 
         except sqlalchemy.exc.DatabaseError as e:
@@ -1231,8 +1231,8 @@ class FileAnnotationsConnector(AbsDataProviderConnector):
     def get_single_annotations(self, annotation_id, serialize):
         session = self.session_maker()
         try:
-            annotation = session.query(scheme.FileAnnotation)\
-                .filter(scheme.FileAnnotation.id == annotation_id)\
+            annotation = session.query(schema.FileAnnotation)\
+                .filter(schema.FileAnnotation.id == annotation_id)\
                 .one()
             if serialize is True:
                 return annotation.serialize()
@@ -1246,8 +1246,8 @@ class FileAnnotationsConnector(AbsDataProviderConnector):
             annotations = []
 
             for annotation in session.query(
-                    scheme.FileAnnotationType)\
-                    .filter(scheme.FileAnnotationType.active == true()):
+                    schema.FileAnnotationType)\
+                    .filter(schema.FileAnnotationType.active == true()):
                 if serialize:
                     annotations.append(annotation.serialize())
                 else:
@@ -1267,7 +1267,7 @@ class FileAnnotationsConnector(AbsDataProviderConnector):
         annotation_type_id = kwargs['annotation_type_id']
         session = self.session_maker()
         try:
-            new_data = scheme.FileAnnotation(file_id=file_id,
+            new_data = schema.FileAnnotation(file_id=file_id,
                                              annotation_content=content,
                                              type_id=annotation_type_id)
             session.add(new_data)
@@ -1282,8 +1282,8 @@ class FileAnnotationsConnector(AbsDataProviderConnector):
     def update(self, id, changed_data):
         session = self.session_maker()
         try:
-            annotation = session.query(scheme.FileAnnotation)\
-                .filter(scheme.FileAnnotation.id == id)\
+            annotation = session.query(schema.FileAnnotation)\
+                .filter(schema.FileAnnotation.id == id)\
                 .one()
 
             if "content" in changed_data:
@@ -1298,8 +1298,8 @@ class FileAnnotationsConnector(AbsDataProviderConnector):
     def delete(self, id):
         session = self.session_maker()
         try:
-            items_deleted = session.query(scheme.FileAnnotation)\
-                .filter(scheme.FileAnnotation.id == id)\
+            items_deleted = session.query(schema.FileAnnotation)\
+                .filter(schema.FileAnnotation.id == id)\
                 .delete()
             session.commit()
             session.close()
@@ -1318,7 +1318,7 @@ class FileAnnotationTypeConnector(AbsDataProviderConnector):
         annotation_message = kwargs['text']
         session = self.session_maker()
         try:
-            new_annotation_type = scheme.FileAnnotationType(
+            new_annotation_type = schema.FileAnnotationType(
                 name=annotation_message,
                 active=True
             )
@@ -1348,8 +1348,8 @@ class FileAnnotationTypeConnector(AbsDataProviderConnector):
         """
         session = self.session_maker()
         try:
-            annotation_type = session.query(scheme.FileAnnotationType) \
-                .filter(scheme.FileAnnotationType.id == id).one()
+            annotation_type = session.query(schema.FileAnnotationType) \
+                .filter(schema.FileAnnotationType.id == id).one()
             annotation_type.active = False
             session.commit()
             return True
