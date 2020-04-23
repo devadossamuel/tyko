@@ -53,7 +53,7 @@
 {% macro note_editor(apiPath, valid_note_types) %}
     {% include "edit_note.html" %}
 <script type="module">
-    import {setup_modal_window, new_note, edit_note, remove_note} from "{{url_for('static', filename='js/noteModal.js')}}"
+    import {setupModalWindow, newNote, editNote, removeNote} from "{{url_for('static', filename='js/noteModal.js')}}"
     import {notes} from "{{url_for('static', filename="js/api.js")}}"
     $(document).ready(function () {
         {%- for note_name, note_id in valid_note_types %}
@@ -61,7 +61,7 @@
         {%- endfor %}
 
         $('#noteRemoveConfirm').on('show.bs.modal', function (event) {
-            remove_note(
+            removeNote(
                 $(event.relatedTarget),
                 $(this),
                 $(event.relatedTarget).data("apiroute"),
@@ -72,13 +72,13 @@
         $('#noteEditor').on('show.bs.modal', function (event) {
             const button = $(event.relatedTarget);
             const modal = $(this);
-            setup_modal_window(modal, button);
+            setupModalWindow(modal, button);
             switch (button.data('dialogtype')) {
                 case "edit":
-                    edit_note(button, modal, notes.editNote);
+                    editNote(button, modal, notes.editNote);
                     break;
                 case "new":
-                    new_note(button, modal, "{{ apiPath }}", notes.addNote);
+                    newNote(button, modal, "{{ apiPath }}", notes.addNote);
                     break;
             }
         });

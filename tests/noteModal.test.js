@@ -1,4 +1,4 @@
-import {edit_note} from "../tyko/static/js/noteModal";
+import {editNote} from "../tyko/static/js/noteModal";
 import {notes} from "../tyko/static/js/api.js"
 
 describe('Testing text widget', ()=> {
@@ -51,7 +51,7 @@ describe('Testing text widget', ()=> {
 
         modal.modal('show');
         expect(modal.hasClass('show')).toBe(true);
-        edit_note(triggerButton, modal, notes.editNote);
+        editNote(triggerButton, modal, notes.editNote);
         modal.find('#cancelButton').trigger("click");
         expect(modal.hasClass('show')).toBe(false);
     });
@@ -65,7 +65,7 @@ describe('Testing text widget', ()=> {
 
         modal.modal('show');
         expect(modal.hasClass('show')).toBe(true);
-        edit_note(triggerButton, modal, notes.editNote);
+        editNote(triggerButton, modal, notes.editNote);
         modal.find('#saveNoteButton').trigger("click");
         expect(modal.hasClass('show')).toBe(false);
     });

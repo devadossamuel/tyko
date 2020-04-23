@@ -1,9 +1,9 @@
-export function setup_modal_window(modal, button) {
+export function setupModalWindow(modal, button) {
   modal.find('.modal-title').text(button.data('title'));
   modal.find('#message-text').val(button.data('text'));
 }
 
-export function edit_note(button, modal, promise) {
+export function editNote(button, modal, promise) {
   const noteId = button.data('notetype');
   modal.find('#noteTypeSelect').val(noteId);
   modal.find('#saveNoteButton').unbind('click').bind('click',
@@ -19,7 +19,7 @@ export function edit_note(button, modal, promise) {
       });
 }
 
-export function new_note(button, modal, apiPath, promise) {
+export function newNote(button, modal, apiPath, promise) {
   modal.find('#saveNoteButton').unbind('click').bind('click',
       function() {
         const noteTypeId = modal.find('#noteTypeSelect').val();
@@ -32,7 +32,7 @@ export function new_note(button, modal, apiPath, promise) {
       });
 }
 
-export function remove_note(button, modal, apiroute, promise) {
+export function removeNote(button, modal, apiroute, promise) {
   modal.find('#confirmRemoveNoteButton').unbind('click').bind('click',
       function() {
         promise(apiroute).then(function() {
