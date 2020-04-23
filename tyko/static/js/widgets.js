@@ -77,7 +77,14 @@ class WidgetState{
     return confirmationButtons;
   }
 
-  newColumn(id, parent, colClass = 'col') {
+  /**
+   * Create a new column
+   *
+   * @param {string} id - id to assign the new column
+   * @param {string} colClass - html classes to assign to the new column
+   * @return {HTMLDivElement}
+   */
+  newColumn(id, colClass = 'col') {
     const newColumnSection = document.createElement('div');
 
     newColumnSection.setAttribute('class', colClass);
@@ -200,11 +207,11 @@ class ViewWidget extends WidgetState {
   draw(element, data) {
     element.innerHTML = '';
     let newRoot = this.newRoot();
-    const newContent = this.newColumn('content', newRoot, 'align-self-stretch');
+    const newContent = this.newColumn('content', 'align-self-stretch');
     newContent.innerText = data['fieldText'];
     newRoot.appendChild(newContent);
 
-    const editCol = this.newColumn('editFunction', newRoot, 'col');
+    const editCol = this.newColumn('editFunction', 'col');
     editCol.appendChild(this.newEditButton());
     newRoot.appendChild(editCol);
     element.appendChild(newRoot);
@@ -336,7 +343,7 @@ class SelectEditWidget extends WidgetEditState {
     const inputElement = this._newSelect(
         this._parent.options,
         data['fieldText'],
-        data['fieldName']
+        data['fieldName'],
     );
 
     newRoot.appendChild(inputElement);

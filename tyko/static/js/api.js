@@ -77,21 +77,44 @@ export const objects = {
   'removeObject': removeObject,
 };
 
+/**
+ * Add an item to a given object
+ * @param {string} apiRoute - url to the project_object_add_item route
+ * @param {Object} data - data to be sent to the server
+ * @return {Promise | Promise<Object>} result of request made to server
+ */
 function addItem(apiRoute, data) {
   if (apiRoute === undefined) {
     throw new TypeError('apiRoute is a required field');
   }
   return requests.post(apiRoute, data);
 }
-
+/**
+ * Update a note for a given file
+ * @param {string} apiRoute - url to the file_notes route
+ * @param {Object} data - data to be sent to the server
+ * @return {Promise | Promise<Object>} result of request made to server
+ */
 function editFileNote(apiRoute, data) {
   return requests.put(apiRoute, data);
 }
 
+/**
+ * Add a note to a given file
+ * @param {string} apiRoute - url to the file_notes route
+ * @param {Object} data - data to be sent to the server
+ * @return {Promise | Promise<Object>} result of request made to server
+ */
 function addFileNote(apiRoute, data) {
   return requests.post(apiRoute, data);
 }
 
+/**
+ * Add a file to a given item
+ * @param {string} apiRoute - url to the item_files route
+ * @param {Object} data - data to be sent to the server
+ * @return {Promise | Promise<Object>} result of request made to server
+ */
 function addFile(apiRoute, data) {
   return requests.post(apiRoute, data);
 }
