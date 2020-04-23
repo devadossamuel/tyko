@@ -23,6 +23,7 @@ class ProjectsAPI(views.MethodView):
     def get(self):
         return self._project.get(True)
 
+
 class ProjectAPI(views.MethodView):
     def __init__(self, project: middleware.ProjectMiddlwareEntity) -> None:
         self._project = project
