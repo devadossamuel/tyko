@@ -33,7 +33,7 @@ class absMetadataWidget {
 
   get onEdited() {
     if (this._onEdited == null) {
-      throw `${this.constructor.name}.onEdited(data) not set`;
+      throw new Error(`${this.constructor.name}.onEdited(data) not set`);
     }
     return this._onEdited;
   }
@@ -193,7 +193,7 @@ class ViewWidget extends WidgetState {
     if (this.editWidget != null) {
       this._parent._state = new this.editWidget(this._parent);
     } else {
-      throw 'No edit has no valid state ';
+      throw Error('No edit has no valid state');
     }
   }
 
