@@ -51,7 +51,7 @@ pipeline {
                     }
                     post{
                         success{
-                            stash includes: "deploy/**,database/**", name: 'SERVER_DEPLOY_FILES'
+                            stash includes: "deploy/**,database/**,alembic/**", name: 'SERVER_DEPLOY_FILES'
                             stash includes: "tyko.dist-info/**", name: 'DIST-INFO'
                         }
                         cleanup{
@@ -700,12 +700,7 @@ pipeline {
                                     sshCommand remote: remote, command: "mv ./package/tyko-${props.Version}/* ./package/"
                                     sshPut remote: remote, from: 'deploy', into: './package/'
                                     sshPut remote: remote, from: 'database', into: './package/'
-                                    try{
-                                        sshPut remote: remote, from: 'alembic', into: './package/'
-                                    } catch (Exception e) {
-                                        sh "ls -la"
-                                    throw e;
-                                    }
+                                    sshPut remote: remote, from: 'alembic', into: './package/'
 
                                     sshCommand remote: remote, command: """cd package &&
         docker-compose -f deploy/docker-compose.yml -p tyko build ${SERVER_COLOR}_api ${SERVER_COLOR}_db &&
