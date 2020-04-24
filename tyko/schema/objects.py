@@ -44,6 +44,8 @@ class CollectionObject(AVTables):
 
     contact = relationship("Contact", foreign_keys=[contact_id])
 
+    audio_cassettes = relationship("AudioCassette")
+
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
 
         data: Dict[str, SerializedData] = {"object_id": self.id,

@@ -160,6 +160,80 @@ class AudioVideo(AVTables):
             "format_subtype": self.format_subtype
 
         }
+
+class Format(AVTables):
+    __abstract__ = True
+    obj_sequence = db.Column("obj_sequence", db.Integer)
+
+
+class AudioCassette(Format):
+    __tablename__ = "AudioCassettes"
+    name = db.Column("name", db.Text)
+    table_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    object_id = db.Column(db.Integer, db.ForeignKey("object.object_id"))
+    parent_object = relationship("CollectionObject", foreign_keys=[object_id])
+
+    format_type_id = db.Column(db.Integer, db.ForeignKey("cassette_types.table_id"))
+    format_type = relationship("CassetteType")
+
+    tape_type_id = db.Column(db.Integer, db.ForeignKey("cassette_tape_types.table_id"))
+    tape_type = relationship("CassetteTapeType")
+
+    tape_thickness_id = db.Column(db.Integer, db.ForeignKey("cassette_tape_thickness.table_id"))
+    tape_thickness = relationship("CassetteTapeThickness")
+
+    inspection_date = db.Column("inspection_date", db.Date)
+    recording_date = db.Column("recording_date", db.Date)
+
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+        return {
+            "name": self.name,
+            "id": self.table_id,
+            "format_type": self.format_type.serialize(),
+            "tape_type": self.tape_type.serialize(),
+            "tape_thickness": self.tape_thickness.serialize(),
+            "inspection_date": self.serialize_date(self.inspection_date),
+            "obj_sequence": self.obj_sequence,
+
+        }
+
+
+class CassetteType(AVTables):
+    __tablename__ = "cassette_types"
+    table_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    name = db.Column("name", db.String)
+
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+        return {
+            "name": self.name,
+            "id": self.table_id
+        }
+
+
+class CassetteTapeType(AVTables):
+    __tablename__ = "cassette_tape_types"
+    table_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    name = db.Column("name", db.String)
+
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+        return {
+            "name": self.name,
+            "id": self.table_id
+        }
+
+
+class CassetteTapeThickness(AVTables):
+    __tablename__ = "cassette_tape_thickness"
+    table_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    name = db.Column("name", db.String)
+
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+        return {
+            "name": self.name,
+            "id": self.table_id
+        }
+
+
 # =============================================================================
 # Enumerated tables
 # =============================================================================
