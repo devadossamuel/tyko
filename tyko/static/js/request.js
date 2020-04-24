@@ -16,7 +16,7 @@ function handle_results(xhr, resolve, reject) {
 
 export const requests = {
   'get': (apiPath) => {
-    let xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
     xhr.withCredentials = false;
 
     return new Promise(((resolve, reject) => {
@@ -31,7 +31,7 @@ export const requests = {
     }));
   },
   'post': (apiPath, data) => {
-    let xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
     xhr.withCredentials = false;
     return new Promise(((resolve, reject) => {
       xhr.onreadystatechange = function() {
@@ -46,7 +46,7 @@ export const requests = {
     }));
   },
   'put': (apiPath, data) => {
-    let xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
     xhr.withCredentials = false;
     return new Promise(((resolve, reject) => {
       xhr.onreadystatechange = function() {
@@ -62,7 +62,7 @@ export const requests = {
     }));
   },
   'delete': (apiPath) => {
-    let xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
     xhr.withCredentials = false;
     return new Promise(((resolve, reject) => {
       xhr.onreadystatechange = function() {
