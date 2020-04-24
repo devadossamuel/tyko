@@ -100,7 +100,6 @@ class WidgetEditState extends WidgetState {
   }
 
   setupEventListeners(rootId) {
-
     const onOffFocusEvent = function(e) {
       if (document.getElementById(rootId).contains(e.target) || e.target.id ===
           this._parent.editButtonId) {
@@ -108,7 +107,6 @@ class WidgetEditState extends WidgetState {
       }
       this.clickedOffFocus();
       window.removeEventListener('click', onOffFocusEvent);
-
     }.bind(this);
 
     window.addEventListener('click', onOffFocusEvent);
@@ -171,7 +169,6 @@ class WidgetEditState extends WidgetState {
     const cancel = this.cancel;
     cancelButton.onclick = function() {
       cancel(parent);
-
     };
 
     confirmationButtons.appendChild(cancelButton);
@@ -207,7 +204,6 @@ class ViewWidget extends WidgetState {
     editCol.appendChild(this.newEditButton());
     newRoot.appendChild(editCol);
     element.appendChild(newRoot);
-
   }
 
   newEditButton() {
@@ -223,7 +219,6 @@ class ViewWidget extends WidgetState {
     };
     return newButton;
   }
-
 }
 
 class NumberPickerWidget extends WidgetEditState {
@@ -250,7 +245,6 @@ class NumberPickerWidget extends WidgetEditState {
     inputElement.setAttribute('name', fieldName);
     if (value != null) {
       inputElement.setAttribute('value', value);
-
     }
 
     return inputElement;
@@ -396,7 +390,6 @@ class TextEditWidget extends WidgetEditState {
 
 class DatePickerPartFactory {
   constructor(type, rootElement) {
-
     if (type === 'viewState') {
       return () => {
         const viewWidget = new ViewWidget(rootElement);
@@ -411,7 +404,6 @@ class DatePickerPartFactory {
 
 class SelectEditorPartFactory {
   constructor(type, rootElement) {
-
     if (type === 'viewState') {
       return () => {
         const viewWidget = new ViewWidget(rootElement);
@@ -426,14 +418,12 @@ class SelectEditorPartFactory {
         rootElement._state.draw(rootElement.element, rootElement._data);
       };
     }
-
   }
 }
 
 
 class TextEditorPartFactory {
   constructor(type, rootElement) {
-
     if (type === 'viewState') {
       return () => {
         const viewWidget = new ViewWidget(rootElement);
