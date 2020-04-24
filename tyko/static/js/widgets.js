@@ -227,7 +227,6 @@ class ViewWidget extends WidgetState {
 }
 
 class NumberPickerWidget extends WidgetEditState {
-
   draw(element, data) {
     element.innerHTML = '';
     const rootId = `editArea${data['fieldName']}`;
@@ -367,7 +366,6 @@ class SelectEditWidget extends WidgetEditState {
 
 
 class TextEditWidget extends WidgetEditState {
-
   constructor(parentClass) {
     super(parentClass);
   }
@@ -490,7 +488,6 @@ class builder {
 
 
 class textEditorBuilder extends builder {
-
   getEditMode(baseWidget) {
     return new TextEditorPartFactory('editState', baseWidget);
   }
@@ -510,7 +507,6 @@ class textEditorBuilder extends builder {
 
 
 class selectionEditorBuilder extends builder {
-
   getViewOnlyMode(baseWidget) {
     return new SelectEditorPartFactory('viewState', baseWidget);
   }
@@ -529,7 +525,6 @@ class selectionEditorBuilder extends builder {
 }
 
 class DatePickerBuilder extends builder {
-
   getViewOnlyMode(baseWidget) {
     return new DatePickerPartFactory('viewState', baseWidget);
   }
