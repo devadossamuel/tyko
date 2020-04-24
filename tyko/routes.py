@@ -87,6 +87,7 @@ class Routes:
 
         if self.app:
             for url_rule in self.get_api_routes():
+                self.app.logger.debug(f"Loading rule {url_rule.rule}")
                 self.app.add_url_rule(
                     url_rule.rule,
                     endpoint=url_rule.endpoint,
@@ -204,10 +205,10 @@ class Routes:
 
     def init_website_routes(self):
         if self.app:
-            for route, route_name, func in \
+            for rule, endpoint, func in \
                     self._page_routes(self.mw.data_provider):
-
-                self.app.add_url_rule(route, route_name, func)
+                self.app.logger.debug(f"Loading rule {rule}")
+                self.app.add_url_rule(rule, endpoint, func)
 
     def get_api_project_routes(self) -> Iterator[UrlRule]:
         project = middleware.ProjectMiddlwareEntity(self.db_engine)
