@@ -1,4 +1,14 @@
 import tyko.database
+import tyko.schema.collection
+import tyko.schema.contacts
+import tyko.schema.formats
+import tyko.schema.instantiation
+import tyko.schema.items
+import tyko.schema.notes
+import tyko.schema.objects
+import tyko.schema.projects
+import tyko.schema.treatment
+import tyko.schema.vendor
 from tyko import schema
 from datetime import date
 
@@ -62,7 +72,7 @@ def dummy_database():
 
 @given("a contact for a collection")
 def collection_contact():
-    new_contact = schema.Contact(
+    new_contact = tyko.schema.contacts.Contact(
         first_name=CONTACT_COLLECTION_FIRST_NAME,
         last_name=CONTACT_COLLECTION_LAST_NAME,
         email_address=CONTACT_COLLECTION_EMAIL
@@ -78,7 +88,7 @@ def add_contact(dummy_database, collection_contact):
 
 @then("the collection contact can be found in the database")
 def find_collection_contact(dummy_database):
-    staff_in_database = dummy_database.query(schema.Contact).all()
+    staff_in_database = dummy_database.query(tyko.schema.contacts.Contact).all()
 
     assert staff_in_database[0].first_name == CONTACT_COLLECTION_FIRST_NAME
     assert staff_in_database[0].last_name == CONTACT_COLLECTION_LAST_NAME
@@ -100,13 +110,13 @@ def new_collection(dummy_database, new_collection):
 @then("the new collection can be found in the database")
 def find_collection(dummy_database):
     # Check newly added record in collection
-    collections = dummy_database.query(schema.Collection).all()
+    collections = dummy_database.query(tyko.schema.collection.Collection).all()
     assert len(collections) == 1
 
 
 @then("the contact to the collection is expected value")
 def expected_collection_contact(dummy_database):
-    collection = dummy_database.query(schema.Collection).first()
+    collection = dummy_database.query(tyko.schema.collection.Collection).first()
     contact = collection.contact
     assert contact.first_name == CONTACT_COLLECTION_FIRST_NAME
     assert contact.last_name == CONTACT_COLLECTION_LAST_NAME
@@ -128,8 +138,8 @@ def new_collection(dummy_database, collection_contact):
     dummy_database.add(collection_contact)
     dummy_database.commit()
 
-    contact = dummy_database.query(schema.Contact).first()
-    new_collection = schema.Collection(
+    contact = dummy_database.query(tyko.schema.contacts.Contact).first()
+    new_collection = tyko.schema.collection.Collection(
         record_series=SAMPLE_RECORD_SERIES,
         collection_name=SAMPLE_COLLECTION_NAME,
         department=SAMPLE_DEPARTMENT,
@@ -156,7 +166,7 @@ def add_new_object(dummy_database, create_new_object):
 @given(parsers.parse("a new object for the collection with a barcode"))
 def create_new_object(dummy_database, new_collection, new_project):
 
-    new_object = schema.CollectionObject(
+    new_object = tyko.schema.objects.CollectionObject(
         name=SAMPLE_OBJECT_NAME,
         collection=new_collection,
         project=new_project,
@@ -170,11 +180,11 @@ def create_new_object(dummy_database, new_collection, new_project):
 @given("a new Project")
 def new_project(dummy_database):
 
-    return schema.Project(
+    return tyko.schema.projects.Project(
         project_code=SAMPLE_PROJECT_CODE,
         title=SAMPLE_PROJECT_TITLE,
         current_location=SAMPLE_LOCATION,
-        status=schema.ProjectStatus(name=SAMPLE_PROJECT_STATUS),
+        status=tyko.schema.projects.ProjectStatus(name=SAMPLE_PROJECT_STATUS),
         specs=SAMPLE_PROJECT_SPECS
     )
 
@@ -189,7 +199,8 @@ def add_new_project(dummy_database, new_project):
 @then("the collection contains the new project")
 def collection_has_project(dummy_database):
 
-    new_added_project = dummy_database.query(schema.Project).first()
+    new_added_project = dummy_database.query(
+        tyko.schema.projects.Project).first()
 
     assert new_added_project.project_code == SAMPLE_PROJECT_CODE
     assert new_added_project.title == SAMPLE_PROJECT_TITLE
@@ -200,7 +211,7 @@ def collection_has_project(dummy_database):
 @given(parsers.parse(
     "a staff contact named {staff_first_name} {staff_last_name}"))
 def staff_contact(dummy_database, staff_first_name, staff_last_name):
-    new_contact = schema.Contact(
+    new_contact = tyko.schema.contacts.Contact(
         first_name=staff_first_name,
         last_name=staff_last_name,
         email_address=SAMPLE_STAFF_CONTACT_EMAIL
@@ -224,13 +235,13 @@ def test_newitem():
 def new_item(dummy_database, new_collection, new_project, staff_contact,
              create_new_object, media_format_name):
 
-    all_media_formats = dummy_database.query(schema.FormatTypes)
+    all_media_formats = dummy_database.query(tyko.schema.formats.FormatTypes)
 
     format_type = all_media_formats.filter(
-        schema.FormatTypes.name == media_format_name
+        tyko.schema.formats.FormatTypes.name == media_format_name
     ).one()
 
-    collection_item = schema.CollectionItem(
+    collection_item = tyko.schema.items.CollectionItem(
         name=SAMPLE_ITEM_NAME,
         # file_name=SAMPLE_FILE,
         medusa_uuid=SAMPLE_MEDUSA_ID,
@@ -240,7 +251,7 @@ def new_item(dummy_database, new_collection, new_project, staff_contact,
 
     )
     collection_item.files.append(
-        schema.InstantiationFile(file_name=SAMPLE_FILE)
+        tyko.schema.instantiation.InstantiationFile(file_name=SAMPLE_FILE)
     )
 
     return collection_item
@@ -255,7 +266,8 @@ def add_item(dummy_database, new_item):
 
 @then("the new object record contains the correct barcode")
 def object_has_correct_barcode(dummy_database):
-    new_added_object = dummy_database.query(schema.CollectionObject).first()
+    new_added_object = dummy_database.query(
+        tyko.schema.objects.CollectionObject).first()
     assert new_added_object.barcode == SAMPLE_BAR_CODE
 
 
@@ -267,12 +279,12 @@ def test_database_note():
 @given(parsers.parse("a new {note_type} note is created"))
 def new_note(dummy_database, note_type):
     inspection_note = \
-        dummy_database.query(schema.NoteTypes).filter(
-            schema.NoteTypes.name == note_type).one()
+        dummy_database.query(tyko.schema.notes.NoteTypes).filter(
+            tyko.schema.notes.NoteTypes.name == note_type).one()
 
     assert inspection_note.name == note_type
 
-    return schema.Note(
+    return tyko.schema.notes.Note(
         text=SAMPLE_INSPECTION_NOTE,
         note_type=inspection_note
 
@@ -324,7 +336,7 @@ def treatment_add_to_item(dummy_database, new_item, treatment_record):
 @given(parsers.parse('a new treatment record is created that '
                      'needs "{needs}" and got "{given}"'))
 def treatment_record(needs, given):
-    return schema.Treatment(
+    return tyko.schema.treatment.Treatment(
         needed=needs,
         given=given,
         date=SAMPLE_DATE
@@ -335,7 +347,8 @@ def treatment_record(needs, given):
 @then(parsers.parse('the treatment record of the item states that it '
                     'needs "{needs}" and got "{given}"'))
 def treatment_record_reads(dummy_database, needs, given):
-    collection_item = dummy_database.query(schema.CollectionItem).first()
+    collection_item = dummy_database.query(
+        tyko.schema.items.CollectionItem).first()
 
     assert len(collection_item.treatment) == 1, \
         "Can only test if there is a single treatement record"
@@ -355,15 +368,15 @@ def test_new_media_project():
 def add_new_item_to_object(dummy_database, create_new_object, media_type,
                            file_name):
 
-    media_type_info = schema.format_types.get(media_type)
+    media_type_info = tyko.schema.formats.format_types.get(media_type)
     assert media_type_info is not None, "No table for {}".format(media_type)
 
-    all_format_types = dummy_database.query(schema.FormatTypes)
+    all_format_types = dummy_database.query(tyko.schema.formats.FormatTypes)
     format_type = all_format_types.filter(
-        schema.FormatTypes.name == media_type
+        tyko.schema.formats.FormatTypes.name == media_type
     ).one()
 
-    new_item = schema.CollectionItem(
+    new_item = tyko.schema.items.CollectionItem(
         name=SAMPLE_ITEM_NAME,
         # file_name=file_name,
         medusa_uuid=SAMPLE_MEDUSA_ID,
@@ -372,7 +385,7 @@ def add_new_item_to_object(dummy_database, create_new_object, media_type,
 
     )
     new_item.files.append(
-        schema.InstantiationFile(file_name=file_name)
+        tyko.schema.instantiation.InstantiationFile(file_name=file_name)
     )
 
     media_table_type = media_type_info[1](item=new_item)
@@ -386,17 +399,20 @@ def add_new_item_to_object(dummy_database, create_new_object, media_type,
        "corresponding <media_type> record with the same item id")
 def has_a_record_with_media_item(dummy_database, file_name, media_type):
 
-    item_file = dummy_database.query(schema.InstantiationFile)\
-        .join(schema.CollectionItem)\
-        .filter(schema.InstantiationFile.file_name == file_name).one()
+    item_file = dummy_database.query(
+        tyko.schema.instantiation.InstantiationFile)\
+        .join(tyko.schema.items.CollectionItem)\
+        .filter(
+        tyko.schema.instantiation.InstantiationFile.file_name == file_name).one()
     assert item_file.file_name == file_name
 
-    media_types = dummy_database.query(schema.FormatTypes)
+    media_types = dummy_database.query(tyko.schema.formats.FormatTypes)
 
-    collection_item = dummy_database.query(schema.CollectionItem) \
-        .join(schema.InstantiationFile) \
-        .filter(schema.InstantiationFile.file_name == file_name).one()
-    media_format = media_types.filter(schema.FormatTypes.id ==
+    collection_item = dummy_database.query(tyko.schema.items.CollectionItem) \
+        .join(tyko.schema.instantiation.InstantiationFile) \
+        .filter(
+        tyko.schema.instantiation.InstantiationFile.file_name == file_name).one()
+    media_format = media_types.filter(tyko.schema.formats.FormatTypes.id ==
                                       collection_item.format_type_id).one()
 
     assert media_format.name == media_type
@@ -412,21 +428,21 @@ def test_new_open_reel_project():
 def new_open_reel(dummy_database, create_new_object, date_recorded,
                   tape_size, base, file_name):
 
-    new_item = schema.CollectionItem(
+    new_item = tyko.schema.items.CollectionItem(
         name=SAMPLE_ITEM_NAME,
     )
     new_item.files.append(
-        schema.InstantiationFile(file_name=file_name)
+        tyko.schema.instantiation.InstantiationFile(file_name=file_name)
     )
 
-    open_reel = schema.OpenReel(
+    open_reel = tyko.schema.formats.OpenReel(
         item=new_item,
         date_recorded=SAMPLE_DATE,
         tape_size=tape_size,
         base=base
 
     )
-    new_file_instance = schema.InstantiationFile(file_name=file_name)
+    new_file_instance = tyko.schema.instantiation.InstantiationFile(file_name=file_name)
     new_item.files.append(new_file_instance)
     create_new_object.items.append(new_item)
     dummy_database.add(open_reel)
@@ -436,7 +452,7 @@ def new_open_reel(dummy_database, create_new_object, date_recorded,
 
 @then("the database has item record with the <file_name>")
 def database_has_item_record_w_filename(dummy_database, file_name):
-    collection_items = dummy_database.query(schema.CollectionItem)
+    collection_items = dummy_database.query(tyko.schema.items.CollectionItem)
     for collection_item in collection_items:
         for file_instance in collection_item.files:
             if file_instance.file_name == file_name:
@@ -447,18 +463,18 @@ def database_has_item_record_w_filename(dummy_database, file_name):
 
 @then("the database has open reel record with a <tape_size> sized tape")
 def check_open_reel_tape_size(dummy_database, tape_size):
-    open_reel_items = dummy_database.query(schema.OpenReel)
+    open_reel_items = dummy_database.query(tyko.schema.formats.OpenReel)
     open_reel_item = open_reel_items.filter(
-        schema.OpenReel.tape_size == tape_size).one()
+        tyko.schema.formats.OpenReel.tape_size == tape_size).one()
 
     assert open_reel_item.tape_size == tape_size
 
 
 @then("the database has open reel record with a <base> base")
 def check_open_reel_base(dummy_database, base):
-    open_reel_items = dummy_database.query(schema.OpenReel)
+    open_reel_items = dummy_database.query(tyko.schema.formats.OpenReel)
     open_reel_item = open_reel_items.filter(
-        schema.OpenReel.base == base).one()
+        tyko.schema.formats.OpenReel.base == base).one()
 
     assert open_reel_item.base == base
 
@@ -476,7 +492,7 @@ def empty_database(dummy_database):
 @when("a new vendor named <vendor_name> from <address> in <city>, <state> "
       "<zipcode> is added")
 def add_vendor(empty_database, vendor_name, address, city, state, zipcode):
-    new_vendor = schema.Vendor(
+    new_vendor = tyko.schema.vendor.Vendor(
         name=vendor_name,
         address=address,
         city=city,
@@ -489,36 +505,36 @@ def add_vendor(empty_database, vendor_name, address, city, state, zipcode):
 
 @then("the newly created vendor has the name <vendor_name>")
 def vendor_has_name(dummy_database, vendor_name):
-    vendors = dummy_database.query(schema.Vendor)
-    vendor = vendors.filter(schema.Vendor.name == vendor_name).one()
+    vendors = dummy_database.query(tyko.schema.vendor.Vendor)
+    vendor = vendors.filter(tyko.schema.vendor.Vendor.name == vendor_name).one()
     assert vendor.name == vendor_name
 
 
 @then("the newly created vendor has the address <address>")
 def vendor_has_address(dummy_database, address):
-    vendors = dummy_database.query(schema.Vendor)
-    vendor = vendors.filter(schema.Vendor.address == address).one()
+    vendors = dummy_database.query(tyko.schema.vendor.Vendor)
+    vendor = vendors.filter(tyko.schema.vendor.Vendor.address == address).one()
     assert vendor.address == address
 
 
 @then("the newly created vendor is located in <city> city")
 def vendor_is_in_city(dummy_database, city):
-    vendors = dummy_database.query(schema.Vendor)
-    vendor = vendors.filter(schema.Vendor.city == city).one()
+    vendors = dummy_database.query(tyko.schema.vendor.Vendor)
+    vendor = vendors.filter(tyko.schema.vendor.Vendor.city == city).one()
     assert vendor.city == city
 
 
 @then("the newly created vendor is located in <state> state")
 def vendor_is_in_city(dummy_database, state):
-    vendors = dummy_database.query(schema.Vendor)
-    vendor = vendors.filter(schema.Vendor.state == state).one()
+    vendors = dummy_database.query(tyko.schema.vendor.Vendor)
+    vendor = vendors.filter(tyko.schema.vendor.Vendor.state == state).one()
     assert vendor.state == state
 
 
 @then("the newly created vendor is has a <zipcode> zipcode")
 def vendor_is_in_city(dummy_database, zipcode):
-    vendors = dummy_database.query(schema.Vendor)
-    vendor = vendors.filter(schema.Vendor.zipcode == zipcode).one()
+    vendors = dummy_database.query(tyko.schema.vendor.Vendor)
+    vendor = vendors.filter(tyko.schema.vendor.Vendor.zipcode == zipcode).one()
     assert vendor.zipcode == zipcode
 
 
@@ -531,10 +547,10 @@ def test_vendor_contact():
       "vendor named <vendor_name>")
 def contact_to_vendor(dummy_database, contact_first_name, contact_last_name,
                       vendor_name):
-    vendors = dummy_database.query(schema.Vendor)
-    vendor = vendors.filter(schema.Vendor.name == vendor_name).one()
+    vendors = dummy_database.query(tyko.schema.vendor.Vendor)
+    vendor = vendors.filter(tyko.schema.vendor.Vendor.name == vendor_name).one()
 
-    contact = schema.Contact(
+    contact = tyko.schema.contacts.Contact(
         first_name=contact_first_name,
         last_name=contact_last_name,
         )
@@ -547,8 +563,8 @@ def contact_to_vendor(dummy_database, contact_first_name, contact_last_name,
 def vendor_has_contact(dummy_database, vendor_name, contact_first_name,
                        contact_last_name):
 
-    vendors = dummy_database.query(schema.Vendor)
-    vendor = vendors.filter(schema.Vendor.name == vendor_name).one()
+    vendors = dummy_database.query(tyko.schema.vendor.Vendor)
+    vendor = vendors.filter(tyko.schema.vendor.Vendor.name == vendor_name).one()
 
     for contact in vendor.contacts:
         print(contact)
@@ -568,10 +584,10 @@ def test_vendor_gets_object():
 
 @when("the object is sent to the vendor <vendor_name>")
 def vendor_gets_object(dummy_database, create_new_object, vendor_name):
-    vendors = dummy_database.query(schema.Vendor)
-    vendor = vendors.filter(schema.Vendor.name == vendor_name).one()
+    vendors = dummy_database.query(tyko.schema.vendor.Vendor)
+    vendor = vendors.filter(tyko.schema.vendor.Vendor.name == vendor_name).one()
 
-    vendor_transfer = schema.VendorTransfer(
+    vendor_transfer = tyko.schema.vendor.VendorTransfer(
         vendor=vendor,
         vendor_deliverables_rec_date=SAMPLE_DATE,
         returned_originals_rec_date=SAMPLE_DATE,
@@ -583,11 +599,12 @@ def vendor_gets_object(dummy_database, create_new_object, vendor_name):
 
 @then("there is a new transfer for the new object sent to <vendor_name>")
 def new_transfer_for_vendor(dummy_database, vendor_name, create_new_object):
-    vendors = dummy_database.query(schema.Vendor)
-    vendor = vendors.filter(schema.Vendor.name == vendor_name).one()
+    vendors = dummy_database.query(tyko.schema.vendor.Vendor)
+    vendor = vendors.filter(tyko.schema.vendor.Vendor.name == vendor_name).one()
 
-    transfers = dummy_database.query(schema.VendorTransfer)
-    transfer = transfers.filter(schema.VendorTransfer.vendor == vendor).one()
+    transfers = dummy_database.query(tyko.schema.vendor.VendorTransfer)
+    transfer = transfers.filter(
+        tyko.schema.vendor.VendorTransfer.vendor == vendor).one()
 
     for transfer_object in transfer.transfer_objects:
 
@@ -651,10 +668,10 @@ def media_type_can_be_serialize(dummy_database, media_type):
 
 @given("a new GroovedDisc item is created")
 def new_grooved_disc(dummy_database):
-    new_disc_item = schema.CollectionItem(name="side A")
+    new_disc_item = tyko.schema.items.CollectionItem(name="side A")
     dummy_database.add(new_disc_item)
     dummy_database.commit()
-    new_disc = schema.GroovedDisc(item_id=new_disc_item.id, side="A")
+    new_disc = tyko.schema.formats.GroovedDisc(item_id=new_disc_item.id, side="A")
     dummy_database.add(new_disc)
     dummy_database.commit()
 
@@ -666,10 +683,10 @@ def test_database_film():
 
 @given("a new Film item is created")
 def new_film(dummy_database):
-    new_film_item = schema.CollectionItem(name="reel 1")
+    new_film_item = tyko.schema.items.CollectionItem(name="reel 1")
     dummy_database.add(new_film_item)
     dummy_database.commit()
-    new_film = schema.Film(item_id=new_film_item.id, sound="optical")
+    new_film = tyko.schema.formats.Film(item_id=new_film_item.id, sound="optical")
     dummy_database.add(new_film)
     dummy_database.commit()
 
@@ -681,10 +698,10 @@ def test_database_open_reel():
 
 @given("a new OpenReel item is created")
 def new_open_reel(dummy_database):
-    new_open_reel_item = schema.CollectionItem(name="reel 1")
+    new_open_reel_item = tyko.schema.items.CollectionItem(name="reel 1")
     dummy_database.add(new_open_reel_item)
     dummy_database.commit()
-    new_reel = schema.OpenReel(item_id=new_open_reel_item.id, track_count="2")
+    new_reel = tyko.schema.formats.OpenReel(item_id=new_open_reel_item.id, track_count="2")
     dummy_database.add(new_reel)
     dummy_database.commit()
 
@@ -698,28 +715,30 @@ def test_file_note():
 def new_media_with_file_note(dummy_database, create_new_object, media_type,
                              file_name, note,
                              annotation_type, annotation_content):
-    media_type_info = schema.format_types.get(media_type)
+    media_type_info = tyko.schema.formats.format_types.get(media_type)
     assert media_type_info is not None, "No table for {}".format(media_type)
 
-    all_format_types = dummy_database.query(schema.FormatTypes)
+    all_format_types = dummy_database.query(tyko.schema.formats.FormatTypes)
     format_type = all_format_types.filter(
-        schema.FormatTypes.name == media_type
+        tyko.schema.formats.FormatTypes.name == media_type
     ).one()
 
-    new_item = schema.CollectionItem(
+    new_item = tyko.schema.items.CollectionItem(
         name=SAMPLE_ITEM_NAME,
         medusa_uuid=SAMPLE_MEDUSA_ID,
         obj_sequence=SAMPLE_OBJ_SEQUENCE,
         format_type=format_type
 
     )
-    new_file = schema.InstantiationFile(file_name=file_name)
-    new_file.notes.append(schema.FileNotes(message=note))
-    annotation_type_enum = dummy_database.query(schema.FileAnnotationType)\
-        .filter(schema.FileAnnotationType.name == annotation_type).one()
+    new_file = tyko.schema.instantiation.InstantiationFile(file_name=file_name)
+    new_file.notes.append(tyko.schema.instantiation.FileNotes(message=note))
+    annotation_type_enum = dummy_database.query(
+        tyko.schema.instantiation.FileAnnotationType)\
+        .filter(
+        tyko.schema.instantiation.FileAnnotationType.name == annotation_type).one()
 
     new_file.annotations.append(
-        schema.FileAnnotation(
+        tyko.schema.instantiation.FileAnnotation(
             annotation_type=annotation_type_enum,
             annotation_content=annotation_content
         )
@@ -738,8 +757,9 @@ def new_media_with_file_note(dummy_database, create_new_object, media_type,
       "that reads <note>")
 def file_with_note(dummy_database, file_name, note):
     files = \
-        dummy_database.query(schema.InstantiationFile)\
-            .filter(schema.InstantiationFile.file_name == file_name)
+        dummy_database.query(tyko.schema.instantiation.InstantiationFile)\
+            .filter(
+            tyko.schema.instantiation.InstantiationFile.file_name == file_name)
     for file in files:
         if file.file_name == file_name:
             assert file.notes[0].message == note
@@ -753,8 +773,9 @@ def file_with_note(dummy_database, file_name, annotation_type,
                    annotation_content):
 
     files = \
-        dummy_database.query(schema.InstantiationFile)\
-            .filter(schema.InstantiationFile.file_name == file_name)
+        dummy_database.query(tyko.schema.instantiation.InstantiationFile)\
+            .filter(
+            tyko.schema.instantiation.InstantiationFile.file_name == file_name)
     for file in files:
         if file.file_name == file_name:
             assert file.annotations[0].annotation_type.name == annotation_type
@@ -765,5 +786,6 @@ def file_with_note(dummy_database, file_name, annotation_type,
 
 @given("annotations for <annotation_type> configured in the database")
 def add_file_annotation_type(dummy_database, annotation_type):
-    dummy_database.add(schema.FileAnnotationType(name=annotation_type))
+    dummy_database.add(
+        tyko.schema.instantiation.FileAnnotationType(name=annotation_type))
     return dummy_database

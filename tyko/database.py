@@ -4,6 +4,10 @@ from typing import Dict, Tuple, Any, Type
 import sqlalchemy as db
 from sqlalchemy.orm.session import sessionmaker
 
+import tyko.schema.avtables
+from .schema import formats
+from .schema import notes
+from .schema import projects
 from tyko import schema
 
 
@@ -11,32 +15,32 @@ def init_database(engine) -> None:
     # if engine.dialect.has_table(engine, "audio_video"):
     #     return
     print("Creating all tables")
-    schema.AVTables.metadata.create_all(bind=engine)
+    tyko.schema.avtables.AVTables.metadata.create_all(bind=engine)
     initial_session = sessionmaker(bind=engine)
     session = initial_session()
     if not engine.dialect.has_table(engine, "alembic_version"):
         version_table = db.Table(
-            "alembic_version", schema.AVTables.metadata,
+            "alembic_version", tyko.schema.avtables.AVTables.metadata,
             db.Column("version_num", db.String(length=32), primary_key=True)
         )
-        schema.AVTables.metadata.create_all(bind=engine)
+        tyko.schema.avtables.AVTables.metadata.create_all(bind=engine)
         set_version_sql = \
             version_table.insert().values(version_num=schema.ALEMBIC_VERSION)  # noqa: E501 pylint: disable=E1120
         session.execute(set_version_sql)
 
     session.commit()
 
-    for i in session.query(schema.NoteTypes):
+    for i in session.query(notes.NoteTypes):
         session.delete(i)
     _populate_note_type_table(session)
 
-    for i in session.query(schema.FormatTypes):
+    for i in session.query(formats.FormatTypes):
         session.delete(i)
 
     _populate_format_types_table(session)
 
     _populate_starting_project_status(
-        session, project_status_table=schema.ProjectStatus)
+        session, project_status_table=projects.ProjectStatus)
 
     session.commit()
     session.close()
@@ -50,16 +54,16 @@ def init_database(engine) -> None:
 
 def _populate_note_type_table(session):
     print("Populating NoteTypes Table")
-    for note_type, note_metadata in schema.note_types.items():
+    for note_type, note_metadata in notes.note_types.items():
         note_id = note_metadata[0]
 
-        new_note_type = schema.NoteTypes(name=note_type, id=note_id)
+        new_note_type = notes.NoteTypes(name=note_type, id=note_id)
         session.add(new_note_type)
 
 
 def _populate_starting_project_status(
         session,
-        project_status_table: Type[schema.ProjectStatus]) -> None:
+        project_status_table: Type[projects.ProjectStatus]) -> None:
 
     print("Populating {} Table".format(project_status_table.__tablename__))
     statuses = ['In progress', "Complete", "No work done"]
@@ -70,10 +74,11 @@ def _populate_starting_project_status(
 
 def _populate_format_types_table(session):
     print("Populating project_status_type Table")
-    for format_type, format_metadata in schema.format_types.items():
+    for format_type, format_metadata in formats.format_types.items():
         format_id = format_metadata[0]
 
-        new_format_type = schema.FormatTypes(name=format_type, id=format_id)
+        new_format_type = formats.FormatTypes(name=format_type,
+                                              id=format_id)
         session.add(new_format_type)
 
 
@@ -82,12 +87,13 @@ def validate_enumerated_tables(engine):
     valid = True
 
     if not validate_enumerate_table_data(
-            engine, schema.FormatTypes, schema.format_types):
+            engine, formats.FormatTypes,
+            formats.format_types):
 
         valid = False
 
     if not validate_enumerate_table_data(
-            engine, schema.NoteTypes, schema.note_types):
+            engine, notes.NoteTypes, notes.note_types):
 
         valid = False
 
@@ -96,7 +102,8 @@ def validate_enumerated_tables(engine):
 
 
 def validate_enumerate_table_data(engine,
-                                  sql_table_type: Type[schema.AVTables],
+                                  sql_table_type: Type[
+                                      tyko.schema.avtables.AVTables],
                                   expected_table: Dict[str, Tuple[int, Any]]
                                   ) -> bool:
 
@@ -125,7 +132,7 @@ def validate_enumerate_table_data(engine,
 def validate_tables(engine):
 
     expected_table_names = []
-    for k in schema.AVTables.metadata.tables.keys():
+    for k in tyko.schema.avtables.AVTables.metadata.tables.keys():
         expected_table_names.append(k)
 
     valid = True
