@@ -1,4 +1,4 @@
-function create_fail_response(xhr) {
+function createFailResponse(xhr) {
   return {
     status: xhr.status,
     statusText: xhr.statusText,
@@ -6,11 +6,11 @@ function create_fail_response(xhr) {
   };
 }
 
-function handle_results(xhr, resolve, reject) {
+function handleResults(xhr, resolve, reject) {
   if (xhr.status >= 200 && xhr.status < 300) {
     resolve(xhr.response);
   } else {
-    reject(create_fail_response(xhr));
+    reject(createFailResponse(xhr));
   }
 }
 
@@ -24,7 +24,7 @@ export const requests = {
         if (xhr.readyState !== 4) {
           return;
         }
-        handle_results(xhr, resolve, reject);
+        handleResults(xhr, resolve, reject);
       };
       xhr.open('get', apiPath, true);
       xhr.send();
@@ -38,7 +38,7 @@ export const requests = {
         if (xhr.readyState !== 4) {
           return;
         }
-        handle_results(xhr, resolve, reject);
+        handleResults(xhr, resolve, reject);
       };
       xhr.open('POST', apiPath, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
@@ -53,7 +53,7 @@ export const requests = {
         if (xhr.readyState !== 4) {
           return;
         }
-        handle_results(xhr, resolve, reject);
+        handleResults(xhr, resolve, reject);
       };
       xhr.open('PUT', apiPath, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
@@ -73,7 +73,7 @@ export const requests = {
         if (xhr.status >= 200 && xhr.status < 300) {
           resolve(xhr.response);
         } else {
-          reject(create_fail_response(xhr));
+          reject(createFailResponse(xhr));
         }
       };
       xhr.open('DELETE', apiPath, true);

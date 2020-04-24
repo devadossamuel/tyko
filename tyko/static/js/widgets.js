@@ -260,28 +260,28 @@ class SelectDateWidget extends WidgetEditState {
     element.innerHTML = '';
     const rootId = `editArea${data['fieldName']}`;
     const newRoot = this.newRoot(rootId);
-    const new_date_picker = this._new_date_picker(data['fieldText']);
+    const newDatePicker = this._newDatePicker(data['fieldText']);
 
-    newRoot.appendChild(new_date_picker);
+    newRoot.appendChild(newDatePicker);
 
     const confirmButtonID = `${data['fieldName']}ConfirmButton`;
     newRoot.appendChild(
-        this.newConfirmationButton(confirmButtonID, new_date_picker));
-    const validator = this.validate_input;
-    new_date_picker.onchange = function(e) {
+        this.newConfirmationButton(confirmButtonID, newDatePicker));
+    const validator = this.validateInput;
+    newDatePicker.onchange = function(e) {
       console.log('Changed ' + e);
-      validator(confirmButtonID, new_date_picker.value);
+      validator(confirmButtonID, newDatePicker.value);
     };
-    new_date_picker.addEventListener('input', function() {
-      validator(confirmButtonID, new_date_picker.value);
+    newDatePicker.addEventListener('input', function() {
+      validator(confirmButtonID, newDatePicker.value);
     });
 
     element.appendChild(newRoot);
     this.setupEventListeners(element.id);
-    this.validate_input(confirmButtonID, new_date_picker.value);
+    this.validateInput(confirmButtonID, newDatePicker.value);
   }
 
-  validate_input(confirmButtonID, value) {
+  validateInput(confirmButtonID, value) {
     const re = new RegExp('^([0-9]{4})-([0-9]{2})-([0-9]{2})$');
     const confirmButton = document.getElementById(confirmButtonID);
     if (!confirmButton) {
@@ -296,7 +296,7 @@ class SelectDateWidget extends WidgetEditState {
     }
   }
 
-  _new_date_picker(value) {
+  _newDatePicker(value) {
 
     const datePicker = document.createElement('input');
     datePicker.setAttribute('class', 'form-control');
