@@ -58,7 +58,6 @@ export const requests = {
       xhr.open('PUT', apiPath, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.send(JSON.stringify(data));
-
     }));
   },
   'delete': (apiPath) => {

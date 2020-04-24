@@ -43,6 +43,7 @@ class absMetadataWidget {
   }
 }
 
+
 class WidgetState {
   draw(element, data) {
     throw new Error('You have to implement the draw method!');
@@ -81,6 +82,7 @@ class WidgetState {
     return newColumnSection;
   }
 }
+
 
 class WidgetEditState extends WidgetState {
   constructor(parentClass) {
@@ -178,6 +180,7 @@ class WidgetEditState extends WidgetState {
   }
 }
 
+
 class ViewWidget extends WidgetState {
   constructor(parentClass) {
     super(parentClass);
@@ -255,6 +258,7 @@ class NumberPickerWidget extends WidgetEditState {
   }
 }
 
+
 class SelectDateWidget extends WidgetEditState {
   draw(element, data) {
     element.innerHTML = '';
@@ -312,6 +316,7 @@ class SelectDateWidget extends WidgetEditState {
   }
 }
 
+
 class SelectEditWidget extends WidgetEditState {
   constructor(parentClass) {
     super(parentClass);
@@ -361,6 +366,7 @@ class SelectEditWidget extends WidgetEditState {
   }
 }
 
+
 class TextEditWidget extends WidgetEditState {
 
   constructor(parentClass) {
@@ -390,6 +396,7 @@ class TextEditWidget extends WidgetEditState {
   }
 }
 
+
 class DatePickerPartFactory {
   constructor(type, rootElement) {
 
@@ -403,6 +410,7 @@ class DatePickerPartFactory {
     }
   }
 }
+
 
 class SelectEditorPartFactory {
   constructor(type, rootElement) {
@@ -425,6 +433,7 @@ class SelectEditorPartFactory {
   }
 }
 
+
 class TextEditorPartFactory {
   constructor(type, rootElement) {
 
@@ -444,6 +453,7 @@ class TextEditorPartFactory {
     }
   }
 }
+
 
 class builder {
   constructor(rootElement, fieldName, displayText) {
@@ -479,6 +489,7 @@ class builder {
   }
 }
 
+
 class textEditorBuilder extends builder {
 
   getEditMode(baseWidget) {
@@ -497,6 +508,7 @@ class textEditorBuilder extends builder {
     return 'textEditor';
   }
 }
+
 
 class selectionEditorBuilder extends builder {
 
@@ -550,7 +562,6 @@ class NumberPickerBuilder extends builder {
   getWidgetTypeName() {
     return 'numberPicker';
   }
-
 }
 
 class Factory {
