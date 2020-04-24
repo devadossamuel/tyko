@@ -6,7 +6,10 @@ function createFailResponse(xhr) {
   };
 }
 
-function handleResults(xhr, resolve, reject) {
+function handleOnreadystatechange(xhr, resolve, reject) {
+  if (xhr.readyState !== 4) {
+    return;
+  }
   if (xhr.status >= 200 && xhr.status < 300) {
     resolve(xhr.response);
   } else {
@@ -20,12 +23,10 @@ export const requests = {
     xhr.withCredentials = false;
 
     return new Promise(((resolve, reject) => {
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState !== 4) {
-          return;
-        }
-        handleResults(xhr, resolve, reject);
+      xhr.onreadystatechange = () => {
+        handleOnreadystatechange(xhr, resolve, reject);
       };
+
       xhr.open('get', apiPath, true);
       xhr.send();
     }));
@@ -34,12 +35,10 @@ export const requests = {
     const xhr = new XMLHttpRequest();
     xhr.withCredentials = false;
     return new Promise(((resolve, reject) => {
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState !== 4) {
-          return;
-        }
-        handleResults(xhr, resolve, reject);
+      xhr.onreadystatechange = () => {
+        handleOnreadystatechange(xhr, resolve, reject);
       };
+
       xhr.open('POST', apiPath, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.send(JSON.stringify(data));
@@ -49,12 +48,10 @@ export const requests = {
     const xhr = new XMLHttpRequest();
     xhr.withCredentials = false;
     return new Promise(((resolve, reject) => {
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState !== 4) {
-          return;
-        }
-        handleResults(xhr, resolve, reject);
+      xhr.onreadystatechange = () => {
+        handleOnreadystatechange(xhr, resolve, reject);
       };
+
       xhr.open('PUT', apiPath, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.send(JSON.stringify(data));
