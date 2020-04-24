@@ -1,4 +1,4 @@
-const sample_notes_data = `
+const sampleNotesData = `
 {
   "notes": [
     {
@@ -18,7 +18,7 @@ const sample_notes_data = `
 export const requests = {
   'get': (apiPath) => {
     return new Promise(((resolve, reject) => {
-      resolve(sample_notes_data);
+      resolve(sampleNotesData);
     }));
   },
   'post': (apiPath, data) => {

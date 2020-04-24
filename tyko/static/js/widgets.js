@@ -1,4 +1,4 @@
-class absMetadataWidget {
+class AbsMetadataWidget {
   constructor(element, fieldName, fieldText) {
     this.element = element;
 
@@ -43,6 +43,7 @@ class absMetadataWidget {
   }
 }
 
+
 class WidgetState {
   draw(element, data) {
     throw new Error('You have to implement the draw method!');
@@ -81,6 +82,7 @@ class WidgetState {
     return newColumnSection;
   }
 }
+
 
 class WidgetEditState extends WidgetState {
   constructor(parentClass) {
@@ -146,7 +148,7 @@ class WidgetEditState extends WidgetState {
   }
 
   newConfirmationButton(confirmButtonId, inputElement) {
-    let confirmationButtons = this.confirmChangesGroup();
+    const confirmationButtons = this.confirmChangesGroup();
 
     const parent = this._parent;
 
@@ -178,6 +180,7 @@ class WidgetEditState extends WidgetState {
   }
 }
 
+
 class ViewWidget extends WidgetState {
   constructor(parentClass) {
     super(parentClass);
@@ -195,7 +198,7 @@ class ViewWidget extends WidgetState {
 
   draw(element, data) {
     element.innerHTML = '';
-    let newRoot = this.newRoot();
+    const newRoot = this.newRoot();
     const newContent = this.newColumn('content', 'align-self-stretch');
     newContent.innerText = data['fieldText'];
     newRoot.appendChild(newContent);
@@ -214,7 +217,7 @@ class ViewWidget extends WidgetState {
     newButton.setAttribute('id', this._parent.editButtonId);
 
     newButton.innerHTML = 'Edit';
-    let self = this._parent;
+    const self = this._parent;
     newButton.onclick = function() {
       self.swap();
     };
@@ -255,35 +258,36 @@ class NumberPickerWidget extends WidgetEditState {
   }
 }
 
+
 class SelectDateWidget extends WidgetEditState {
   draw(element, data) {
     element.innerHTML = '';
     const rootId = `editArea${data['fieldName']}`;
-    let newRoot = this.newRoot(rootId);
-    let new_date_picker = this._new_date_picker(data['fieldText']);
+    const newRoot = this.newRoot(rootId);
+    const newDatePicker = this._newDatePicker(data['fieldText']);
 
-    newRoot.appendChild(new_date_picker);
+    newRoot.appendChild(newDatePicker);
 
     const confirmButtonID = `${data['fieldName']}ConfirmButton`;
     newRoot.appendChild(
-        this.newConfirmationButton(confirmButtonID, new_date_picker));
-    let validator = this.validate_input;
-    new_date_picker.onchange = function(e) {
+        this.newConfirmationButton(confirmButtonID, newDatePicker));
+    const validator = this.validateInput;
+    newDatePicker.onchange = function(e) {
       console.log('Changed ' + e);
-      validator(confirmButtonID, new_date_picker.value);
+      validator(confirmButtonID, newDatePicker.value);
     };
-    new_date_picker.addEventListener('input', function() {
-      validator(confirmButtonID, new_date_picker.value);
+    newDatePicker.addEventListener('input', function() {
+      validator(confirmButtonID, newDatePicker.value);
     });
 
     element.appendChild(newRoot);
     this.setupEventListeners(element.id);
-    this.validate_input(confirmButtonID, new_date_picker.value);
+    this.validateInput(confirmButtonID, newDatePicker.value);
   }
 
-  validate_input(confirmButtonID, value) {
+  validateInput(confirmButtonID, value) {
     const re = new RegExp('^([0-9]{4})-([0-9]{2})-([0-9]{2})$');
-    let confirmButton = document.getElementById(confirmButtonID);
+    const confirmButton = document.getElementById(confirmButtonID);
     if (!confirmButton) {
       return;
     }
@@ -296,8 +300,7 @@ class SelectDateWidget extends WidgetEditState {
     }
   }
 
-  _new_date_picker(value) {
-
+  _newDatePicker(value) {
     const datePicker = document.createElement('input');
     datePicker.setAttribute('class', 'form-control');
     datePicker.setAttribute('value', value);
@@ -312,6 +315,7 @@ class SelectDateWidget extends WidgetEditState {
   }
 }
 
+
 class SelectEditWidget extends WidgetEditState {
   constructor(parentClass) {
     super(parentClass);
@@ -325,7 +329,7 @@ class SelectEditWidget extends WidgetEditState {
   draw(element, data) {
     element.innerHTML = '';
     const rootId = `editArea${data['fieldName']}`;
-    let newRoot = this.newRoot(rootId);
+    const newRoot = this.newRoot(rootId);
     const inputId = `input${data['fieldName']}`;
     newRoot.appendChild(this.newInputLabel(inputId));
 
@@ -348,7 +352,7 @@ class SelectEditWidget extends WidgetEditState {
     const inputElement = document.createElement('select');
     inputElement.setAttribute('id', selectionId);
     inputElement.setAttribute('class', 'form-control');
-    options.forEach(option => {
+    options.forEach((option) => {
       const optionElement = document.createElement('option');
       optionElement.innerText = option.text;
       optionElement.setAttribute('value', option.value);
@@ -360,6 +364,7 @@ class SelectEditWidget extends WidgetEditState {
     return inputElement;
   }
 }
+
 
 class TextEditWidget extends WidgetEditState {
 
@@ -374,7 +379,7 @@ class TextEditWidget extends WidgetEditState {
   draw(element, data) {
     element.innerHTML = '';
     const rootId = `editArea${data['fieldName']}`;
-    let newRoot = this.newRoot(rootId);
+    const newRoot = this.newRoot(rootId);
 
     const inputId = `input${data['fieldName']}`;
     newRoot.appendChild(this.newInputLabel(inputId));
@@ -390,12 +395,13 @@ class TextEditWidget extends WidgetEditState {
   }
 }
 
+
 class DatePickerPartFactory {
   constructor(type, rootElement) {
 
     if (type === 'viewState') {
       return () => {
-        let viewWidget = new ViewWidget(rootElement);
+        const viewWidget = new ViewWidget(rootElement);
         viewWidget.editWidget = SelectDateWidget;
         rootElement._state = viewWidget;
         rootElement._state.draw(rootElement.element, rootElement._data);
@@ -404,12 +410,13 @@ class DatePickerPartFactory {
   }
 }
 
+
 class SelectEditorPartFactory {
   constructor(type, rootElement) {
 
     if (type === 'viewState') {
       return () => {
-        let viewWidget = new ViewWidget(rootElement);
+        const viewWidget = new ViewWidget(rootElement);
         viewWidget.editWidget = SelectEditWidget;
         rootElement._state = viewWidget;
         rootElement._state.draw(rootElement.element, rootElement._data);
@@ -425,12 +432,13 @@ class SelectEditorPartFactory {
   }
 }
 
+
 class TextEditorPartFactory {
   constructor(type, rootElement) {
 
     if (type === 'viewState') {
       return () => {
-        let viewWidget = new ViewWidget(rootElement);
+        const viewWidget = new ViewWidget(rootElement);
         viewWidget.editWidget = TextEditWidget;
         rootElement._state = viewWidget;
         rootElement._state.draw(rootElement.element, rootElement._data);
@@ -445,9 +453,12 @@ class TextEditorPartFactory {
   }
 }
 
+
 class builder {
   constructor(rootElement, fieldName, displayText) {
-    let baseWidget = new absMetadataWidget(rootElement, fieldName, displayText);
+    const baseWidget = new AbsMetadataWidget(rootElement,
+        fieldName, displayText);
+
     baseWidget['inputType'] = this.getInputType();
     baseWidget['editMode'] = this.getEditMode(baseWidget);
     baseWidget['viewOnlyMode'] = this.getViewOnlyMode(baseWidget);
@@ -477,6 +488,7 @@ class builder {
   }
 }
 
+
 class textEditorBuilder extends builder {
 
   getEditMode(baseWidget) {
@@ -495,6 +507,7 @@ class textEditorBuilder extends builder {
     return 'textEditor';
   }
 }
+
 
 class selectionEditorBuilder extends builder {
 
@@ -533,7 +546,7 @@ class DatePickerBuilder extends builder {
 class NumberPickerBuilder extends builder {
   getViewOnlyMode(baseWidget) {
     return () => {
-      let viewWidget = new ViewWidget(baseWidget);
+      const viewWidget = new ViewWidget(baseWidget);
       viewWidget.editWidget = NumberPickerWidget;
       baseWidget._state = viewWidget;
       baseWidget._state.draw(baseWidget.element, baseWidget._data);
@@ -548,7 +561,6 @@ class NumberPickerBuilder extends builder {
   getWidgetTypeName() {
     return 'numberPicker';
   }
-
 }
 
 class Factory {
@@ -575,8 +587,8 @@ class Factory {
       throw `${type} is not valid type`;
     }
 
-    let widgetFactory = this.widgetTypes[type];
-    let widget = widgetFactory(rootElement, fieldName, displayText);
+    const widgetFactory = this.widgetTypes[type];
+    const widget = widgetFactory(rootElement, fieldName, displayText);
     widget.viewOnlyMode();
     return widget;
   }

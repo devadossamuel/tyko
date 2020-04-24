@@ -1,4 +1,4 @@
-function create_fail_response(xhr) {
+function createFailResponse(xhr) {
   return {
     status: xhr.status,
     statusText: xhr.statusText,
@@ -6,63 +6,59 @@ function create_fail_response(xhr) {
   };
 }
 
-function handle_results(xhr, resolve, reject) {
+function handleOnreadystatechange(xhr, resolve, reject) {
+  if (xhr.readyState !== 4) {
+    return;
+  }
   if (xhr.status >= 200 && xhr.status < 300) {
     resolve(xhr.response);
   } else {
-    reject(create_fail_response(xhr));
+    reject(createFailResponse(xhr));
   }
 }
 
 export const requests = {
   'get': (apiPath) => {
-    let xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
     xhr.withCredentials = false;
 
     return new Promise(((resolve, reject) => {
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState !== 4) {
-          return;
-        }
-        handle_results(xhr, resolve, reject);
+      xhr.onreadystatechange = () => {
+        handleOnreadystatechange(xhr, resolve, reject);
       };
+
       xhr.open('get', apiPath, true);
       xhr.send();
     }));
   },
   'post': (apiPath, data) => {
-    let xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
     xhr.withCredentials = false;
     return new Promise(((resolve, reject) => {
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState !== 4) {
-          return;
-        }
-        handle_results(xhr, resolve, reject);
+      xhr.onreadystatechange = () => {
+        handleOnreadystatechange(xhr, resolve, reject);
       };
+
       xhr.open('POST', apiPath, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.send(JSON.stringify(data));
     }));
   },
   'put': (apiPath, data) => {
-    let xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
     xhr.withCredentials = false;
     return new Promise(((resolve, reject) => {
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState !== 4) {
-          return;
-        }
-        handle_results(xhr, resolve, reject);
+      xhr.onreadystatechange = () => {
+        handleOnreadystatechange(xhr, resolve, reject);
       };
+
       xhr.open('PUT', apiPath, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.send(JSON.stringify(data));
-
     }));
   },
   'delete': (apiPath) => {
-    let xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
     xhr.withCredentials = false;
     return new Promise(((resolve, reject) => {
       xhr.onreadystatechange = function() {
@@ -73,7 +69,7 @@ export const requests = {
         if (xhr.status >= 200 && xhr.status < 300) {
           resolve(xhr.response);
         } else {
-          reject(create_fail_response(xhr));
+          reject(createFailResponse(xhr));
         }
       };
       xhr.open('DELETE', apiPath, true);
