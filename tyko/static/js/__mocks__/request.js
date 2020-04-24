@@ -1,8 +1,3 @@
-
-
-// export const notes = {
-//   "getNotes": getNotes,
-// };
 const sample_notes_data = `
 {
   "notes": [
@@ -21,25 +16,25 @@ const sample_notes_data = `
   ]
 }`;
 export const requests = {
-    "get": (apiPath)=>{
-        return new Promise(((resolve, reject) => {
-            resolve(sample_notes_data)
-        }))
-    },
-    "post": (apiPath, data)=>{
-        return new Promise(((resolve, reject) => {
-            resolve()
-        }))
-    },
-    "put": (apiPath, data)=>{
-        return new Promise(((resolve, reject) => {
-            resolve()
-        }))
-    },
-    "delete": (apiPath)=>{
-        return new Promise(((resolve, reject) => {
-            resolve()
-        }))
-    },
+  'get': (apiPath) => {
+    return new Promise(((resolve, reject) => {
+      resolve(sample_notes_data);
+    }));
+  },
+  'post': (apiPath, data) => {
+    return new Promise(((resolve, reject) => {
+      resolve();
+    }));
+  },
+  'put': (apiPath, data) => {
+    return new Promise(((resolve, reject) => {
+      resolve();
+    }));
+  },
+  'delete': (apiPath) => {
+    return new Promise(((resolve, reject) => {
+      resolve();
+    }));
+  },
 
 };
