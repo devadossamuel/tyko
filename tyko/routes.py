@@ -183,25 +183,7 @@ class Routes:
                 show_bread_crumb=True)
         )
 
-        yield (
-            "/project/<int:project_id>/object/<int:object_id>",
-            "page_project_object_details",
-            lambda project_id, object_id: project_frontend.display_details(
-                object_id,
-                show_bread_crumb=True)
-        )
 
-        yield (
-            "/project/<int:project_id>/object/<int:object_id>/item"
-            "/<int:item_id>",
-            "page_project_object_item_details",
-            lambda project_id, object_id, item_id:
-            project_frontend.display_details(
-                item_id,
-                project_id=project_id,
-                object_id=object_id,
-                show_bread_crumb=True)
-        )
 
     def init_website_routes(self):
         if self.app:
@@ -499,7 +481,13 @@ class Routes:
     @staticmethod
     def _object_pages(data_prov):
         object_frontend = frontend.ObjectFrontend(data_prov)
-
+        yield (
+            "/project/<int:project_id>/object/<int:object_id>",
+            "page_project_object_details",
+            lambda project_id, object_id: object_frontend.display_details(
+                object_id,
+                show_bread_crumb=True)
+        )
         yield (
             "/object/<int:object_id>",
             "page_object_details",
@@ -527,6 +515,17 @@ class Routes:
             "page_item_details",
             lambda item_id: item_pages.display_details(item_id,
                                                        show_bread_crumb=False)
+        )
+        yield (
+            "/project/<int:project_id>/object/<int:object_id>/item"
+            "/<int:item_id>",
+            "page_project_object_item_details",
+            lambda project_id, object_id, item_id:
+            item_pages.display_details(
+                item_id,
+                project_id=project_id,
+                object_id=object_id,
+                show_bread_crumb=True)
         )
 
 
