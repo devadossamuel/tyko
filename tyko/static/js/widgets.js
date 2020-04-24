@@ -569,7 +569,7 @@ class Factory {
 
   createWidget(type, rootElement, fieldName, displayText) {
     if (!(type in this.widgetTypes)) {
-      throw `${type} is not valid type`;
+      throw Error(`${type} is not valid type`);
     }
 
     const widgetFactory = this.widgetTypes[type];
