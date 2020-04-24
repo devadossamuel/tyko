@@ -1,4 +1,4 @@
-class absMetadataWidget {
+class AbsMetadataWidget {
   constructor(element, fieldName, fieldText) {
     this.element = element;
 
@@ -301,7 +301,6 @@ class SelectDateWidget extends WidgetEditState {
   }
 
   _newDatePicker(value) {
-
     const datePicker = document.createElement('input');
     datePicker.setAttribute('class', 'form-control');
     datePicker.setAttribute('value', value);
@@ -457,7 +456,7 @@ class TextEditorPartFactory {
 
 class builder {
   constructor(rootElement, fieldName, displayText) {
-    const baseWidget = new absMetadataWidget(rootElement,
+    const baseWidget = new AbsMetadataWidget(rootElement,
         fieldName, displayText);
 
     baseWidget['inputType'] = this.getInputType();
