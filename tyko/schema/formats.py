@@ -1,5 +1,7 @@
-from typing import Dict
+import datetime
 
+from typing import Dict, Optional, Tuple
+import re
 import sqlalchemy as db
 from sqlalchemy.orm import relationship
 
@@ -161,41 +163,95 @@ class AudioVideo(AVTables):
 
         }
 
+
 class Format(AVTables):
     __abstract__ = True
     obj_sequence = db.Column("obj_sequence", db.Integer)
 
 
 class AudioCassette(Format):
+
     __tablename__ = "AudioCassettes"
     name = db.Column("name", db.Text)
     table_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     object_id = db.Column(db.Integer, db.ForeignKey("object.object_id"))
     parent_object = relationship("CollectionObject", foreign_keys=[object_id])
 
-    format_type_id = db.Column(db.Integer, db.ForeignKey("cassette_types.table_id"))
+    format_type_id = db.Column(db.Integer,
+                               db.ForeignKey("cassette_types.table_id"))
+
     format_type = relationship("CassetteType")
 
-    tape_type_id = db.Column(db.Integer, db.ForeignKey("cassette_tape_types.table_id"))
+    tape_type_id = db.Column(db.Integer,
+                             db.ForeignKey("cassette_tape_types.table_id"))
+
     tape_type = relationship("CassetteTapeType")
 
-    tape_thickness_id = db.Column(db.Integer, db.ForeignKey("cassette_tape_thickness.table_id"))
+    tape_thickness_id = \
+        db.Column(db.Integer,
+                  db.ForeignKey("cassette_tape_thickness.table_id"))
+
     tape_thickness = relationship("CassetteTapeThickness")
 
     inspection_date = db.Column("inspection_date", db.Date)
     recording_date = db.Column("recording_date", db.Date)
+    recording_date_precision = db.Column("recording_date_precision",
+                                         db.Integer, default=3)
+
+    # REGEX
+    REGEX_DAY_MONTH_YEAR = re.compile(r"^([0-1][0-9])-([0-2][0-9])-([0-9]){4}")
+    REGEX_YEAR_ONLY = re.compile(r"^([1-9]){4}$")
+    REGEX_MONTH_YEAR = re.compile(r"^([0-1][0-9])-([0-9]){4}$")
+
+    @classmethod
+    def serialize_date(cls, date: Optional[datetime.datetime.date],
+                       precision=3):
+
+        if isinstance(date, datetime.date):
+            if precision == 3:
+                return date.strftime("%m-%d-%Y")
+
+            if precision == 2:
+                return date.strftime("%m-%Y")
+
+            if precision == 1:
+                return date.strftime("%Y")
+
+        return None
+
+    @classmethod
+    def encode_date(cls, date_string: str) -> Tuple[datetime.datetime, int]:
+
+        if cls.REGEX_DAY_MONTH_YEAR.match(date_string):
+            return datetime.datetime.strptime(date_string, "%m-%d-%Y"), 3
+
+        if cls.REGEX_MONTH_YEAR.match(date_string):
+            return datetime.datetime.strptime(date_string, "%m-%Y"), 2
+
+        if cls.REGEX_YEAR_ONLY.match(date_string):
+            return datetime.datetime.strptime(date_string, "%Y"), 1
+
+        raise AttributeError("Unknown date format: {}".format(date_string))
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
-        return {
+        serialized_data = {
             "name": self.name,
             "id": self.table_id,
             "format_type": self.format_type.serialize(),
-            "tape_type": self.tape_type.serialize(),
-            "tape_thickness": self.tape_thickness.serialize(),
             "inspection_date": self.serialize_date(self.inspection_date),
             "obj_sequence": self.obj_sequence,
-
+            "date_recorded":
+                self.serialize_date(self.recording_date,
+                                    self.recording_date_precision),
         }
+
+        if self.tape_type is not None:
+            serialized_data["tape_type"] = self.tape_type.serialize()
+
+        if self.tape_thickness is not None:
+            serialized_data["tape_thickness"] = self.tape_thickness.serialize()
+
+        return serialized_data
 
 
 class CassetteType(AVTables):

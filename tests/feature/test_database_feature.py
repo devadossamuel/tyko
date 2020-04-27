@@ -809,26 +809,29 @@ def new_audio_object(dummy_database, project_and_collection, object_title):
         "project": project,
         "object": new_object
     }
-#
-#     # new_object = schema.CollectionObject(name=object_title, collection=new_collection, project=new_project)
-#     # raise NotImplementedError(
-#     #     u'STEP: When a new <object_title> audio recording is added')
+
 @when(
     "a tape named <item_title> recorded on <date_recorded> using a "
     "<audio_type> type <tape_type> and <tape_thickness> which was inspected "
     "on <inspection_date>")
 def new_audio_item(dummy_database, new_audio_object, item_title, date_recorded,
                    audio_type, tape_type, tape_thickness, inspection_date):
+    recording_date, recording_date_precision = \
+        schema.AudioCassette.encode_date(date_recorded)
 
     new_audio_item = schema.AudioCassette(
         name=item_title,
         parent_object=new_audio_object["object"],
-        recording_date=datetime.strptime(date_recorded, "%m-%d-%Y"),
+        recording_date=recording_date,
+        recording_date_precision=recording_date_precision,
         format_type=schema.CassetteType(name=audio_type),
-        tape_type=schema.CassetteTapeType(name=tape_type),
         tape_thickness=schema.CassetteTapeThickness(name=tape_thickness),
         inspection_date=datetime.strptime(inspection_date, "%m-%d-%Y")
     )
+
+    if tape_type.strip() != "":
+        new_audio_item.tape_type = schema.CassetteTapeType(name=tape_type)
+
     dummy_database.add(new_audio_item)
     dummy_database.commit()
 
@@ -846,9 +849,39 @@ def object_has_audio_cassette(dummy_database, object_title):
 @then(
     "AudioCassette in <object_title> is titled <item_title> was recorded on "
     "the date <date_recorded>")
-def audio_cassette_has_a_title(dummy_database, object_title, item_title):
+def audio_cassette_has_a_title(dummy_database, object_title, item_title, date_recorded):
     cassette = dummy_database.query(schema.CollectionObject) \
         .filter(schema.CollectionObject.name == object_title) \
         .one().audio_cassettes[0]
     cassette_data = cassette.serialize()
     assert cassette_data['name'] == item_title
+    assert cassette_data['date_recorded'] == date_recorded
+
+
+@then(
+    "AudioCassette in <object_title> with title <item_title> used type "
+    "<tape_type> cassette and with <tape_thickness>")
+def audio_cassette_has_a_tape_thickness(dummy_database, object_title, item_title, tape_type, tape_thickness):
+
+    cassette = dummy_database.query(schema.CollectionObject) \
+        .filter(schema.CollectionObject.name == object_title) \
+        .one().audio_cassettes[0]
+    cassette_date = cassette.serialize()
+    assert cassette_date['name'] == item_title
+
+    if "tape_type" in cassette_date:
+        assert cassette_date['tape_type']['name'] == tape_type
+
+    if "tape_thickness" in cassette_date:
+        assert cassette_date['tape_thickness']['name'] == tape_thickness
+
+
+@then(
+    "AudioCassette in <object_title> with title <item_title> was inspected on "
+    "<inspection_date>")
+def audio_cassette_inspection_date(dummy_database, object_title, item_title, inspection_date):
+    cassette = dummy_database.query(schema.CollectionObject) \
+        .filter(schema.CollectionObject.name == object_title) \
+        .one().audio_cassettes[0]
+    cassette_date = cassette.serialize()
+    assert cassette_date['inspection_date'] == inspection_date

@@ -222,10 +222,11 @@ Scenario Outline: Create a new media project with audio cassettes
     Then the database has 1 AudioCassette records
     And the database has a an object entitled <object_title> with an AudioCassette
     And AudioCassette in <object_title> is titled <item_title> was recorded on the date <date_recorded>
-#    And AudioCassette titled <item_title> used type <type_tape> cassette and with <tape_thickness>
-#    And AudioCassette titled <item_title> was inspected on <inspection_date>
+    And AudioCassette in <object_title> with title <item_title> used type <tape_type> cassette and with <tape_thickness>
+    And AudioCassette in <object_title> with title <item_title> was inspected on <inspection_date>
 
     Examples:
-    | object_title          | item_title         | date_recorded | audio_type       | tape_type | tape_thickness | inspection_date |
-    | John Doe Oral history | The beginning part | 12-10-1999    | compact cassette | I         | "0.5"          | 12-10-2019      |
-    | Brass Band Recording  |                    | 1-10-1997     | ADAT             |           | "0.5"          | 12-10-2019      |
+    | object_title           | item_title         | date_recorded | audio_type       | tape_type | tape_thickness | inspection_date |
+    | John Doe Oral history  | The beginning part | 11-26-1999    | compact cassette | I         | "0.5"          | 12-10-2019      |
+    | Brass Band Recording   |                    | 01-1997       | ADAT             |           | "0.5"          | 12-12-2019      |
+    | Famous Amazing Speech  |                    | 1997          | DAT              |           | NA             | 12-11-2019      |
