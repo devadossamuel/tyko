@@ -91,7 +91,6 @@ def test_item_update(app):
                             "name": "dummy.txt",
                         }
                     ],
-                    "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4",
                     "format_id": 2,
                 }
             ),
@@ -113,7 +112,6 @@ def test_item_update(app):
         #
         edited_data = json.loads(get_resp.data)
         item = edited_data["item"]
-        assert item["medusa_uuid"] == "03de08f0-dada-0136-5326-0050569601ca-4"
         assert item["name"] == "changed_dummy"
 
 
@@ -130,7 +128,6 @@ def test_item_delete(app):
                             "name": "changed_dummy.txt",
                         }
                     ],
-                    "medusa_uuid": "03de08f0-dada-0136-5326-0050569601ca-4",
                     "format_id": 1
                 }
             ),

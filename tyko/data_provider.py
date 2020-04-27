@@ -865,10 +865,8 @@ class ItemDataConnector(AbsNotesConnector):
         format_type = session.query(FormatTypes)\
             .filter(FormatTypes.id == format_id).one()
 
-        medusa_uuid = kwargs.get("medusa_uuid")
         new_item = CollectionItem(
             name=name,
-            medusa_uuid=medusa_uuid,
             format_type=format_type
         )
 
@@ -890,9 +888,6 @@ class ItemDataConnector(AbsNotesConnector):
         if item:
             if "name" in changed_data:
                 item.name = changed_data['name']
-
-            if "medusa_uuid" in changed_data:
-                item.medusa_uuid = changed_data["medusa_uuid"]
 
             if "obj_sequence" in changed_data:
                 item.obj_sequence = int(changed_data["obj_sequence"])

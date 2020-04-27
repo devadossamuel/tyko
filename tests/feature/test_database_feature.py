@@ -16,8 +16,6 @@ SAMPLE_OBJ_SEQUENCE = 12
 
 SAMPLE_DATE = date(1970, 1, 1)
 
-SAMPLE_MEDUSA_ID = "ASDFASDF"
-
 SAMPLE_FILE = "SampleFile.txt"
 
 SAMPLE_BAR_CODE = "S4MP1384RC0D"
@@ -233,9 +231,7 @@ def new_item(dummy_database, new_collection, new_project, staff_contact,
 
     collection_item = schema.CollectionItem(
         name=SAMPLE_ITEM_NAME,
-        # file_name=SAMPLE_FILE,
-        medusa_uuid=SAMPLE_MEDUSA_ID,
-        collection_object=create_new_object,
+        parent_object=create_new_object,
         obj_sequence=SAMPLE_OBJ_SEQUENCE,
         format_type=format_type
 
@@ -368,7 +364,6 @@ def add_new_item_to_object(dummy_database, create_new_object, media_type,
 
     new_item = schema.CollectionItem(
         name=SAMPLE_ITEM_NAME,
-        medusa_uuid=SAMPLE_MEDUSA_ID,
         obj_sequence=SAMPLE_OBJ_SEQUENCE,
         format_type=format_type
 
@@ -715,7 +710,6 @@ def new_media_with_file_note(dummy_database, create_new_object, media_type,
 
     new_item = schema.CollectionItem(
         name=SAMPLE_ITEM_NAME,
-        medusa_uuid=SAMPLE_MEDUSA_ID,
         obj_sequence=SAMPLE_OBJ_SEQUENCE,
         format_type=format_type
 
