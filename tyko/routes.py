@@ -183,8 +183,6 @@ class Routes:
                 show_bread_crumb=True)
         )
 
-
-
     def init_website_routes(self):
         if self.app:
             for rule, endpoint, func in \
