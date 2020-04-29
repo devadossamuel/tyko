@@ -46,15 +46,11 @@ def create_app(app=None, verify_db=True) -> Flask:
     data_provider = DataProvider(engine)
 
     app.logger.info("Checking database schema version")
-    try:
-        if verify_db is True and not is_correct_db_version(app, database):
-            app.logger.critical(f"Database requires alembic version "
-                                f"{ALEMBIC_VERSION}. Please migrate or initialize "
-                                f"database and try again.")
-            app.add_url_rule("/", "unable_to_load", page_failed_on_startup)
-            return app
-    except NoTable:
-        set_up_init(app)
+    if verify_db is True and not is_correct_db_version(app, database):
+        app.logger.critical(f"Database requires alembic version "
+                            f"{ALEMBIC_VERSION}. Please migrate or initialize "
+                            f"database and try again.")
+        app.add_url_rule("/", "unable_to_load", page_failed_on_startup)
         return app
 
     app_routes = Routes(data_provider, app)
