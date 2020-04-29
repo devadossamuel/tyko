@@ -6,11 +6,10 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import OperationalError
 
 from .database import init_database
-from .exceptions import DataError
+from .exceptions import DataError, NoTable
 from .data_provider import DataProvider, get_schema_version
 from .schema import ALEMBIC_VERSION
 from .routes import Routes
-
 
 def is_correct_db_version(app, database) -> bool:
     try:
@@ -22,6 +21,8 @@ def is_correct_db_version(app, database) -> bool:
         app.logger.error(
             "Problem getting version information. "
             "Reason given: {}".format(exc))
+        if "no such table" in str(exc):
+            raise NoTable()
         return False
     return version == ALEMBIC_VERSION
 
@@ -45,11 +46,15 @@ def create_app(app=None, verify_db=True) -> Flask:
     data_provider = DataProvider(engine)
 
     app.logger.info("Checking database schema version")
-    if verify_db is True and not is_correct_db_version(app, database):
-        app.logger.critical(f"Database requires alembic version "
-                            f"{ALEMBIC_VERSION}. Please migrate or initialize "
-                            f"database and try again.")
-        app.add_url_rule("/", "unable_to_load", page_failed_on_startup)
+    try:
+        if verify_db is True and not is_correct_db_version(app, database):
+            app.logger.critical(f"Database requires alembic version "
+                                f"{ALEMBIC_VERSION}. Please migrate or initialize "
+                                f"database and try again.")
+            app.add_url_rule("/", "unable_to_load", page_failed_on_startup)
+            return app
+    except NoTable:
+        set_up_init(app)
         return app
 
     app_routes = Routes(data_provider, app)

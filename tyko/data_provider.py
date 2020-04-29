@@ -12,7 +12,7 @@ from .schema.collection import Collection
 from .schema.formats import FormatTypes
 from .schema.instantiation import FileNotes, InstantiationFile, \
     FileAnnotation, FileAnnotationType
-from .schema.items import CollectionItem
+from .schema import CollectionItem
 from .schema.notes import Note, NoteTypes
 from .schema.objects import CollectionObject
 from .schema.projects import Project, ProjectStatus
@@ -590,7 +590,7 @@ class ObjectDataConnector(AbsNotesConnector):
             matching_object = self._get_object(object_id, session)
             item_connector = ItemDataConnector(self.session_maker)
             new_item_id = item_connector.create(**data)
-            matching_object.items.append(item_connector.get(id=new_item_id))
+            matching_object.collection_items.append(item_connector.get(id=new_item_id))
             session.commit()
             return item_connector.get(id=new_item_id, serialize=True)
         finally:
@@ -606,12 +606,12 @@ class ObjectDataConnector(AbsNotesConnector):
                 session=session
             )
 
-            if matching_item not in matching_object.items:
+            if matching_item not in matching_object.collection_items:
                 raise DataError(
                     message="Item with ID: {} is not a child of object with "
                             "ID: {}".format(item_id, object_id)
                 )
-            matching_object.items.remove(matching_item)
+            matching_object.collection_items.remove(matching_item)
             session.commit()
             return session.query(CollectionObject) \
                 .filter(CollectionObject.id == object_id) \
@@ -624,7 +624,7 @@ class ObjectDataConnector(AbsNotesConnector):
     def _find_item(item_id, session) -> CollectionItem:
         matching_items = \
             session.query(CollectionItem).filter(
-                CollectionItem.id == item_id).all()
+                CollectionItem.table_id == item_id).all()
 
         if len(matching_items) == 0:
             raise DataError(
@@ -754,7 +754,7 @@ class FilesDataConnector(AbsDataProviderConnector):
         session = self.session_maker()
         try:
             matching_item = session.query(CollectionItem)\
-                .filter(CollectionItem.id == item_id).one()
+                .filter(CollectionItem.table_id == item_id).one()
 
             new_file = InstantiationFile(file_name=name)
 
@@ -798,7 +798,7 @@ class FilesDataConnector(AbsDataProviderConnector):
         session = self.session_maker()
         try:
             item = session.query(CollectionItem)\
-                .filter(CollectionItem.id == item_id).one()
+                .filter(CollectionItem.table_id == item_id).one()
 
             for f in item.files:
                 if f.file_id == file_id:
@@ -817,7 +817,7 @@ class ItemDataConnector(AbsNotesConnector):
         try:
             if id:
                 all_collection_item = session.query(CollectionItem)\
-                    .filter(CollectionItem.id == id)\
+                    .filter(CollectionItem.table_id == id)\
                     .all()
             else:
                 all_collection_item = \
@@ -850,7 +850,7 @@ class ItemDataConnector(AbsNotesConnector):
             session.commit()
 
             new_item = session.query(CollectionItem) \
-                .filter(CollectionItem.id == item_id) \
+                .filter(CollectionItem.table_id == item_id) \
                 .one()
 
             return new_item.serialize()
@@ -877,7 +877,7 @@ class ItemDataConnector(AbsNotesConnector):
         # new_item.files.append(f)
         session.add(new_item)
         session.commit()
-        new_item_id = new_item.id
+        new_item_id = new_item.table_id
         session.close()
 
         return new_item_id
@@ -897,7 +897,7 @@ class ItemDataConnector(AbsNotesConnector):
             session.add(item)
             session.commit()
             updated_item = session.query(CollectionItem)\
-                .filter(CollectionItem.id == id)\
+                .filter(CollectionItem.table_id == id)\
                 .one()
         return updated_item.serialize()
 
@@ -906,7 +906,7 @@ class ItemDataConnector(AbsNotesConnector):
             session = self.session_maker()
 
             items_deleted = session.query(CollectionItem)\
-                .filter(CollectionItem.id == id).delete()
+                .filter(CollectionItem.table_id == id).delete()
 
             success = items_deleted > 0
             session.commit()
@@ -926,7 +926,7 @@ class ItemDataConnector(AbsNotesConnector):
     @staticmethod
     def _get_item(item_id, session):
         collection_items = session.query(CollectionItem) \
-            .filter(CollectionItem.id == item_id) \
+            .filter(CollectionItem.table_id == item_id) \
             .all()
         if len(collection_items) == 0:
             raise ValueError("Not a valid item")
@@ -937,7 +937,7 @@ class ItemDataConnector(AbsNotesConnector):
         session = self.session_maker()
         try:
             collection_items = session.query(CollectionItem)\
-                .filter(CollectionItem.id == item_id).all()
+                .filter(CollectionItem.table_id == item_id).all()
 
             if len(collection_items) == 0:
                 raise DataError(
@@ -972,7 +972,7 @@ class ItemDataConnector(AbsNotesConnector):
 
             session.commit()
             return session.query(CollectionItem) \
-                .filter(CollectionItem.id == item_id) \
+                .filter(CollectionItem.table_id == item_id) \
                 .one().serialize()
         finally:
             session.close()
@@ -997,7 +997,7 @@ class ItemDataConnector(AbsNotesConnector):
             session.commit()
             new_item = \
                 session.query(CollectionItem).filter(
-                    CollectionItem.id == item_id).one()
+                    CollectionItem.table_id == item_id).one()
 
             return new_item.serialize()
 
@@ -1122,7 +1122,7 @@ class NotesDataConnector(AbsDataProviderConnector):
                 note_data['parent_object_ids'] = objects_mentioned
 
                 items_mentioned = [
-                    obj.id for obj in note.item_sources
+                    obj.id for obj in note.item_source
                 ]
                 note_data['parent_item_ids'] = items_mentioned
 

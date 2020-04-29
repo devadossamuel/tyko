@@ -22,7 +22,7 @@ class InstantiationFile(AVTables):
 
     filesize = db.Column("filesize", db.Integer)
     filesize_unit = db.Column("filesize_unit", db.Text)
-    item_id = db.Column(db.Integer, db.ForeignKey("item.item_id"))
+    item_id = db.Column(db.Integer, db.ForeignKey("formats.item_id"))
     notes = relationship(
         "FileNotes",
         backref="file_note_source"

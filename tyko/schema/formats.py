@@ -1,11 +1,84 @@
 import datetime
 
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Mapping
 import re
 import sqlalchemy as db
+from sqlalchemy.ext.declarative import ConcreteBase
 from sqlalchemy.orm import relationship
 
 from tyko.schema.avtables import AVTables, SerializedData
+
+item_has_notes_table = db.Table(
+    "item_has_notes",
+    AVTables.metadata,
+    db.Column("notes_id", db.Integer, db.ForeignKey("notes.note_id")),
+    db.Column("item_id", db.Integer, db.ForeignKey("formats.item_id"))
+)
+
+
+class AVFormat(AVTables):
+    __tablename__ = 'formats'
+    name = db.Column("name", db.Text)
+    type = db.Column(db.String(50))
+
+    table_id = db.Column(
+        "item_id",
+        db.Integer,
+        primary_key=True,
+        autoincrement=True
+    )
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'formats',
+        'polymorphic_on': type
+    }
+    obj_sequence = db.Column("obj_sequence", db.Integer)
+
+
+    notes = relationship("Note",
+                         secondary=item_has_notes_table,
+                         backref="item_source"
+                         )
+
+    format_type_id = db.Column(db.Integer,
+                               db.ForeignKey("format_types.format_id"))
+
+    format_type = relationship("FormatTypes", foreign_keys=[format_type_id])
+    files = relationship("InstantiationFile", backref="file_source")
+    treatment = relationship("Treatment", backref="treatment_id")
+
+    def _iter_files(self, recurse=False):
+        for file_ in self.files:
+            if recurse is True:
+                yield file_.serialize(recurse=True)
+            else:
+                yield {
+                    "name": file_.file_name,
+                    "id": file_.file_id,
+                    "generation": file_.generation
+                }
+
+    def _iter_notes(self):
+        yield from self.notes
+
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+
+        data = {
+            "item_id": self.table_id,
+            "name": self.name,
+            "files": list(self._iter_files(recurse)),
+            "notes": list(self._iter_notes()),
+            "parent_object_id": self.table_id,
+            "obj_sequence": self.obj_sequence
+        }
+        try:
+            data["format"] = self.format_type.serialize()
+            data["format_id"] = self.format_type_id
+        except AttributeError:
+            data["format"] = None
+            data["format_id"] = None
+
+        return data
 
 
 class FormatTypes(AVTables):
@@ -23,14 +96,13 @@ class FormatTypes(AVTables):
         }
 
 
-class OpenReel(AVTables):
-    __tablename__ = "open_reel"
+# ###############################  AV Formats #################################
 
-    item_id = db.Column(
-        db.Integer, db.ForeignKey("item.item_id"), primary_key=True)
-
-    item = relationship("CollectionItem", foreign_keys=[item_id])
-
+class OpenReel(AVFormat):
+    __tablename__ = "open_reels"
+    __mapper_args__ = {'polymorphic_identity': 'open_reels'}
+    table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'),
+                         primary_key=True)
     date_recorded = db.Column(
         "date_recorded", db.Date
     )
@@ -47,10 +119,13 @@ class OpenReel(AVTables):
     track_configuration = db.Column("track_configuration", db.Text)
     track_duration = db.Column("track_duration", db.Text)
     generation = db.Column("generation", db.Text)
+    object_id = db.Column(db.Integer, db.ForeignKey("tyko_object.object_id"))
+    object = relationship("CollectionObject",
+                          back_populates="open_reels")
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         return {
-            "item_id": self.item_id,
+            **super().serialize(recurse),
             "date_recorded": self.serialize_date(self.date_recorded),
             "track_count": self.track_count,
             "tape_size": self.tape_size,
@@ -67,13 +142,18 @@ class OpenReel(AVTables):
         }
 
 
-class Film(AVTables):
-    __tablename__ = "film"
 
-    item_id = db.Column(
-        db.Integer, db.ForeignKey("item.item_id"), primary_key=True)
+class Film(AVFormat):
+    __tablename__ = "films"
+    __mapper_args__ = {
+        'polymorphic_identity': 'films'
+    }
 
-    item = relationship("CollectionItem", foreign_keys=[item_id])
+    table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'), primary_key=True)
+
+    object_id = db.Column(db.Integer, db.ForeignKey("tyko_object.object_id"))
+    object = relationship("CollectionObject",
+                          back_populates="films")
 
     date_of_film = db.Column("date_of_film", db.Date)
     can_label = db.Column("can_label", db.Text)
@@ -81,7 +161,7 @@ class Film(AVTables):
     length = db.Column("length", db.Integer)
     duration = db.Column("duration", db.Text)
     format_gauge = db.Column("format_gauge", db.Integer)
-    base = db.Column("base", db.Text)
+    film_base = db.Column("film_base", db.Text)
     edge_code_date = db.Column("edge_code_date", db.Date)
     sound = db.Column("sound", db.Text)
     color = db.Column("color", db.Text)
@@ -91,14 +171,14 @@ class Film(AVTables):
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         return {
-            "item_id": self.item_id,
+            **super().serialize(recurse),
             "date_of_film": self.serialize_date(self.date_of_film),
             "can_label": self.can_label,
             "leader_label": self.leader_label,
             "length": self.length,
             "duration": self.duration,
             "format_gauge": self.format_gauge,
-            "base": self.base,
+            "base": self.film_base,
             "edge_code_date": self.serialize_date(self.edge_code_date),
             "sound": self.sound,
             "color": self.color,
@@ -108,27 +188,28 @@ class Film(AVTables):
         }
 
 
-class GroovedDisc(AVTables):
-    __tablename__ = "grooved_disc"
-
-    item_id = db.Column(
-        db.Integer, db.ForeignKey("item.item_id"), primary_key=True)
-
-    item = relationship("CollectionItem", foreign_keys=[item_id])
+class GroovedDisc(AVFormat):
+    __tablename__ = "grooved_discs"
+    __mapper_args__ = {'polymorphic_identity': 'grooved_discs'}
+    table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'),
+                         primary_key=True)
+    object_id = db.Column(db.Integer, db.ForeignKey("tyko_object.object_id"))
+    object = relationship("CollectionObject",
+                          back_populates="groove_disks")
 
     # This is a year
-    date_recorded = db.Column("date_recorded", db.Integer)
-    side = db.Column("side", db.Text)
-    duration = db.Column("duration", db.Text)
+    date_recorded = db.Column("date_recorded_grooved_disc", db.Integer)
+    side = db.Column("side_grooved_disc", db.Text)
+    duration = db.Column("duration_grooved_disc", db.Text)
     diameter = db.Column("diameter", db.Integer)
     disc_material = db.Column("disc_material", db.Text)
-    base = db.Column("base", db.Text)
+    base = db.Column("base_grooved_disc", db.Text)
     playback_direction = db.Column("playback_direction", db.Text)
     playback_speed = db.Column("playback_speed", db.Text)
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         return {
-            "item_id": self.item_id,
+            **super().serialize(recurse),
             "date_recorded": self.date_recorded,
             "side": self.side,
             "duration": self.duration,
@@ -141,22 +222,25 @@ class GroovedDisc(AVTables):
         }
 
 
-class AudioVideo(AVTables):
-    __tablename__ = "audio_video"
+class AudioVideo(AVFormat):
+    __tablename__ = "audio_videos"
+    __mapper_args__ = {'polymorphic_identity': 'audio_videos'}
+    table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'),
+                         primary_key=True)
 
-    item_id = db.Column(
-        db.Integer, db.ForeignKey("item.item_id"), primary_key=True)
+    object_id = db.Column(db.Integer, db.ForeignKey("tyko_object.object_id"))
+    object = relationship("CollectionObject",
+                          back_populates="audio_videos")
 
-    item = relationship("CollectionItem", foreign_keys=[item_id])
-    date_recorded = db.Column("date_recorded", db.Date)
+    av_date_recorded = db.Column("audio_video_date_recorded", db.Date)
     side = db.Column("side", db.Text)
-    duration = db.Column("duration", db.Text)
+    duration = db.Column("audio_video_duration", db.Text)
     format_subtype = db.Column("format_subtype", db.Text)
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         return {
-            "item_id": self.item_id,
-            "date_recorded": self.serialize_date(self.date_recorded),
+            **super().serialize(recurse),
+            "date_recorded": self.serialize_date(self.av_date_recorded),
             "side": self.side,
             "duration": self.duration,
             "format_subtype": self.format_subtype
@@ -164,21 +248,21 @@ class AudioVideo(AVTables):
         }
 
 
-class Format(AVTables):
-    __abstract__ = True
-    obj_sequence = db.Column("obj_sequence", db.Integer)
+class AudioCassette(AVFormat):
+    __tablename__ = 'audio_cassettes'
+    __mapper_args__ = {'polymorphic_identity': 'audio_cassettes'}
 
+    table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'),
+                         primary_key=True)
 
-class AudioCassette(Format):
+    object_id = db.Column(db.Integer, db.ForeignKey("tyko_object.object_id"))
+    object = relationship("CollectionObject",
+                          back_populates="audio_cassettes")
 
-    __tablename__ = "AudioCassettes"
-    name = db.Column("name", db.Text)
-    table_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    object_id = db.Column(db.Integer, db.ForeignKey("object.object_id"))
-    parent_object = relationship("CollectionObject", foreign_keys=[object_id])
-
-    format_type_id = db.Column(db.Integer,
-                               db.ForeignKey("cassette_types.table_id"))
+    cassette_format_type_id = db.Column(
+        db.Integer,
+        db.ForeignKey("cassette_types.table_id")
+    )
 
     format_type = relationship("CassetteType")
 
@@ -204,8 +288,8 @@ class AudioCassette(Format):
     REGEX_MONTH_YEAR = re.compile(r"^([0-1][0-9])-([0-9]){4}$")
 
     @classmethod
-    def serialize_date(cls, date: Optional[datetime.datetime.date],
-                       precision=3):
+    def serialize_date(cls, date: Optional[datetime.date],
+                       precision=3) -> str:
 
         if isinstance(date, datetime.date):
             if precision == 3:
@@ -217,7 +301,7 @@ class AudioCassette(Format):
             if precision == 1:
                 return date.strftime("%Y")
 
-        return None
+        raise AttributeError("Unable to serialize date {}".format(date))
 
     @classmethod
     def encode_date(cls, date_string: str) -> Tuple[datetime.datetime, int]:
@@ -234,9 +318,9 @@ class AudioCassette(Format):
         raise AttributeError("Unknown date format: {}".format(date_string))
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+
         serialized_data = {
-            "name": self.name,
-            "id": self.table_id,
+            **super().serialize(recurse),
             "format_type": self.format_type.serialize(),
             "inspection_date": self.serialize_date(self.inspection_date),
             "obj_sequence": self.obj_sequence,
@@ -252,6 +336,8 @@ class AudioCassette(Format):
             serialized_data["tape_thickness"] = self.tape_thickness.serialize()
 
         return serialized_data
+
+# ############################ End of AV Formats ##############################
 
 
 class CassetteType(AVTables):
@@ -290,6 +376,32 @@ class CassetteTapeThickness(AVTables):
         }
 
 
+item_has_contacts_table = db.Table(
+    "item_has_contacts",
+    AVTables.metadata,
+    db.Column("contact_id", db.Integer, db.ForeignKey("formats.item_id")),
+    db.Column("item_id", db.Integer, db.ForeignKey("contact.contact_id"))
+)
+
+
+class CollectionItem(AVFormat):
+    __tablename__ = "items"
+    __mapper_args__ = {'polymorphic_identity': 'items'}
+    table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'),
+                         primary_key=True)
+    # __mapper_args__ = {'polymorphic_identity': 'items'}
+
+    object_id = db.Column(db.Integer, db.ForeignKey("tyko_object.object_id"))
+    object = relationship("CollectionObject",
+                          back_populates="collection_items")
+
+    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+
+        data: Dict[str, SerializedData] = {
+            **super().serialize(recurse),
+        }
+        return data
+
 # =============================================================================
 # Enumerated tables
 # =============================================================================
@@ -303,6 +415,7 @@ class CassetteTapeThickness(AVTables):
 
 
 # =============================================================================
+
 
 format_types = {
     "audio video": (1, AudioVideo),

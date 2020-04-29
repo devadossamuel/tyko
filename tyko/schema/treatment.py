@@ -13,7 +13,7 @@ class Treatment(AVTables):
     needed = db.Column("needed", db.Text)
     given = db.Column("given", db.Text)
     date = db.Column("date", db.Date)
-    item_id = db.Column(db.Integer, db.ForeignKey("item.item_id"))
+    item_id = db.Column(db.Integer, db.ForeignKey("formats.item_id"))
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         return {

@@ -514,7 +514,8 @@ class CollectionFrontend(FrontendEntity):
                                 row_table="collections"
                                 )
 
-    def display_details(self, entity_id, *args, **kwargs):
+    def display_details(self, *args, **kwargs):
+        entity_id = int(kwargs['collection_id'])
         selected_object = self._data_connector.get(serialize=True,
                                                    id=entity_id)
 
@@ -593,8 +594,7 @@ class FileDetailsFrontend:
             ),
             file_url="#"
         )
-        file_details = self._data_connector.get(file_id,
-                                                serialize=True)
+        file_details = self._data_connector.get(file_id, serialize=True)
         edit_api_path = url_for("item_files",
                                 project_id=project_id,
                                 object_id=object_id,
@@ -607,3 +607,7 @@ class FileDetailsFrontend:
                                show_bread_crumb=True,
                                file=file_details,
                                api_path=edit_api_path)
+
+
+def render_first_time_startup():
+    return render_template("initialize_app.html")

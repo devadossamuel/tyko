@@ -112,17 +112,16 @@ Feature: database
     And a staff contact named <first_name> <last_name>
     And a new object for the collection with a barcode
     And a new <media_type> item with <file_name> added to the object
-    Then the database has 1 CollectionItem records
-    And the database has 1 CollectionObject records
-    And the database has item record with the <file_name> and has a corresponding <media_type> record with the same item id
+    Then the database has 1 CollectionObject records
+    And the database has item record with the <file_name> and has a corresponding <media_type> record in a <format_class> with the same item id
 
     Examples:
-    | first_name | last_name | media_type         |  file_name    |
-    | Henry      | Borchers  | open reel          |  myfile.wav   |
-    | John       | Smith     | open reel          |  my2file.wav  |
-    | John       | Smith     | film               |  myfilm.mov   |
-    | John       | Smith     | grooved disc       |  mydisc.wav   |
-    | John       | Smith     | audio video        |  myvideo.mov  |
+    | first_name | last_name | media_type         |  file_name    | format_class |
+    | Henry      | Borchers  | open reel          |  myfile.wav   | OpenReel     |
+    | John       | Smith     | open reel          |  my2file.wav  | OpenReel     |
+    | John       | Smith     | film               |  myfilm.mov   | Film         |
+#    | John       | Smith     | grooved disc       |  mydisc.wav   |
+#    | John       | Smith     | audio video        |  myvideo.mov  |
 
 
   Scenario Outline: Create a open reel project
@@ -130,7 +129,7 @@ Feature: database
     And a staff contact named <first_name> <last_name>
     And a new object for the collection with a barcode
     When a new open reel item recorded on <date_recorded> to <tape_size> tape on a <base> base with <file_name> added to the object
-    Then the database has 1 CollectionItem records
+    Then the database has 1 OpenReel records
     And the database has 1 CollectionObject records
     And the database has item record with the <file_name>
     And the database has open reel record with a <tape_size> sized tape
@@ -205,8 +204,7 @@ Scenario Outline: Create a new media project where a file has a note and an anno
     And a new object for the collection with a barcode
     And annotations for <annotation_type> configured in the database
     When a new <media_type> item with <file_name> with <note> and an annotation of <annotation_type> and <annotation_content> added to the object
-    Then the database has 1 CollectionItem records
-    And the database has 1 CollectionObject records
+    Then the database has 1 CollectionObject records
     And the database has item record with the <file_name> that contains a note that reads <note>
     And the database has item record with the <file_name> that contains a <annotation_type> annotation containing <annotation_content>
 

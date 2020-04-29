@@ -1,4 +1,5 @@
 import tyko.database
+import tyko.schema.formats
 from tyko import schema
 from datetime import date, datetime
 
@@ -162,6 +163,7 @@ def create_new_object(dummy_database, new_collection, new_project):
         originals_rec_date=SAMPLE_DATE,
         originals_return_date=SAMPLE_DATE,
     )
+    dummy_database.add(new_object)
     return new_object
 
 
@@ -211,7 +213,8 @@ def staff_contact(dummy_database, staff_first_name, staff_last_name):
 @then(parsers.parse("the database has {count:d} {data_type} records"))
 def count_database_items(dummy_database, count, data_type):
     my_data_type = getattr(schema, data_type)
-    assert len(dummy_database.query(my_data_type).all()) == count
+    records_found = len(dummy_database.query(my_data_type).all())
+    assert records_found == count, "database doesn't have {} {} records, it has {}".format(count, data_type, records_found)
 
 
 @scenario("database.feature", "Create a new item")
@@ -229,9 +232,9 @@ def new_item(dummy_database, new_collection, new_project, staff_contact,
         schema.FormatTypes.name == media_format_name
     ).one()
 
-    collection_item = schema.CollectionItem(
+    collection_item = tyko.schema.formats.CollectionItem(
         name=SAMPLE_ITEM_NAME,
-        parent_object=create_new_object,
+        object=create_new_object,
         obj_sequence=SAMPLE_OBJ_SEQUENCE,
         format_type=format_type
 
@@ -334,7 +337,7 @@ def treatment_record(needs, given):
                     'needs "{needs}" and got "{given}"'))
 def treatment_record_reads(dummy_database, needs, given):
     collection_item = dummy_database.query(
-        schema.CollectionItem).first()
+        tyko.schema.formats.CollectionItem).first()
 
     assert len(collection_item.treatment) == 1, \
         "Can only test if there is a single treatement record"
@@ -362,37 +365,46 @@ def add_new_item_to_object(dummy_database, create_new_object, media_type,
         schema.FormatTypes.name == media_type
     ).one()
 
-    new_item = schema.CollectionItem(
+    media_table_type = media_type_info[1](
         name=SAMPLE_ITEM_NAME,
         obj_sequence=SAMPLE_OBJ_SEQUENCE,
-        format_type=format_type
+        format_type=format_type)
+    # new_item = tyko.schema.formats.CollectionItem(
+    #     name=SAMPLE_ITEM_NAME,
+    #     obj_sequence=SAMPLE_OBJ_SEQUENCE,
+    #     format_type=format_type
+    #
+    # )
 
-    )
-    new_item.files.append(
+    media_table_type.files.append(
         schema.InstantiationFile(file_name=file_name)
     )
 
-    media_table_type = media_type_info[1](item=new_item)
-    create_new_object.items.append(new_item)
+    # media_table_type = media_type_info[1](item=new_item)
+
+    getattr(create_new_object, media_table_type.__tablename__).append(media_table_type)
+    # create_new_object.items.append(media_table_type)
     dummy_database.add(create_new_object)
     dummy_database.add(media_table_type)
     dummy_database.commit()
 
 
 @then("the database has item record with the <file_name> and has a "
-       "corresponding <media_type> record with the same item id")
-def has_a_record_with_media_item(dummy_database, file_name, media_type):
-
-    item_file = dummy_database.query(
+      "corresponding <media_type> record in a <format_class> with the same item id")
+def has_a_record_with_media_item(dummy_database, file_name, media_type, format_class):
+    format_type = getattr(tyko.schema.formats, format_class)
+    items = dummy_database.query(
         schema.InstantiationFile)\
-        .join(schema.CollectionItem)\
+        .join(format_type)\
         .filter(
-        schema.InstantiationFile.file_name == file_name).one()
+        schema.InstantiationFile.file_name == file_name)
+
+    item_file = items.one()
     assert item_file.file_name == file_name
 
     media_types = dummy_database.query(schema.FormatTypes)
 
-    collection_item = dummy_database.query(schema.CollectionItem) \
+    collection_item = dummy_database.query(format_type) \
         .join(schema.InstantiationFile) \
         .filter(
         schema.InstantiationFile.file_name == file_name).one()
@@ -412,37 +424,42 @@ def test_new_open_reel_project():
 def new_open_reel(dummy_database, create_new_object, date_recorded,
                   tape_size, base, file_name):
 
-    new_item = schema.CollectionItem(
-        name=SAMPLE_ITEM_NAME,
-    )
-    new_item.files.append(
-        schema.InstantiationFile(file_name=file_name)
-    )
+    # new_item = tyko.schema.formats.CollectionItem(
+    #     name=SAMPLE_ITEM_NAME,
+    # )
+
 
     open_reel = schema.OpenReel(
-        item=new_item,
+        name=SAMPLE_ITEM_NAME,
         date_recorded=SAMPLE_DATE,
         tape_size=tape_size,
-        base=base
+        base=base,
 
     )
-    new_file_instance = schema.InstantiationFile(file_name=file_name)
-    new_item.files.append(new_file_instance)
-    create_new_object.items.append(new_item)
+    # # open_reel.files.append(
+    # #     schema.InstantiationFile(file_name=file_name)
+    # # )
     dummy_database.add(open_reel)
-    dummy_database.add(new_item)
+    dummy_database.flush()
+    # # FIXME: OPEN reel is not getiting the files
+    new_file_instance = schema.InstantiationFile(file_name=file_name)
+    # dummy_database.add(new_file_instance)
+    # dummy_database.flush(new_file_instance)
+    open_reel.files.append(new_file_instance)
+    # # dummy_database.flush(new_file_instance)
+    # # create_new_object.items.append(new_item)
+    # # dummy_database.add(open_reel)
+    # create_new_object.open_reel.append(open_reel)
+    # # dummy_database.add(new_item)
     dummy_database.commit()
 
 
 @then("the database has item record with the <file_name>")
 def database_has_item_record_w_filename(dummy_database, file_name):
-    collection_items = dummy_database.query(schema.CollectionItem)
-    for collection_item in collection_items:
-        for file_instance in collection_item.files:
-            if file_instance.file_name == file_name:
-                assert True
-                return
-    assert False, "No file matched {}".format(file_name)
+    collection_items = dummy_database.query(tyko.schema.InstantiationFile)\
+        .filter(tyko.schema.InstantiationFile.file_name == file_name)
+
+    assert len(collection_items.all()) > 0, "No file matched {}".format(file_name)
 
 
 @then("the database has open reel record with a <tape_size> sized tape")
@@ -652,10 +669,7 @@ def media_type_can_be_serialize(dummy_database, media_type):
 
 @given("a new GroovedDisc item is created")
 def new_grooved_disc(dummy_database):
-    new_disc_item = schema.CollectionItem(name="side A")
-    dummy_database.add(new_disc_item)
-    dummy_database.commit()
-    new_disc = schema.GroovedDisc(item_id=new_disc_item.id, side="A")
+    new_disc = schema.GroovedDisc(name="side A", side="A")
     dummy_database.add(new_disc)
     dummy_database.commit()
 
@@ -667,10 +681,7 @@ def test_database_film():
 
 @given("a new Film item is created")
 def new_film(dummy_database):
-    new_film_item = schema.CollectionItem(name="reel 1")
-    dummy_database.add(new_film_item)
-    dummy_database.commit()
-    new_film = schema.Film(item_id=new_film_item.id, sound="optical")
+    new_film = schema.Film(name="reel 1", sound="optical")
     dummy_database.add(new_film)
     dummy_database.commit()
 
@@ -678,10 +689,7 @@ def new_film(dummy_database):
 
 @given("a new OpenReel item is created")
 def new_open_reel(dummy_database):
-    new_open_reel_item = schema.CollectionItem(name="reel 1")
-    dummy_database.add(new_open_reel_item)
-    dummy_database.commit()
-    new_reel = schema.OpenReel(item_id=new_open_reel_item.id, track_count="2")
+    new_reel = schema.OpenReel(track_count="2")
     dummy_database.add(new_reel)
     dummy_database.commit()
 
@@ -708,12 +716,7 @@ def new_media_with_file_note(dummy_database, create_new_object, media_type,
         schema.FormatTypes.name == media_type
     ).one()
 
-    new_item = schema.CollectionItem(
-        name=SAMPLE_ITEM_NAME,
-        obj_sequence=SAMPLE_OBJ_SEQUENCE,
-        format_type=format_type
 
-    )
     new_file = schema.InstantiationFile(file_name=file_name)
     new_file.notes.append(schema.FileNotes(message=note))
     annotation_type_enum = dummy_database.query(schema.FileAnnotationType)\
@@ -727,11 +730,14 @@ def new_media_with_file_note(dummy_database, create_new_object, media_type,
         )
     )
 
-    new_item.files.append(new_file)
-
-    media_table_type = media_type_info[1](item=new_item)
-    create_new_object.items.append(new_item)
-    dummy_database.add(create_new_object)
+    media_table_type = media_type_info[1](
+        name=SAMPLE_ITEM_NAME,
+        obj_sequence=SAMPLE_OBJ_SEQUENCE,
+        format_type=format_type
+    )
+    media_table_type.files.append(new_file)
+    # create_new_object.items.append(new_item)
+    # dummy_database.add(create_new_object)
     dummy_database.add(media_table_type)
     dummy_database.commit()
 
@@ -815,7 +821,7 @@ def new_audio_item(dummy_database, new_audio_object, item_title, date_recorded,
 
     new_audio_item = schema.AudioCassette(
         name=item_title,
-        parent_object=new_audio_object["object"],
+        object=new_audio_object["object"],
         recording_date=recording_date,
         recording_date_precision=recording_date_precision,
         format_type=schema.CassetteType(name=audio_type),

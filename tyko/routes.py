@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from typing import Any, List, Iterator, Tuple, Callable, Optional, Union
-from flask import jsonify, render_template, views
+from flask import jsonify, render_template, views, make_response
 
 import tyko.views.files
 from . import middleware
@@ -534,6 +534,7 @@ def page_formats(middleware_source):
         selected_menu_item="formats",
         formats=formats
     )
+
 
 
 def list_routes(app):
