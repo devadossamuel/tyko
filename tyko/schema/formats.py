@@ -3,7 +3,6 @@ import datetime
 from typing import Dict, Optional, Tuple, Mapping
 import re
 import sqlalchemy as db
-from sqlalchemy.ext.declarative import ConcreteBase, declared_attr
 from sqlalchemy.orm import relationship
 
 from tyko.schema.avtables import AVTables, SerializedData
@@ -162,7 +161,7 @@ class Film(AVFormat):
     length = db.Column("length", db.Integer)
     duration = db.Column("duration", db.Text)
     format_gauge = db.Column("format_gauge", db.Integer)
-    film_base = db.Column("film_base", db.Text)
+    base = db.Column("base", db.Text)
     edge_code_date = db.Column("edge_code_date", db.Date)
     sound = db.Column("sound", db.Text)
     color = db.Column("color", db.Text)
@@ -179,7 +178,7 @@ class Film(AVFormat):
             "length": self.length,
             "duration": self.duration,
             "format_gauge": self.format_gauge,
-            "base": self.film_base,
+            "base": self.base,
             "edge_code_date": self.serialize_date(self.edge_code_date),
             "sound": self.sound,
             "color": self.color,
@@ -199,12 +198,12 @@ class GroovedDisc(AVFormat):
                           back_populates="groove_disks")
 
     # This is a year
-    date_recorded = db.Column("date_recorded_grooved_disc", db.Integer)
-    side = db.Column("side_grooved_disc", db.Text)
-    duration = db.Column("duration_grooved_disc", db.Text)
+    date_recorded = db.Column("date_recorded", db.Integer)
+    side = db.Column("side", db.Text)
+    duration = db.Column("duration", db.Text)
     diameter = db.Column("diameter", db.Integer)
     disc_material = db.Column("disc_material", db.Text)
-    base = db.Column("base_grooved_disc", db.Text)
+    base = db.Column("base", db.Text)
     playback_direction = db.Column("playback_direction", db.Text)
     playback_speed = db.Column("playback_speed", db.Text)
 
