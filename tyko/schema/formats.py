@@ -3,7 +3,7 @@ import datetime
 from typing import Dict, Optional, Tuple, Mapping
 import re
 import sqlalchemy as db
-from sqlalchemy.ext.declarative import ConcreteBase
+from sqlalchemy.ext.declarative import ConcreteBase, declared_attr
 from sqlalchemy.orm import relationship
 
 from tyko.schema.avtables import AVTables, SerializedData
@@ -34,6 +34,7 @@ class AVFormat(AVTables):
     }
     obj_sequence = db.Column("obj_sequence", db.Integer)
 
+    object_id = db.Column(db.Integer, db.ForeignKey("tyko_object.object_id"))
 
     notes = relationship("Note",
                          secondary=item_has_notes_table,
@@ -119,7 +120,7 @@ class OpenReel(AVFormat):
     track_configuration = db.Column("track_configuration", db.Text)
     track_duration = db.Column("track_duration", db.Text)
     generation = db.Column("generation", db.Text)
-    object_id = db.Column(db.Integer, db.ForeignKey("tyko_object.object_id"))
+
     object = relationship("CollectionObject",
                           back_populates="open_reels")
 
@@ -151,7 +152,6 @@ class Film(AVFormat):
 
     table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'), primary_key=True)
 
-    object_id = db.Column(db.Integer, db.ForeignKey("tyko_object.object_id"))
     object = relationship("CollectionObject",
                           back_populates="films")
 
@@ -193,7 +193,7 @@ class GroovedDisc(AVFormat):
     __mapper_args__ = {'polymorphic_identity': 'grooved_discs'}
     table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'),
                          primary_key=True)
-    object_id = db.Column(db.Integer, db.ForeignKey("tyko_object.object_id"))
+
     object = relationship("CollectionObject",
                           back_populates="groove_disks")
 
@@ -228,7 +228,6 @@ class AudioVideo(AVFormat):
     table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'),
                          primary_key=True)
 
-    object_id = db.Column(db.Integer, db.ForeignKey("tyko_object.object_id"))
     object = relationship("CollectionObject",
                           back_populates="audio_videos")
 
@@ -255,7 +254,6 @@ class AudioCassette(AVFormat):
     table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'),
                          primary_key=True)
 
-    object_id = db.Column(db.Integer, db.ForeignKey("tyko_object.object_id"))
     object = relationship("CollectionObject",
                           back_populates="audio_cassettes")
 
@@ -390,7 +388,6 @@ class CollectionItem(AVFormat):
     table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'),
                          primary_key=True)
 
-    object_id = db.Column(db.Integer, db.ForeignKey("tyko_object.object_id"))
     object = relationship("CollectionObject",
                           back_populates="collection_items")
 
