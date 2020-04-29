@@ -389,7 +389,6 @@ class CollectionItem(AVFormat):
     __mapper_args__ = {'polymorphic_identity': 'items'}
     table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'),
                          primary_key=True)
-    # __mapper_args__ = {'polymorphic_identity': 'items'}
 
     object_id = db.Column(db.Integer, db.ForeignKey("tyko_object.object_id"))
     object = relationship("CollectionObject",
