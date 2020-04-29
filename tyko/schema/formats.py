@@ -20,7 +20,7 @@ class AVFormat(AVTables):
     __tablename__ = 'formats'
     name = db.Column("name", db.Text)
     type = db.Column(db.String(50))
-
+    FK_TABLE_ID = "formats.item_id"
     table_id = db.Column(
         "item_id",
         db.Integer,
@@ -102,7 +102,7 @@ class FormatTypes(AVTables):
 class OpenReel(AVFormat):
     __tablename__ = "open_reels"
     __mapper_args__ = {'polymorphic_identity': 'open_reels'}
-    table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'),
+    table_id = db.Column(db.Integer, db.ForeignKey(AVFormat.FK_TABLE_ID),
                          primary_key=True)
     date_recorded = db.Column(
         "date_recorded", db.Date
@@ -150,7 +150,8 @@ class Film(AVFormat):
         'polymorphic_identity': 'films'
     }
 
-    table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'), primary_key=True)
+    table_id = db.Column(db.Integer, db.ForeignKey(AVFormat.FK_TABLE_ID),
+                         primary_key=True)
 
     object = relationship("CollectionObject",
                           back_populates="films")
@@ -191,7 +192,7 @@ class Film(AVFormat):
 class GroovedDisc(AVFormat):
     __tablename__ = "grooved_discs"
     __mapper_args__ = {'polymorphic_identity': 'grooved_discs'}
-    table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'),
+    table_id = db.Column(db.Integer, db.ForeignKey(AVFormat.FK_TABLE_ID),
                          primary_key=True)
 
     object = relationship("CollectionObject",
@@ -225,7 +226,7 @@ class GroovedDisc(AVFormat):
 class AudioVideo(AVFormat):
     __tablename__ = "audio_videos"
     __mapper_args__ = {'polymorphic_identity': 'audio_videos'}
-    table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'),
+    table_id = db.Column(db.Integer, db.ForeignKey(AVFormat.FK_TABLE_ID),
                          primary_key=True)
 
     object = relationship("CollectionObject",
@@ -251,7 +252,7 @@ class AudioCassette(AVFormat):
     __tablename__ = 'audio_cassettes'
     __mapper_args__ = {'polymorphic_identity': 'audio_cassettes'}
 
-    table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'),
+    table_id = db.Column(db.Integer, db.ForeignKey(AVFormat.FK_TABLE_ID),
                          primary_key=True)
 
     object = relationship("CollectionObject",
@@ -385,7 +386,7 @@ item_has_contacts_table = db.Table(
 class CollectionItem(AVFormat):
     __tablename__ = "items"
     __mapper_args__ = {'polymorphic_identity': 'items'}
-    table_id = db.Column(db.Integer, db.ForeignKey('formats.item_id'),
+    table_id = db.Column(db.Integer, db.ForeignKey(AVFormat.FK_TABLE_ID),
                          primary_key=True)
 
     object = relationship("CollectionObject",
