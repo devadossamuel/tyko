@@ -18,7 +18,7 @@ item_has_notes_table = db.Table(
 class AVFormat(AVTables):
     __tablename__ = 'formats'
     name = db.Column("name", db.Text)
-    type = db.Column(db.String(50))
+    type = db.Column(db.Text())
     FK_TABLE_ID = "formats.item_id"
     table_id = db.Column(
         "item_id",
@@ -341,7 +341,7 @@ class AudioCassette(AVFormat):
 class CassetteType(AVTables):
     __tablename__ = "cassette_types"
     table_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    name = db.Column("name", db.String)
+    name = db.Column("name", db.Text)
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         return {
@@ -353,7 +353,7 @@ class CassetteType(AVTables):
 class CassetteTapeType(AVTables):
     __tablename__ = "cassette_tape_types"
     table_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    name = db.Column("name", db.String)
+    name = db.Column("name", db.Text)
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         return {
@@ -365,7 +365,7 @@ class CassetteTapeType(AVTables):
 class CassetteTapeThickness(AVTables):
     __tablename__ = "cassette_tape_thickness"
     table_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    name = db.Column("name", db.String)
+    name = db.Column("name", db.Text)
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         return {
