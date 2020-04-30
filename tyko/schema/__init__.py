@@ -19,7 +19,7 @@ from .objects import CollectionObject
 from .instantiation import FileAnnotationType, InstantiationFile, \
     FileAnnotation, FileNotes
 
-ALEMBIC_VERSION: str = "364bf8893123"
+ALEMBIC_VERSION: str = "d008a138763c"
 
 Session = scoped_session(sessionmaker(expire_on_commit=False))
 
