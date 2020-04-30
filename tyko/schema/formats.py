@@ -231,9 +231,9 @@ class AudioVideo(AVFormat):
     object = relationship("CollectionObject",
                           back_populates="audio_videos")
 
-    av_date_recorded = db.Column("audio_video_date_recorded", db.Date)
+    av_date_recorded = db.Column("date_recorded", db.Date)
     side = db.Column("side", db.Text)
-    duration = db.Column("audio_video_duration", db.Text)
+    duration = db.Column("duration", db.Text)
     format_subtype = db.Column("format_subtype", db.Text)
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
