@@ -16,7 +16,7 @@ class InstantiationFile(AVTables):
 
     source = db.Column("source", db.Text,
                        default="University of Illinois library",
-                       nullable=False)
+                       nullable=True)
 
     generation = db.Column("generation", db.Text)
 
