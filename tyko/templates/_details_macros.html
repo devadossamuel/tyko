@@ -255,10 +255,8 @@ function remove(apiPath) {
 {% macro metadata_widget(field_name, field_value) %}
     <td style="width: 16.66%" class="font-weight-bold">{{field_name}}</td>
     <td>
-        <div id="{{field_name}}Data">
-            <div class="container">
-                <p>{{field_value}}</p>
-            </div>
+        <div id="{{field_name}}Data" class="container">
+            <p>{{field_value}}</p>
         </div>
         {{ caller() }}
     </td>
@@ -371,8 +369,10 @@ function remove(apiPath) {
 
             let displayWidget = getWidget("textEditor",
                 document.getElementById("{{field_name}}Data"),
+                {% autoescape false %}
                 "{{ field_name }}",
                 "{{ field_value }}",
+                {% endautoescape %}
             );
             displayWidget.onEdited = function (data) {
                 const newData= {
