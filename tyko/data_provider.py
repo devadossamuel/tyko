@@ -9,7 +9,7 @@ from sqlalchemy.sql.expression import true
 from sqlalchemy import orm
 
 from .schema.collection import Collection
-from .schema.formats import FormatTypes
+from .schema import formats
 from .schema.instantiation import FileNotes, InstantiationFile, \
     FileAnnotation, FileAnnotationType
 from .schema import CollectionItem
@@ -376,7 +376,7 @@ class ObjectDataConnector(AbsNotesConnector):
             serialized_all_collection_object = []
             for collection_object in all_collection_object:
                 serialized_all_collection_object.append(
-                    collection_object.serialize(True)
+                    collection_object.serialize(False)
                 )
 
             all_collection_object = serialized_all_collection_object
@@ -812,25 +812,57 @@ class FilesDataConnector(AbsDataProviderConnector):
 
 class ItemDataConnector(AbsNotesConnector):
 
+    @staticmethod
+    def _get_all(session):
+        all_collection_item = session.query(formats.AVFormat).all()
+        return all_collection_item
+
+    @staticmethod
+    def _get_one(session, table_id: int):
+
+        res = list(session.query(formats.Film)
+                    .filter(formats.AVFormat.table_id == table_id)
+                    .all()) +\
+               list(session.query(formats.AudioCassette)
+                    .filter(formats.AVFormat.table_id == table_id)
+                    .all()) + \
+               list(session.query(formats.AudioVideo)
+                    .filter(formats.AVFormat.table_id == table_id)
+                    .all()) + \
+               list(session.query(formats.GroovedDisc)
+                    .filter(formats.AVFormat.table_id == table_id)
+                    .all()) + \
+               list(session.query(formats.OpenReel)
+                    .filter(formats.AVFormat.table_id == table_id) \
+                    .all()) + \
+               list(session.query(formats.CollectionItem)
+                    .filter(formats.AVFormat.table_id == table_id) \
+                    .all())
+        if len(res) == 0:
+            res = list(session.query(formats.AVFormat)
+                       .filter(formats.AVFormat.table_id == table_id)
+                       .all())
+        return res
+
+    @staticmethod
+    def _serialize(items):
+        serialized_all_collection_item = []
+        for collection_item in items:
+            serialized_all_collection_item.append(
+                collection_item.serialize(true))
+
+        return serialized_all_collection_item
+
     def get(self, id=None, serialize=False):
         session = self.session_maker()
         try:
-            if id:
-                all_collection_item = session.query(CollectionItem)\
-                    .filter(CollectionItem.table_id == id)\
-                    .all()
+            if id is not None:
+                all_collection_item = self._get_one(session, id)
             else:
-                all_collection_item = \
-                    session.query(CollectionItem).all()
+                all_collection_item = self._get_all(session)
 
             if serialize:
-                serialized_all_collection_item = []
-
-                for collection_item in all_collection_item:
-                    serialized_all_collection_item.append(
-                        collection_item.serialize())
-
-                all_collection_item = serialized_all_collection_item
+                all_collection_item = self._serialize(all_collection_item)
 
             if id is not None:
                 return all_collection_item[0]
@@ -862,8 +894,8 @@ class ItemDataConnector(AbsNotesConnector):
         session = self.session_maker()
         name = kwargs["name"]
         format_id = int(kwargs["format_id"])
-        format_type = session.query(FormatTypes)\
-            .filter(FormatTypes.id == format_id).one()
+        format_type = session.query(formats.FormatTypes)\
+            .filter(formats.FormatTypes.id == format_id).one()
 
         new_item = CollectionItem(
             name=name,
@@ -1205,11 +1237,11 @@ class DataProvider:
             session = self.db_session_maker()
 
             if id:
-                all_formats = session.query(FormatTypes)\
-                    .filter(FormatTypes.id == id)\
+                all_formats = session.query(formats.FormatTypes)\
+                    .filter(formats.FormatTypes.id == id)\
                     .all()
             else:
-                all_formats = session.query(FormatTypes).all()
+                all_formats = session.query(formats.FormatTypes).all()
             session.close()
 
         except sqlalchemy.exc.DatabaseError as e:

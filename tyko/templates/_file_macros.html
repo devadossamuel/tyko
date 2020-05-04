@@ -20,6 +20,7 @@
                         <th scope="col"
                             data-field="name"
                             data-sortable="true"
+                            data-width="500"
                             data-formatter="fileNameFormatter"
                         >File Name
                         </th>
@@ -27,53 +28,21 @@
                             scope="col"
                             data-formatter="fileOptionsFormatter"
                             data-width="10"
+                            data-sortable="false"
                             data-align="right"></th>
                     </tr>
                 </thead>
                 <script type="application/javascript">
                     let dataRoutes = {};
-                    async function get_routes(){
-                        let xhr = new XMLHttpRequest();
-                        xhr.withCredentials = false;
-
-                        let dataRoutesPromise = new Promise(((resolve, reject) => {
-                            xhr.onreadystatechange = function () {
-                                if (xhr.readyState !== 4) {
-                                    return;
-                                }
-                                if (xhr.status >= 200 && xhr.status < 300) {
-                                    resolve(xhr.response);
-                                } else {
-                                    reject({
-                                        status: xhr.status,
-                                        statusText: xhr.statusText,
-                                        responseText: xhr.responseText
-                                    })
-                                }
-                            };
-                            xhr.open("get", "/api", true);
-                            xhr.send();
-                        })).then(function (res) {
-                            let d = JSON.parse(res)
-                            for (let i =0; i < d.length; i++){
-                                dataRoutes[d[i].endpoint.toString()] = d[i];
-                            }
-                            return dataRoutes
-                        }).catch(function (res) {
-                                alert("Failed" + res)
-                            });
-                        await dataRoutesPromise
-                    }
-
-                    get_routes();
 
                     function fileNameFormatter(value, row, index) {
                       const id = $table.bootstrapTable('getData')[index]['id']
                       const editURL = getFileFrontEndUrl(id);
-                      return `<a href='${editURL}'>${value}</a>`
+                      return `<a href='${editURL}' title="${value}">${value}</a>`
                     }
 
                     function api_url(fileID) {
+                      return "";
                       const template = dataRoutes['item_files'].route;
                       return template.replace('<int:project_id>',
                           "{{project_id}}").
@@ -83,12 +52,13 @@
                     }
 
                     function getFileFrontEndUrl(fileID) {
-                      const template = dataRoutes['page_file_details'].route
-                      return template
-                        .replace("<int:project_id>", "{{project_id}}")
-                        .replace("<int:object_id>", "{{object_id}}")
-                        .replace("<int:item_id>", "{{item_id}}")
-                        .replace('<int:file_id>', fileID)
+                      return ""
+                      {#const template = dataRoutes['page_file_details'].route#}
+                      {#return template#}
+                      {#  .replace("<int:project_id>", "{{project_id}}")#}
+                      {#  .replace("<int:object_id>", "{{object_id}}")#}
+                      {#  .replace("<int:item_id>", "{{item_id}}")#}
+                      {#  .replace('<int:file_id>', fileID)#}
                     }
 
                     function fileOptionsFormatter(value, row, index) {
@@ -104,7 +74,7 @@
                         const removeButton = `<button class="dropdown-item btn-danger" data-toggle="modal" data-target="#removeFileModal" data-entity-name=${fileName} data-removeurl=${fileApiUrl}>Remove</button>`
                         const dropdownMenu =
                             `<div class="dropdown-menu">${editButton}${removeButton}</div>`
-                        return `<div class="btn-group-sm d-flex justify-content-end" role="group" aria-label="Options">${dropdownButton}${dropdownMenu}</div>`;
+                        return `<div class="btn-group-sm justify-content-end" role="group" aria-label="Options">${dropdownButton}${dropdownMenu}</div>`;
                     }
 
                 </script>

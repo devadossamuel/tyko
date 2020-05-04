@@ -1,4 +1,5 @@
 import datetime
+from abc import ABC
 
 from typing import Dict, Optional, Tuple, Mapping
 import re
@@ -61,23 +62,29 @@ class AVFormat(AVTables):
     def _iter_notes(self):
         yield from self.notes
 
+    def format_details(self) -> Dict[str, SerializedData]:
+        return dict()
+
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
 
         data = {
             "item_id": self.table_id,
             "name": self.name,
             "files": list(self._iter_files(recurse)),
-            "notes": list(self._iter_notes()),
-            "parent_object_id": self.table_id,
-            "obj_sequence": self.obj_sequence
+            "parent_object_id": self.object_id,
+            "obj_sequence": self.obj_sequence,
         }
+        notes = []
+        for note in self._iter_notes():
+            notes.append(note.serialize())
+        data['notes'] = notes
         try:
             data["format"] = self.format_type.serialize()
             data["format_id"] = self.format_type_id
         except AttributeError:
             data["format"] = None
             data["format_id"] = None
-
+        data['format_details'] = self.format_details()
         return data
 
 
@@ -123,9 +130,8 @@ class OpenReel(AVFormat):
     object = relationship("CollectionObject",
                           back_populates="open_reels")
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def format_details(self) -> Dict[str, SerializedData]:
         return {
-            **super().serialize(recurse),
             "date_recorded": self.serialize_date(self.date_recorded),
             "track_count": self.track_count,
             "tape_size": self.tape_size,
@@ -142,8 +148,8 @@ class OpenReel(AVFormat):
         }
 
 
+class Film(AVFormat, ABC):
 
-class Film(AVFormat):
     __tablename__ = "films"
     __mapper_args__ = {
         'polymorphic_identity': 'films'
@@ -169,9 +175,8 @@ class Film(AVFormat):
     ad_test_date = db.Column("ad_test_date", db.Date)
     ad_test_level = db.Column("ad_test_level", db.Integer)
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def format_details(self) -> Dict[str, SerializedData]:
         return {
-            **super().serialize(recurse),
             "date_of_film": self.serialize_date(self.date_of_film),
             "can_label": self.can_label,
             "leader_label": self.leader_label,
@@ -184,11 +189,11 @@ class Film(AVFormat):
             "color": self.color,
             "image_type": self.image_type,
             "ad_test_date": self.serialize_date(self.ad_test_date),
-            "ad_test_level": self.ad_test_level,
+            "ad_test_level": self.ad_test_level
         }
 
 
-class GroovedDisc(AVFormat):
+class GroovedDisc(AVFormat, ABC):
     __tablename__ = "grooved_discs"
     __mapper_args__ = {'polymorphic_identity': 'grooved_discs'}
     table_id = db.Column(db.Integer, db.ForeignKey(AVFormat.FK_TABLE_ID),
@@ -207,9 +212,8 @@ class GroovedDisc(AVFormat):
     playback_direction = db.Column("playback_direction", db.Text)
     playback_speed = db.Column("playback_speed", db.Text)
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def format_details(self) -> Dict[str, SerializedData]:
         return {
-            **super().serialize(recurse),
             "date_recorded": self.date_recorded,
             "side": self.side,
             "duration": self.duration,
@@ -218,7 +222,6 @@ class GroovedDisc(AVFormat):
             "base": self.base,
             "playback_direction": self.playback_direction,
             "playback_speed": self.playback_speed
-
         }
 
 
@@ -236,9 +239,8 @@ class AudioVideo(AVFormat):
     duration = db.Column("duration", db.Text)
     format_subtype = db.Column("format_subtype", db.Text)
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def format_details(self) -> Dict[str, SerializedData]:
         return {
-            **super().serialize(recurse),
             "date_recorded": self.serialize_date(self.av_date_recorded),
             "side": self.side,
             "duration": self.duration,
@@ -247,7 +249,7 @@ class AudioVideo(AVFormat):
         }
 
 
-class AudioCassette(AVFormat):
+class AudioCassette(AVFormat, ABC):
     __tablename__ = 'audio_cassettes'
     __mapper_args__ = {'polymorphic_identity': 'audio_cassettes'}
 
@@ -315,10 +317,9 @@ class AudioCassette(AVFormat):
 
         raise AttributeError("Unknown date format: {}".format(date_string))
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def format_details(self) -> Dict[str, SerializedData]:
 
         serialized_data = {
-            **super().serialize(recurse),
             "format_type": self.format_type.serialize(),
             "inspection_date": self.serialize_date(self.inspection_date),
             "obj_sequence": self.obj_sequence,
@@ -334,6 +335,19 @@ class AudioCassette(AVFormat):
             serialized_data["tape_thickness"] = self.tape_thickness.serialize()
 
         return serialized_data
+
+
+class CollectionItem(AVFormat):
+    __tablename__ = "items"
+    __mapper_args__ = {'polymorphic_identity': 'items'}
+    table_id = db.Column(db.Integer, db.ForeignKey(AVFormat.FK_TABLE_ID),
+                         primary_key=True)
+
+    object = relationship("CollectionObject",
+                          back_populates="collection_items")
+
+    def format_details(self) -> Dict[str, SerializedData]:
+        return dict()
 
 # ############################ End of AV Formats ##############################
 
@@ -382,21 +396,7 @@ item_has_contacts_table = db.Table(
 )
 
 
-class CollectionItem(AVFormat):
-    __tablename__ = "items"
-    __mapper_args__ = {'polymorphic_identity': 'items'}
-    table_id = db.Column(db.Integer, db.ForeignKey(AVFormat.FK_TABLE_ID),
-                         primary_key=True)
 
-    object = relationship("CollectionObject",
-                          back_populates="collection_items")
-
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
-
-        data: Dict[str, SerializedData] = {
-            **super().serialize(recurse),
-        }
-        return data
 
 # =============================================================================
 # Enumerated tables
@@ -419,5 +419,6 @@ format_types = {
     "video": (3,),
     "open reel": (4, OpenReel),
     "grooved disc": (5, GroovedDisc),
-    "film": (6, Film)
+    "film": (6, Film),
+    "audio cassette": (7, AudioCassette)
 }

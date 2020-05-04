@@ -279,7 +279,7 @@ def test_object_update(app):
         assert get_object["name"] == "changed_dummy object"
         assert get_object["originals_rec_date"] == "2010-01-04"
         assert get_object["originals_return_date"] == "2012-05-04"
-        assert get_object['collection']["collection_id"] == collection_two_id
+        assert get_object["collection_id"] == collection_two_id
 
 
 def test_object_delete(app):

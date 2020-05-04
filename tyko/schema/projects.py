@@ -64,7 +64,7 @@ class Project(AVTables):
             child_objects = []
             for project_object in self.objects:
                 project_object_data = project_object.serialize(recurse=False)
-                del project_object_data['parent_project']
+                del project_object_data['parent_project_id']
                 child_objects.append(project_object_data)
             data["objects"] = child_objects
 

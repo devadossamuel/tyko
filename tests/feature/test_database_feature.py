@@ -855,7 +855,7 @@ def audio_cassette_has_a_title(dummy_database, object_title, item_title, date_re
         .one().audio_cassettes[0]
     cassette_data = cassette.serialize()
     assert cassette_data['name'] == item_title
-    assert cassette_data['date_recorded'] == date_recorded
+    assert cassette_data['format_details']['date_recorded'] == date_recorded
 
 
 @then(
@@ -884,4 +884,4 @@ def audio_cassette_inspection_date(dummy_database, object_title, item_title, ins
         .filter(schema.CollectionObject.name == object_title) \
         .one().audio_cassettes[0]
     cassette_date = cassette.serialize()
-    assert cassette_date['inspection_date'] == inspection_date
+    assert cassette_date['format_details']['inspection_date'] == inspection_date

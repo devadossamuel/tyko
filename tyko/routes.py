@@ -232,7 +232,7 @@ class Routes:
             endpoint="project_object",
             view_func=ProjectObjectAPI.as_view("project_objects",
                                                project=project),
-            methods=["DELETE"]
+            methods=["GET", "DELETE"]
         )
 
         yield UrlRule(

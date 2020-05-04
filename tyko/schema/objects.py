@@ -50,7 +50,14 @@ class CollectionObject(AVTables):
     groove_disks = relationship("GroovedDisc", back_populates="object")
 
     def all_items(self):
-        return self.collection_items + self.audio_cassettes + self.films + self.audio_videos + self.groove_disks
+        r = self.collection_items \
+            + self.audio_cassettes \
+            + self.films \
+            + self.audio_videos \
+            + self.groove_disks \
+            + self.open_reels \
+            + self.collection_items
+        return r
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
 
@@ -61,8 +68,12 @@ class CollectionObject(AVTables):
 
         if recurse is True:
             data["notes"] = [note.serialize() for note in self.notes]
-
-        data["collection"] = self.get_collection(recurse)
+        else:
+            data['notes'] = [{"note_id": note.id} for note in self.notes]
+        if recurse:
+            data["collection"] = self.get_collection(True)
+        else:
+            data["collection_id"] = self.get_collection(False)
 
         if self.contact is not None:
             contact = self.contact.serialize()
@@ -77,9 +88,9 @@ class CollectionObject(AVTables):
                 data["project"] = None
         else:
             if self.project is not None:
-                data["parent_project"] = self.project.id
+                data["parent_project_id"] = self.project.id
             else:
-                data["parent_project"] = None
+                data["parent_project_id"] = None
 
         data["originals_rec_date"] = \
             self.serialize_date(self.originals_rec_date)
@@ -93,7 +104,7 @@ class CollectionObject(AVTables):
         if self.collection is not None:
             if recurse is True:
                 return self.collection.serialize()
-            return None
+            return self.collection.id
         return None
 
     def get_items(self, recurse):
@@ -123,6 +134,9 @@ class CollectionObject(AVTables):
             else:
                 items.append({
                     "item_id": item.table_id,
-                    "name": item.name
+                    "name": item.name,
+                    "format":
+                        item.format_type.serialize()
+                        if item.format_type is not None else None
                 })
         return items
