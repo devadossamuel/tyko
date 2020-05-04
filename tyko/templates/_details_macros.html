@@ -236,19 +236,20 @@ function remove(apiPath) {
 
 {% macro breadcrumbs_widget(breadcrumbs) %}
 {% if breadcrumbs %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-    {% for breadcrumb in breadcrumbs %}
-        <li class="breadcrumb-item {{'active' if breadcrumb.current}}"
-            {{ 'aria-current="page"' if breadcrumb.current }}>
-            {% if breadcrumb.current %}
-                {{ breadcrumb.name }}
-            {% else %}
-                <a href="{{breadcrumb.link}}">{{ breadcrumb.name }}</a></li>
-            {% endif %}
-    {% endfor %}
-    </ol>
-</nav>
+    <nav aria-label="breadcrumb" class="nav nav-fill">
+        <ol class="breadcrumb mb-0 nav">
+            {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item {{'active' if breadcrumb.current}}"
+                {{ 'aria-current="page"' if breadcrumb.current }}>
+                {% if breadcrumb.current %}
+                    {{ breadcrumb.name }}
+                {% else %}
+                    <a href="{{breadcrumb.link}}">{{ breadcrumb.name }}</a>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ol>
+    </nav>
 {% endif %}
 {% endmacro %}
 

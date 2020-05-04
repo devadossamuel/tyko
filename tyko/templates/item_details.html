@@ -5,7 +5,7 @@
 {% import "_item_macros.html" as item_widgets %}
 
 {% block main_details %}
-    {%  call widgets.card("Details", "my-1 h-100")  %}
+    {%  call widgets.card("Details", "my-1")  %}
         {%  call metadata_table() %}
             <tr>
                 {{widgets.metadata_text_edit_widget("Name", item['name'], 'name', api_path)}}
@@ -14,6 +14,35 @@
                 {{widgets.metadata_number_edit_widget("Object Sequence", item['obj_sequence'], 'obj_sequence', api_path)}}
             </tr>
         {% endcall %}
+    {% endcall %}
+    {%  call widgets.card("Format Details", "my-1")  %}
+        <div class="container">
+            <div class="row mb-3">
+                <table class="table table-sm">
+                    <caption hidden>Metadata</caption>
+                    <thead>
+                        <tr hidden>
+                            <th scope="col">Type</th>
+                            <th scope="col">Data</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for field_name,field_value in item['format_details'].items() %}
+                        <tr>
+                            <th scope="row" style="width: 16.66%">
+                                {{field_name}}
+                            </th>
+                            <td>
+                                <div id="{{field_name}}Data" class="container-sm">
+                                    <p>{{field_value}}</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     {% endcall %}
 {% endblock %}
 
