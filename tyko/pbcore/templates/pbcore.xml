@@ -16,11 +16,7 @@
 
 {%- macro pbcorePart(part) %}
     <pbcorePart>
-        {% if part['medusa_uuid'] is not none -%}
-        <pbcoreIdentifier source="{{ identifier_source }}" annotation="medusa_uuid">{{ part['medusa_uuid'] }}</pbcoreIdentifier>
-        {% else -%}
         <pbcoreIdentifier source="{{ identifier_source }}"/>
-        {%- endif %}
         <pbcoreTitle>{{ part['name'] }}</pbcoreTitle>
         {%- for note in part['notes'] %}
         <pbcoreAnnotation annotationType="{{- note['note_type'] ~ " note" if note['note_type']|length else "Note" -}} ">{{ note['text'] }}</pbcoreAnnotation>
