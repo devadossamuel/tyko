@@ -72,10 +72,14 @@ class WidgetState {
    *
    * @param {string} id - id to assign the new column
    * @param {string} colClass - html classes to assign to the new column
+   * @param {string|null} wordBreak - optional. add a word break to the column
    * @return {HTMLDivElement}
    */
-  newColumn(id, colClass = 'col') {
+  newColumn(id, colClass = 'col', wordBreak=null) {
     const newColumnSection = document.createElement('div');
+    if (wordBreak != null){
+      newColumnSection.setAttribute('style', `word-break: ${wordBreak};`);
+    }
 
     newColumnSection.setAttribute('class', colClass);
     newColumnSection.setAttribute('id', id);
@@ -196,7 +200,7 @@ class ViewWidget extends WidgetState {
   draw(element, data) {
     element.innerHTML = '';
     const newRoot = this.newRoot();
-    const newContent = this.newColumn('content', 'align-self-stretch');
+    const newContent = this.newColumn('content', 'align-self-stretch', 'break-word');
     newContent.innerText = data['fieldText'];
     newRoot.appendChild(newContent);
 
@@ -211,6 +215,7 @@ class ViewWidget extends WidgetState {
     newButton.setAttribute('class',
         'btn btn-sm btn-secondary btn-sm float-right');
     newButton.setAttribute('id', this._parent.editButtonId);
+    // newButton.setAttribute('style', "word-break: break-word;");
 
     newButton.innerHTML = 'Edit';
     const self = this._parent;
