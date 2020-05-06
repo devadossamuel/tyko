@@ -321,11 +321,12 @@ class AudioCassette(AVFormat, ABC):
 
         serialized_data = {
             "format_type": self.format_type.serialize(),
-            "inspection_date": self.serialize_date(self.inspection_date),
-            "obj_sequence": self.obj_sequence,
+            "inspection_date":
+                self.serialize_date(self.inspection_date)
+                if self.inspection_date is not None else None,
             "date_recorded":
                 self.serialize_date(self.recording_date,
-                                    self.recording_date_precision),
+                                    self.recording_date_precision) if self.recording_date is not None else None,
         }
 
         if self.tape_type is not None:
@@ -379,11 +380,13 @@ class CassetteTapeType(AVTables):
 class CassetteTapeThickness(AVTables):
     __tablename__ = "cassette_tape_thickness"
     table_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    name = db.Column("name", db.Text)
+    value = db.Column("value", db.Text)
+    unit = db.Column("unit", db.Text)
 
     def serialize(self, recurse=False) -> Dict[str, SerializedData]:
         return {
-            "name": self.name,
+            "value": self.value,
+            "unit": self.unit,
             "id": self.table_id
         }
 

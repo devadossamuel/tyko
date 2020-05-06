@@ -438,7 +438,11 @@ class ObjectFrontend(ProjectComponentDetailFrontend):
                                                    id=entity_id)
 
         collection = selected_object.get('collection')
-        if collection is not None:
+        if collection is None and 'collection_id' in selected_object:
+            collection_connector = data_provider.CollectionDataConnector(self._data_provider.db_session_maker)
+            collection = collection_connector.get(selected_object['collection_id'])
+            selected_object['collection_name'] = collection.collection_name
+        else:
             collection_id = selected_object['collection'].get('collection_id')
             if collection_id is not None:
 

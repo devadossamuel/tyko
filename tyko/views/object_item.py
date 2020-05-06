@@ -1,6 +1,6 @@
 from typing import Dict, Any
 
-from flask import views, make_response, jsonify, request
+from flask import views, make_response, jsonify, request, url_for
 
 from tyko import middleware, data_provider
 
@@ -74,8 +74,23 @@ class ItemAPI(views.MethodView):
         )
 
     def get(self, item_id):
+        item = self._data_connector.get(item_id, True)
+        object_provider = data_provider.ObjectDataConnector(
+            self._data_provider.db_session_maker)
+
+        if 'parent_object_id' in item and item['parent_object_id'] is not None:
+            parent_project = object_provider.get(
+                id=item['parent_object_id'], serialize=True)['parent_project_id']
+
+            for f in item['files']:
+                f['routes'] = {
+                    "frontend": url_for("page_file_details", item_id=item['item_id'], object_id=item['parent_object_id'], project_id=parent_project, file_id=f["id"]),
+                    "api": url_for("item_files", item_id=item['item_id'], object_id=item['parent_object_id'], project_id=parent_project, id=f["id"])
+
+                }
+
         data = {
-            "item": self._data_connector.get(item_id, True),
+            "item": item
         }
 
         response = make_response(jsonify(data), 200)

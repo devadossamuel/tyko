@@ -16,6 +16,7 @@ from .schema import CollectionItem
 from .schema.notes import Note, NoteTypes
 from .schema.objects import CollectionObject
 from .schema.projects import Project, ProjectStatus
+from .schema.formats import CassetteType, CassetteTapeType, CassetteTapeThickness
 from .exceptions import DataError
 from . import database
 
@@ -1401,3 +1402,112 @@ class FileAnnotationTypeConnector(AbsDataProviderConnector):
             return True
         finally:
             session.close()
+
+
+class CassetteTypeConnector(AbsDataProviderConnector):
+    def get(self, id=None, serialize=False):
+        session = self.session_maker()
+        try:
+            if id is not None:
+                cassette_types = session.query(CassetteType).filter(
+                    CassetteType.table_id == id
+                )
+            else:
+                cassette_types = session.query(CassetteType).all()
+            if serialize is False:
+                return cassette_types
+
+            enum_types = []
+            for i in cassette_types:
+                enum_types.append(i.serialize())
+
+            if id is not None:
+                return enum_types[0]
+            return enum_types
+        finally:
+            session.close()
+
+    def create(self, *args, **kwargs):
+        # TODO: CassetteTypeConnector.create()
+        pass
+
+    def update(self, id, changed_data):
+        # TODO: CassetteTypeConnector.update()
+        pass
+
+    def delete(self, id):
+        # TODO: CassetteTypeConnector.delete()
+        pass
+
+
+class CassetteTapeTypeConnector(AbsDataProviderConnector):
+    def get(self, id=None, serialize=False):
+        session = self.session_maker()
+        try:
+            if id is not None:
+                cassette_types = session.query(CassetteTapeType).filter(
+                    CassetteTapeType.table_id == id
+                )
+            else:
+                cassette_types = session.query(CassetteTapeType).all()
+            if serialize is False:
+                return cassette_types
+
+            enum_types = []
+            for i in cassette_types:
+                enum_types.append(i.serialize())
+
+            if id is not None:
+                return enum_types[0]
+            return enum_types
+        finally:
+            session.close()
+
+    def create(self, *args, **kwargs):
+        # TODO: CassetteTypeConnector.create()
+        pass
+
+    def update(self, id, changed_data):
+        # TODO: CassetteTypeConnector.update()
+        pass
+
+    def delete(self, id):
+        # TODO: CassetteTypeConnector.delete()
+        pass
+
+
+class CassetteTapeThicknessConnector(AbsDataProviderConnector):
+    def get(self, id=None, serialize=False):
+        session = self.session_maker()
+        try:
+            if id is not None:
+                cassette_types = session.query(CassetteTapeThickness).filter(
+                    CassetteTapeThickness.table_id == id
+                )
+            else:
+                cassette_types = session.query(CassetteTapeThickness).all()
+            if serialize is False:
+                return cassette_types
+
+            enum_types = []
+            for i in cassette_types:
+                enum_types.append(i.serialize())
+
+            if id is not None:
+                return enum_types[0]
+            return enum_types
+        finally:
+            session.close()
+
+    def create(self, *args, **kwargs):
+        # TODO: CassetteTypeConnector.create()
+        pass
+
+    def update(self, id, changed_data):
+        # TODO: CassetteTypeConnector.update()
+        pass
+
+    def delete(self, id):
+        # TODO: CassetteTypeConnector.delete()
+        pass
+

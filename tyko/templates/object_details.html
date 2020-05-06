@@ -1,6 +1,6 @@
 {% extends "panel_details.html" %}
 {% from "_macros.html" import notes_table_row, note_editor, notes_table, metadata_table%}
-{% from "_details_macros.html" import add_field_row, confirm_remove_entity_modal, child_entity_row, remove_modal_event_scripts, metadata_text_edit_widget, metadata_select_edit_widget, metadata_select_dynamic_edit_widget, metadata_date_edit_widget, card%}
+{% from "_details_macros.html" import add_field_row, confirm_remove_entity_modal2, child_entity_row, remove_modal_event_scripts, metadata_text_edit_widget, metadata_select_edit_widget, metadata_select_dynamic_edit_widget, metadata_date_edit_widget, card%}
 {% from "_item_macros.html" import item_new_button_row, new_item_modal %}
 {% block sidebar %}
     <div class="btn-toolbar mb-2 mb-md-0">
@@ -75,7 +75,8 @@
                 function itemOptionsFormatter(value, row, index, field) {
                   const dropdownButton = '<button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>';
                   const editButton = `<button class="dropdown-item" onclick="window.location='${row['routes']['frontend']}'">Edit</button>`
-                  const removeButton = `<button class="dropdown-item btn-danger" onclick="alert('does nothing now')" data-toggle="modal" >Remove</button>`
+                  const removeButton = `<button class="dropdown-item btn-danger" data-target="#removeItemModal" data-toggle="modal" data-displayname="${row['name']}" data-apiroute='${row["routes"]["api"]}'>Remove</button>`
+                  {#const removeButton = `<button class="dropdown-item btn-danger" data-toggel="modal" data-target="alert('does nothing now but when it does it will call ${row["routes"]["api"]}')" data-toggle="modal" >Remove</button>`#}
                   {#TODO: impliment remove #}
                   const dropdownMenu =
                             `<div class="dropdown-menu">${editButton}${removeButton}</div>`
@@ -106,36 +107,17 @@
 {% block secondary_details %}
     {% call card("Items", 'my-1') %}
         {{ itemsTable( api_path, object['parent_project_id'], object['object_id']  )}}
-{#        <table class="table">#}
-{#            <caption hidden>Items</caption>#}
-{#            <thead>#}
-{#                <th scope="col" hidden>Items</th>#}
-{#                <th scope="col" hidden>Remove</th>#}
-{#            </thead>#}
-{#            {% if "parent_project_id" in object %}#}
-{#                <tbody>#}
-{#                    {% for item in object['items'] %}#}
-{#                        {{ child_entity_row(#}
-{#                            item['name'],#}
-{#                            url_for('page_project_object_item_details', project_id=object['parent_project_id'], object_id=object['object_id'], item_id=item['item_id']),#}
-{#                            "removeItemModal",#}
-{#                            url_for("object_item", project_id=object['parent_project_id'], object_id=object['object_id'], item_id=item['item_id'])#}
-{#                            ) }}#}
-{#                    {%- endfor -%}#}
                     {{
                             item_new_button_row(
                                 url_for("project_object_add_item", object_id=object['object_id'], project_id=object['parent_project_id']),
                                 "newItemtModal"
                             )
                     }}
-{#                </tbody>#}
-{#            {% endif %}#}
-{#        </table>#}
             {% if "parent_project_id" in object %}
                 {{ new_item_modal("newItemtModal", formats, url_for("project_object_add_item", object_id=object['object_id'], project_id=object['parent_project_id'])) }}
 
             {% endif %}
-            {{ confirm_remove_entity_modal("removeItemModal") }}
+            {{ confirm_remove_entity_modal2("removeItemModal", confirmButtonID="removeItemModalRemoveButton") }}
     {% endcall %}
     {% call card("Notes", 'my-1') %}
         {% call(note) notes_table(object['notes'], api_path) %}

@@ -13,7 +13,7 @@ from .views.object_item import ItemAPI
 from .views.project import ProjectNotesAPI, ProjectAPI
 from .views.project_object import ProjectObjectAPI, ObjectApi, \
     ProjectObjectNotesAPI
-
+from .views import cassette_tape
 
 @dataclass
 class Route:
@@ -373,6 +373,31 @@ class Routes:
                 "item_notes",
                 item=item),
             methods=["PUT", "DELETE"]
+        )
+
+        yield UrlRule(
+            "/api/formats/cassette_tape/cassette_tape_tape)types",
+            view_func=cassette_tape.CassetteTapeTapeTypesAPI.as_view(
+                "cassette_tape_tape_types",
+                provider=self.db_engine
+            ),
+            methods=["GET"]
+        )
+        yield UrlRule(
+            "/api/formats/cassette_tape/cassette_tape_format_types",
+            view_func=cassette_tape.CassetteTapeFormatTypesAPI.as_view(
+                "cassette_tape_format_types",
+                provider=self.db_engine
+            ),
+            methods=["GET"]
+        )
+        yield UrlRule(
+            "/api/formats/cassette_tape/cassette_tape_tape_thickness",
+            view_func=cassette_tape.CassetteTapeThicknessAPI.as_view(
+                "cassette_tape_tape_thickness",
+                provider=self.db_engine
+            ),
+            methods=["GET"]
         )
 
     def get_api_file_routes(self):
