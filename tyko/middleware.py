@@ -460,8 +460,12 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
         if current_project:
             for obj in current_project['objects']:
                 obj['routes'] = {
-                    "frontend": url_for("page_project_object_details", project_id=id, object_id=obj['object_id']),
-                    "api":  url_for("project_object", project_id=id, object_id=obj['object_id'])
+                    "frontend": url_for("page_project_object_details",
+                                        project_id=id,
+                                        object_id=obj['object_id']),
+                    "api":  url_for("project_object",
+                                    project_id=id,
+                                    object_id=obj['object_id'])
                 }
             return current_project
 
@@ -627,7 +631,6 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
             new_data['collection_id'] = int(data['collectionId'])
 
         return new_data
-
 
 
 class ItemMiddlwareEntity(AbsMiddlwareEntity):

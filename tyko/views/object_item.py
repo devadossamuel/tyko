@@ -79,13 +79,21 @@ class ItemAPI(views.MethodView):
             self._data_provider.db_session_maker)
 
         if 'parent_object_id' in item and item['parent_object_id'] is not None:
-            parent_project = object_provider.get(
-                id=item['parent_object_id'], serialize=True)['parent_project_id']
+            parent_project = \
+                object_provider.get(id=item['parent_object_id'],
+                                    serialize=True)['parent_project_id']
 
             for f in item['files']:
                 f['routes'] = {
-                    "frontend": url_for("page_file_details", item_id=item['item_id'], object_id=item['parent_object_id'], project_id=parent_project, file_id=f["id"]),
-                    "api": url_for("item_files", item_id=item['item_id'], object_id=item['parent_object_id'], project_id=parent_project, id=f["id"])
+                    "frontend": url_for("page_file_details",
+                                        item_id=item['item_id'],
+                                        object_id=item['parent_object_id'],
+                                        project_id=parent_project,
+                                        file_id=f["id"]),
+                    "api": url_for("item_files",
+                                   item_id=item['item_id'],
+                                   object_id=item['parent_object_id'],
+                                   project_id=parent_project, id=f["id"])
 
                 }
 

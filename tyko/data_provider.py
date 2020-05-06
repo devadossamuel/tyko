@@ -16,7 +16,8 @@ from .schema import CollectionItem
 from .schema.notes import Note, NoteTypes
 from .schema.objects import CollectionObject
 from .schema.projects import Project, ProjectStatus
-from .schema.formats import CassetteType, CassetteTapeType, CassetteTapeThickness
+from .schema.formats import CassetteType, CassetteTapeType, \
+    CassetteTapeThickness
 from .exceptions import DataError
 from . import database
 
@@ -591,7 +592,11 @@ class ObjectDataConnector(AbsNotesConnector):
             matching_object = self._get_object(object_id, session)
             item_connector = ItemDataConnector(self.session_maker)
             new_item_id = item_connector.create(**data)
-            matching_object.collection_items.append(item_connector.get(id=new_item_id))
+
+            matching_object.collection_items.append(
+                item_connector.get(id=new_item_id)
+            )
+
             session.commit()
             return item_connector.get(id=new_item_id, serialize=True)
         finally:
@@ -822,23 +827,23 @@ class ItemDataConnector(AbsNotesConnector):
     def _get_one(session, table_id: int):
 
         res = list(session.query(formats.Film)
-                    .filter(formats.AVFormat.table_id == table_id)
-                    .all()) +\
-               list(session.query(formats.AudioCassette)
-                    .filter(formats.AVFormat.table_id == table_id)
-                    .all()) + \
-               list(session.query(formats.AudioVideo)
-                    .filter(formats.AVFormat.table_id == table_id)
-                    .all()) + \
-               list(session.query(formats.GroovedDisc)
-                    .filter(formats.AVFormat.table_id == table_id)
-                    .all()) + \
-               list(session.query(formats.OpenReel)
-                    .filter(formats.AVFormat.table_id == table_id) \
-                    .all()) + \
-               list(session.query(formats.CollectionItem)
-                    .filter(formats.AVFormat.table_id == table_id) \
-                    .all())
+                   .filter(formats.AVFormat.table_id == table_id)
+                   .all()) + \
+              list(session.query(formats.AudioCassette)
+                   .filter(formats.AVFormat.table_id == table_id)
+                   .all()) + \
+              list(session.query(formats.AudioVideo)
+                   .filter(formats.AVFormat.table_id == table_id)
+                   .all()) + \
+              list(session.query(formats.GroovedDisc)
+                   .filter(formats.AVFormat.table_id == table_id)
+                   .all()) + \
+              list(session.query(formats.OpenReel)
+                   .filter(formats.AVFormat.table_id == table_id)
+                   .all()) + \
+              list(session.query(formats.CollectionItem)
+                   .filter(formats.AVFormat.table_id == table_id)
+                   .all())
         if len(res) == 0:
             res = list(session.query(formats.AVFormat)
                        .filter(formats.AVFormat.table_id == table_id)
@@ -1510,4 +1515,3 @@ class CassetteTapeThicknessConnector(AbsDataProviderConnector):
     def delete(self, id):
         # TODO: CassetteTypeConnector.delete()
         pass
-

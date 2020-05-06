@@ -1,7 +1,7 @@
 import datetime
 from abc import ABC
 
-from typing import Dict, Optional, Tuple, Mapping
+from typing import Dict, Optional, Tuple
 import re
 import sqlalchemy as db
 from sqlalchemy.orm import relationship
@@ -325,8 +325,11 @@ class AudioCassette(AVFormat, ABC):
                 self.serialize_date(self.inspection_date)
                 if self.inspection_date is not None else None,
             "date_recorded":
-                self.serialize_date(self.recording_date,
-                                    self.recording_date_precision) if self.recording_date is not None else None,
+                self.serialize_date(
+                    self.recording_date,
+                    self.recording_date_precision)
+                if self.recording_date is not None
+                else None,
         }
 
         if self.tape_type is not None:
@@ -397,8 +400,6 @@ item_has_contacts_table = db.Table(
     db.Column("contact_id", db.Integer, db.ForeignKey("formats.item_id")),
     db.Column("item_id", db.Integer, db.ForeignKey("contact.contact_id"))
 )
-
-
 
 
 # =============================================================================

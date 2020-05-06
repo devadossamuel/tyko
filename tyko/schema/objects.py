@@ -38,7 +38,6 @@ class CollectionObject(AVTables):
                          backref="object_sources"
                          )
 
-
     contact_id = db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
 
     contact = relationship("Contact", foreign_keys=[contact_id])

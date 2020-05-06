@@ -22,7 +22,10 @@ def create_pbcore_from_object(object_id: int,
     resulting_object = connector.get(object_id, serialize=True)
     file_connector = FilesDataConnector(data_provider.db_session_maker)
     project_connector = ProjectDataConnector(data_provider.db_session_maker)
-    resulting_object['project'] = resolve_project_data(project_connector, resulting_object)
+
+    resulting_object['project'] = resolve_project_data(
+        project_connector, resulting_object)
+
     for item in resulting_object.get("items", []):
         item['files'] = resolve_files(file_connector, item)
 

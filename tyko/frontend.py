@@ -439,8 +439,13 @@ class ObjectFrontend(ProjectComponentDetailFrontend):
 
         collection = selected_object.get('collection')
         if collection is None and 'collection_id' in selected_object:
-            collection_connector = data_provider.CollectionDataConnector(self._data_provider.db_session_maker)
-            collection = collection_connector.get(selected_object['collection_id'])
+            collection_connector = \
+                data_provider.CollectionDataConnector(
+                    self._data_provider.db_session_maker)
+
+            collection = \
+                collection_connector.get(selected_object['collection_id'])
+
             selected_object['collection_name'] = collection.collection_name
         else:
             collection_id = selected_object['collection'].get('collection_id')
@@ -470,7 +475,8 @@ class ObjectFrontend(ProjectComponentDetailFrontend):
             selected_object['project_id'] = project_id
 
         elif 'parent_project_id' in selected_object:
-            selected_object['project_id'] = selected_object['parent_project_id']
+            selected_object['project_id'] = \
+                selected_object['parent_project_id']
 
         if "show_bread_crumb" in kwargs and kwargs["show_bread_crumb"] is True:
             breadcrumbs = self.build_breadcrumbs(
@@ -488,10 +494,11 @@ class ObjectFrontend(ProjectComponentDetailFrontend):
         else:
             breadcrumbs = None
         if selected_object['parent_project_id'] is not None:
-            api_route = url_for("project_object",
-                                project_id=selected_object['parent_project_id'],
-                                object_id=entity_id
-                                )
+            api_route = url_for(
+                "project_object",
+                project_id=selected_object['parent_project_id'],
+                object_id=entity_id
+            )
         else:
             api_route = url_for('object', object_id=entity_id),
         return self.render_page(

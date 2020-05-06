@@ -1,5 +1,6 @@
 from flask import views, request, jsonify, make_response
-from tyko.data_provider import CassetteTypeConnector, CassetteTapeTypeConnector, \
+from tyko.data_provider import CassetteTypeConnector, \
+    CassetteTapeTypeConnector, \
     CassetteTapeThicknessConnector
 
 
@@ -8,7 +9,8 @@ class AbsEnumView(views.MethodView):
         requested_id = request.args.get("id")
         results = self._connector.get(id=requested_id, serialize=True)
         if results is None:
-            return make_response("Unable to find requested cassette types", 404)
+            return make_response("Unable to find requested cassette types",
+                                 404)
         return jsonify(results)
 
 

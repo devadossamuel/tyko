@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from typing import Any, List, Iterator, Tuple, Callable, Optional, Union
-from flask import jsonify, render_template, views, make_response
+from flask import jsonify, render_template, views
 
 import tyko.views.files
 from . import middleware
@@ -14,6 +14,7 @@ from .views.project import ProjectNotesAPI, ProjectAPI
 from .views.project_object import ProjectObjectAPI, ObjectApi, \
     ProjectObjectNotesAPI
 from .views import cassette_tape
+
 
 @dataclass
 class Route:
@@ -559,7 +560,6 @@ def page_formats(middleware_source):
         selected_menu_item="formats",
         formats=formats
     )
-
 
 
 def list_routes(app):

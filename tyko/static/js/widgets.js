@@ -77,7 +77,7 @@ class WidgetState {
    */
   newColumn(id, colClass = 'col', wordBreak=null) {
     const newColumnSection = document.createElement('div');
-    if (wordBreak != null){
+    if (wordBreak != null) {
       newColumnSection.setAttribute('style', `word-break: ${wordBreak};`);
     }
 
@@ -200,7 +200,10 @@ class ViewWidget extends WidgetState {
   draw(element, data) {
     element.innerHTML = '';
     const newRoot = this.newRoot();
-    const newContent = this.newColumn('content', 'align-self-stretch', 'break-word');
+    const newContent = this.newColumn(
+        'content', 'align-self-stretch', 'break-word',
+    );
+
     newContent.innerText = data['fieldText'];
     newRoot.appendChild(newContent);
 
@@ -230,7 +233,7 @@ class NumberPickerWidget extends WidgetEditState {
   draw(element, data) {
     element.innerHTML = '';
     const rootId = `editArea${data['fieldName']}`;
-    let newRoot = this.newRoot(rootId);
+    const newRoot = this.newRoot(rootId);
 
     const inputElement = this._newNumberPicker(data['fieldName'],
         data['fieldText']);

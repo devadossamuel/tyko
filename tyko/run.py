@@ -11,6 +11,7 @@ from .data_provider import DataProvider, get_schema_version
 from .schema import ALEMBIC_VERSION
 from .routes import Routes
 
+
 def is_correct_db_version(app, database) -> bool:
     try:
         version = get_schema_version(db_engine=database.get_engine())
