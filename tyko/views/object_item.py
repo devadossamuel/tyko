@@ -24,7 +24,6 @@ class ObjectItemAPI(views.MethodView):
         self._provider = provider
 
     def post(self, project_id, object_id):  # noqa: E501  pylint: disable=W0613,C0301
-        connector = data_provider.ObjectDataConnector(self._provider.db_session_maker)
         current_project = middleware.ProjectMiddlwareEntity(
             self._provider).get_project_by_id(project_id)
         # make sure that the project has that object
@@ -62,7 +61,8 @@ class ObjectItemAPI(views.MethodView):
             new_item = connector.create(**request_data, object_id=object_id)
         else:
             data_connector = \
-                data_provider.ObjectDataConnector(self._provider.db_session_maker)
+                data_provider.ObjectDataConnector(
+                    self._provider.db_session_maker)
 
             new_item = data_connector.add_item(
                 object_id=object_id,
@@ -91,7 +91,10 @@ class ObjectItemAPI(views.MethodView):
 
     def get(self, project_id, object_id):  # noqa: E501  pylint: disable=W0613,C0301
         item_id = request.args.get("item_id")
-        connector = data_provider.ItemDataConnector(self._provider.db_session_maker)
+
+        connector = data_provider.ItemDataConnector(
+            self._provider.db_session_maker)
+
         return connector.get(id=item_id, serialize=True)
 
     def delete(self, project_id, object_id):  # noqa: E501  pylint: disable=W0613,C0301

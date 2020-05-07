@@ -134,7 +134,8 @@ class OpenReel(AVFormat):
     def format_details(self) -> Dict[str, SerializedData]:
         return {
             "date_recorded": utils.serialize_precision_datetime(
-                self.date_recorded) if self.date_recorded is not None else None,
+                self.date_recorded)
+            if self.date_recorded is not None else None,
             "track_count": self.track_count,
             "tape_size": self.tape_size,
             "reel_diam": self.reel_diam,
@@ -322,7 +323,8 @@ class AudioCassette(AVFormat, ABC):
 
     @classmethod
     def encode_date(cls, date_string: str) -> Tuple[datetime.datetime, int]:
-        warnings.warn("use utils.serialize_precision_datetime instead", DeprecationWarning)
+        warnings.warn("use utils.serialize_precision_datetime instead",
+                      DeprecationWarning)
 
         if cls.REGEX_DAY_MONTH_YEAR.match(date_string):
             return datetime.datetime.strptime(date_string, "%m-%d-%Y"), 3

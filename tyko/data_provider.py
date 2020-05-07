@@ -612,10 +612,10 @@ class ObjectDataConnector(AbsNotesConnector):
                 object_id=object_id,
                 session=session
             )
-            matching_list = self._find_matching_section(matching_item, matching_object)
+            matching_list = self._find_matching_section(matching_item,
+                                                        matching_object)
             if matching_list is not None:
                 matching_list.remove(matching_item)
-
 
             session.commit()
             return session.query(CollectionObject) \
@@ -686,6 +686,7 @@ class ObjectDataConnector(AbsNotesConnector):
             if matching_item in subtype:
                 return subtype
         return None
+
 
 class FileNotesDataConnector(AbsDataProviderConnector):
 
@@ -829,6 +830,7 @@ class FilesDataConnector(AbsDataProviderConnector):
                              f" id of {file_id}")
         finally:
             session.close()
+
 
 class ItemDataConnector(AbsNotesConnector):
 
@@ -1126,6 +1128,7 @@ class AudioCassetteDataConnector(ItemDataConnector):
                 precision=date_prec
             )
             new_cassette.recording_date_precision = date_prec
+
 
 class CollectionDataConnector(AbsDataProviderConnector):
 
