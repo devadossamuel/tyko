@@ -1,6 +1,5 @@
 import abc
 import datetime
-import warnings
 from typing import Union, List, Optional, Mapping
 
 from sqlalchemy.ext.declarative.api import DeclarativeMeta, declarative_base
