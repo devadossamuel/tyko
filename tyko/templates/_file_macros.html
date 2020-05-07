@@ -102,7 +102,7 @@
 </div>
 {% endmacro %}
 {% macro newFileModal(modalId, apiRoute) %}
-    {{new_modal(modalId, "New File", newFileForm()) }}
+    {{new_modal(modalId, "New File", apiRoute, newFileForm()) }}
     <script type="module">
         import {items} from "{{url_for('static', filename="js/api.js")}}"
         const object_api_route = "{{ api_route }}";

@@ -1,11 +1,12 @@
 import datetime
+import warnings
 from abc import ABC
 
 from typing import Dict, Optional, Tuple
 import re
 import sqlalchemy as db
 from sqlalchemy.orm import relationship
-
+from tyko import utils
 from tyko.schema.avtables import AVTables, SerializedData
 
 item_has_notes_table = db.Table(
@@ -132,7 +133,8 @@ class OpenReel(AVFormat):
 
     def format_details(self) -> Dict[str, SerializedData]:
         return {
-            "date_recorded": self.serialize_date(self.date_recorded),
+            "date_recorded": utils.serialize_precision_datetime(
+                self.date_recorded) if self.date_recorded is not None else None,
             "track_count": self.track_count,
             "tape_size": self.tape_size,
             "reel_diam": self.reel_diam,
@@ -177,18 +179,26 @@ class Film(AVFormat, ABC):
 
     def format_details(self) -> Dict[str, SerializedData]:
         return {
-            "date_of_film": self.serialize_date(self.date_of_film),
+            "date_of_film":
+                utils.serialize_precision_datetime(self.date_of_film)
+                if self.date_of_film is not None else None,
             "can_label": self.can_label,
             "leader_label": self.leader_label,
             "length": self.length,
             "duration": self.duration,
             "format_gauge": self.format_gauge,
             "base": self.base,
-            "edge_code_date": self.serialize_date(self.edge_code_date),
+            "edge_code_date":
+                utils.serialize_precision_datetime(
+                    self.edge_code_date)
+                if self.edge_code_date is not None else None,
             "sound": self.sound,
             "color": self.color,
             "image_type": self.image_type,
-            "ad_test_date": self.serialize_date(self.ad_test_date),
+            "ad_test_date":
+                utils.serialize_precision_datetime(
+                    self.ad_test_date)
+                if self.ad_test_date is not None else None,
             "ad_test_level": self.ad_test_level
         }
 
@@ -241,7 +251,10 @@ class AudioVideo(AVFormat):
 
     def format_details(self) -> Dict[str, SerializedData]:
         return {
-            "date_recorded": self.serialize_date(self.av_date_recorded),
+            "date_recorded":
+                utils.serialize_precision_datetime(
+                    self.av_date_recorded)
+                if self.av_date_recorded is not None else None,
             "side": self.side,
             "duration": self.duration,
             "format_subtype": self.format_subtype
@@ -290,6 +303,10 @@ class AudioCassette(AVFormat, ABC):
     @classmethod
     def serialize_date(cls, date: Optional[datetime.date],
                        precision=3) -> str:
+        warnings.warn(
+            "Use utils.serialize_precision_datetime instead",
+            DeprecationWarning
+        )
 
         if isinstance(date, datetime.date):
             if precision == 3:
@@ -305,6 +322,7 @@ class AudioCassette(AVFormat, ABC):
 
     @classmethod
     def encode_date(cls, date_string: str) -> Tuple[datetime.datetime, int]:
+        warnings.warn("use utils.serialize_precision_datetime instead", DeprecationWarning)
 
         if cls.REGEX_DAY_MONTH_YEAR.match(date_string):
             return datetime.datetime.strptime(date_string, "%m-%d-%Y"), 3
@@ -322,10 +340,11 @@ class AudioCassette(AVFormat, ABC):
         serialized_data = {
             "format_type": self.format_type.serialize(),
             "inspection_date":
-                self.serialize_date(self.inspection_date)
+                utils.serialize_precision_datetime(
+                    self.inspection_date)
                 if self.inspection_date is not None else None,
             "date_recorded":
-                self.serialize_date(
+                utils.serialize_precision_datetime(
                     self.recording_date,
                     self.recording_date_precision)
                 if self.recording_date is not None

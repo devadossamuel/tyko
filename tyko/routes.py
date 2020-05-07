@@ -253,17 +253,8 @@ class Routes:
             methods=[
                 "GET",
                 "DELETE",
-                "PUT"
+                "PUT",
             ]
-        )
-
-        yield UrlRule(
-            "/api/project/<int:project_id>/object/<int:object_id>/item",
-            "project_object_add_item",
-            lambda project_id, object_id: project_object.add_item(
-                project_id=project_id, object_id=object_id),
-            methods=["POST"]
-
         )
 
         yield UrlRule(
@@ -300,21 +291,21 @@ class Routes:
             view_func=lambda serialize=True: project_object.get(serialize),
         )
 
-        yield UrlRule(
-            "/api/project/<int:project_id>/object/<int:object_id>/item"
-            "/<int:item_id>",
-            view_func=ObjectItemAPI.as_view(
-                "object_item",
-                parent=project_object),
-            methods=[
-                "DELETE"
-            ]
-        )
-
     def get_api_item_routes(self) -> Iterator[UrlRule]:
 
         item = middleware.ItemMiddlwareEntity(self.db_engine)
-
+        yield UrlRule(
+            "/api/project/<int:project_id>/object/<int:object_id>/item",
+            view_func=ObjectItemAPI.as_view(
+                "object_item",
+                provider=self.db_engine
+            ),
+            methods=[
+                "GET",
+                "DELETE",
+                "POST"
+            ]
+        )
         yield UrlRule(
             rule="/api/project/<int:project_id>/object/<int:object_id>"
                  "/item/<int:item_id>/notes",
@@ -377,7 +368,7 @@ class Routes:
         )
 
         yield UrlRule(
-            "/api/formats/cassette_tape/cassette_tape_tape)types",
+            "/api/formats/cassette_tape/cassette_tape_tape_types",
             view_func=cassette_tape.CassetteTapeTapeTypesAPI.as_view(
                 "cassette_tape_tape_types",
                 provider=self.db_engine
@@ -390,7 +381,7 @@ class Routes:
                 "cassette_tape_format_types",
                 provider=self.db_engine
             ),
-            methods=["GET"]
+            methods=["GET", "POST"]
         )
         yield UrlRule(
             "/api/formats/cassette_tape/cassette_tape_tape_thickness",

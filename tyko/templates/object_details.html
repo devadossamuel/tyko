@@ -109,12 +109,12 @@
         {{ itemsTable( api_path, object['parent_project_id'], object['object_id']  )}}
                     {{
                             item_new_button_row(
-                                url_for("project_object_add_item", object_id=object['object_id'], project_id=object['parent_project_id']),
+                                url_for("object_item", object_id=object['object_id'], project_id=object['parent_project_id']),
                                 "newItemtModal"
                             )
                     }}
             {% if "parent_project_id" in object %}
-                {{ new_item_modal("newItemtModal", formats, url_for("project_object_add_item", object_id=object['object_id'], project_id=object['parent_project_id'])) }}
+                {{ new_item_modal("newItemtModal", formats, url_for("object_item", object_id=object['object_id'], project_id=object['parent_project_id'])) }}
 
             {% endif %}
             {{ confirm_remove_entity_modal2("removeItemModal", confirmButtonID="removeItemModalRemoveButton") }}

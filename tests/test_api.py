@@ -670,7 +670,8 @@ def server_with_object():
         )
 
         assert new_collection_response.status_code == 200
-        new_collection_id = json.loads(new_collection_response.data)['id']
+        new_collection_data = json.loads(new_collection_response.data)
+        new_collection_id = new_collection_data['id']
 
         new_project_response = server.post(
             "/api/project/",
@@ -682,7 +683,8 @@ def server_with_object():
             content_type='application/json'
         )
         assert new_project_response.status_code == 200
-        new_project_id = json.loads(new_project_response.data)['id']
+        new_project_data = json.loads(new_project_response.data)
+        new_project_id = new_project_data['id']
         new_object_url = url_for("project_add_object", project_id=new_project_id)
 
         post_new_object_project_resp = server.post(
@@ -695,27 +697,59 @@ def server_with_object():
             content_type='application/json'
         )
         assert post_new_object_project_resp.status_code == 200
-        yield server
+        formats_response = server.get(url_for('formats'))
+        assert formats_response.status_code == 200, formats_response.status
+
+        format_types = {
+            format_type["name"]: format_type
+            for format_type in json.loads(formats_response.data)
+        }
+
+        cassette_tape_format_types_url = url_for("cassette_tape_format_types")
+        new_cassette_type_resp = server.post(
+            cassette_tape_format_types_url,
+            data=json.dumps({
+                "name": "compact cassette"
+            }),
+            content_type='application/json'
+        )
+        assert new_cassette_type_resp.status_code == 200, \
+            new_cassette_type_resp.status
+
+        cassette_tape_formats = {
+            i['name']: i for i in json.loads(
+                server.get(cassette_tape_format_types_url).data
+            )
+        }
+
+        data = {
+            "collection": new_collection_data,
+            "project": new_project_data,
+            "object": json.loads(post_new_object_project_resp.data)['object'],
+            "format_types": format_types,
+            "cassette_tape_formats": cassette_tape_formats
+        }
+        yield server, data
 
 
 def test_add_and_delete_item_to_object(server_with_object):
-
+    server, data = server_with_object
     formats = dict()
-    for format_type in server_with_object.get(url_for("formats")).get_json():
+    for format_type in server.get(url_for("formats")).get_json():
         formats[format_type['name']] = format_type['format_types_id']
 
     test_project_url = url_for("projects")
     test_project = \
-        json.loads(server_with_object.get(test_project_url).data)['projects'][0]
+        json.loads(server.get(test_project_url).data)['projects'][0]
 
     test_object = test_project['objects'][0]
 
-    new_object_item_url = url_for("project_object_add_item",
+    new_object_item_url = url_for("object_item",
                                   project_id=test_project['project_id'],
                                   object_id=test_object['object_id']
                                   )
 
-    post_response = server_with_object.post(
+    post_response = server.post(
         new_object_item_url,
         data=json.dumps(
             {
@@ -743,7 +777,7 @@ def test_add_and_delete_item_to_object(server_with_object):
         object_id=test_object['object_id']
     )
 
-    object_get_resp = server_with_object.get(object_url)
+    object_get_resp = server.get(object_url)
     object_data = json.loads(object_get_resp.data)['object']
     assert len(object_data['items']) == 1
     assert object_data['items'][0]['name'] == "My dummy item"
@@ -754,11 +788,11 @@ def test_add_and_delete_item_to_object(server_with_object):
                            item_id=new_item['item_id']
                            )
 
-    delete_response = server_with_object.delete(item_api_url)
+    delete_response = server.delete(item_api_url)
     assert delete_response.status_code == 202
 
     items_after_deleted = \
-        json.loads(server_with_object.get(object_url).data)['object']['items']
+        json.loads(server.get(object_url).data)['object']['items']
     assert len(items_after_deleted) == 0
 
 
@@ -809,7 +843,7 @@ def server_with_object_and_item():
         new_object_id = json.loads(post_new_object_project_resp.data)['object']["object_id"]
 
         assert post_new_object_project_resp.status_code == 200
-        new_item_url = url_for("project_object_add_item",
+        new_item_url = url_for("object_item",
                                project_id=new_project_id,
                                object_id=new_object_id
                                )
@@ -1141,3 +1175,57 @@ def test_create_and_delete_file_annotation(server_with_object_item_file):
     del_resp = server.delete(annotation_url)
     assert del_resp.status_code == 202
     assert len(json.loads(server.get(file_annotations_url).data)['annotations']) == 0
+
+dates = [
+    "1993",
+    "11-1950",
+    "11-26-1993",
+    "11-26-1993",
+    "11-06-1993",
+    "11-06-1993",
+    "01-06-1993",
+    "01-06-1993"
+]
+
+@pytest.mark.parametrize("date", dates)
+def test_create_add_and_remove_cassette(date, server_with_object):
+    server, data = server_with_object
+
+    object_add_url = url_for(
+        "object_item",
+        project_id=data['project']['id'],
+        object_id=data['object']['object_id']
+    )
+
+    new_item_resp = server.post(
+        object_add_url,
+        data=json.dumps({
+            "name": "dummy",
+            "format_id":
+                data['format_types']['audio cassette']["format_types_id"],
+            "format_details": {
+                "format_type_id":
+                    data['cassette_tape_formats']['compact cassette']['id'],
+                    "date_recorded": date
+            }
+        }),
+        content_type='application/json'
+    )
+    assert new_item_resp.status_code == 200, new_item_resp.status
+    new_item_data = json.loads(new_item_resp.data)
+    assert "routes" in new_item_data
+
+    item_get_resp = server.get(new_item_data['routes']['api'])
+    assert item_get_resp.status_code == 200, item_get_resp.status
+    new_item_get_data = json.loads(item_get_resp.data)
+    assert "format_type" in new_item_get_data['format_details']
+
+    format_details = new_item_get_data['format_details']
+    format_type = format_details['format_type']
+    assert format_type['name'] == "compact cassette"
+
+    assert format_details['date_recorded'] == date
+
+    delete_resp = server.delete(new_item_data['routes']['api'])
+
+    assert delete_resp.status_code == 202

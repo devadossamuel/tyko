@@ -82,7 +82,7 @@ def test_pbcore_valid_id(tmpdir):
 
         sample_item = server.post(
             flask.url_for(
-                "project_object_add_item",
+                "object_item",
                 project_id=sample_project['id'],
                 object_id=sample_object['object_id']
             ),

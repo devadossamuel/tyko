@@ -1,3 +1,5 @@
+import sys
+import traceback
 from typing import Dict, Any
 
 from flask import views, make_response, jsonify, request, url_for
@@ -17,12 +19,85 @@ class ObjectItemNotesAPI(views.MethodView):
 
 
 class ObjectItemAPI(views.MethodView):
-    def __init__(self, parent: middleware.ObjectMiddlwareEntity) -> None:
-        self._parent_object = parent
+    def __init__(self, provider) -> None:
 
-    def delete(self, project_id, object_id, item_id):  # noqa: E501  pylint: disable=W0613,C0301
-        return self._parent_object.remove_item(object_id=object_id,
-                                               item_id=item_id)
+        self._provider = provider
+
+    def post(self, project_id, object_id):  # noqa: E501  pylint: disable=W0613,C0301
+        connector = data_provider.ObjectDataConnector(self._provider.db_session_maker)
+        current_project = middleware.ProjectMiddlwareEntity(
+            self._provider).get_project_by_id(project_id)
+        # make sure that the project has that object
+        for child_object in current_project['objects']:
+            if child_object['object_id'] == object_id:
+                break
+        else:
+            return make_response(
+                f"Project with id {project_id} does not have an object with an"
+                f" id of {object_id}",
+                404)
+        request_data = request.get_json()
+        try:
+            new_item_data = {
+                "name": request_data["name"],
+                "format_id": request_data["format_id"],
+                "files": request_data.get("files", [])
+
+            }
+        except KeyError as e:
+            traceback.print_exc(file=sys.stderr)
+            return make_response(
+                "missing required value {}".format(e), 400)
+
+        format_type = self._provider.get_formats(
+            request_data["format_id"], serialize=True)[0]
+        connectors = {
+            "audio cassette": data_provider.AudioCassetteDataConnector,
+            'casette tape': data_provider.AudioCassetteDataConnector,
+
+        }
+        connector_class = connectors.get(format_type['name'])
+        if connector_class is not None:
+            connector = connector_class(self._provider.db_session_maker)
+            new_item = connector.create(**request_data, object_id=object_id)
+        else:
+            data_connector = \
+                data_provider.ObjectDataConnector(self._provider.db_session_maker)
+
+            new_item = data_connector.add_item(
+                object_id=object_id,
+                data=new_item_data)
+        try:
+            return jsonify(
+                {
+                    "item": new_item,
+                    'routes': {
+                        "frontend": url_for("page_project_object_item_details",
+                                            object_id=object_id,
+                                            project_id=project_id,
+                                            item_id=new_item['item_id']
+                                            ),
+                        "api": url_for("object_item",
+                                       object_id=object_id,
+                                       project_id=project_id,
+                                       item_id=new_item['item_id']
+                                       )
+                    }
+                }
+            )
+        except AttributeError:
+            traceback.print_exc(file=sys.stderr)
+            return make_response("Invalid item data", 400)
+
+    def get(self, project_id, object_id):  # noqa: E501  pylint: disable=W0613,C0301
+        item_id = request.args.get("item_id")
+        connector = data_provider.ItemDataConnector(self._provider.db_session_maker)
+        return connector.get(id=item_id, serialize=True)
+
+    def delete(self, project_id, object_id):  # noqa: E501  pylint: disable=W0613,C0301
+        item_id = int(request.args.get("item_id"))
+        parent_object = middleware.ObjectMiddlwareEntity(self._provider)
+        return parent_object.remove_item(object_id=object_id, item_id=item_id)
 
 
 class ItemAPI(views.MethodView):

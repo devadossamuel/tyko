@@ -19,6 +19,12 @@ class CassetteTapeFormatTypesAPI(AbsEnumView):
         self._provider = provider
         self._connector = CassetteTypeConnector(provider.db_session_maker)
 
+    def post(self):
+        args = request.get_json()
+        name = args["name"]
+        res = self._connector.create(name=name)
+        return jsonify(res)
+
 
 class CassetteTapeTapeTypesAPI(AbsEnumView):
     def __init__(self, provider):

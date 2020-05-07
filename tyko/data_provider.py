@@ -17,9 +17,10 @@ from .schema.notes import Note, NoteTypes
 from .schema.objects import CollectionObject
 from .schema.projects import Project, ProjectStatus
 from .schema.formats import CassetteType, CassetteTapeType, \
-    CassetteTapeThickness
+    CassetteTapeThickness, AudioCassette, AVFormat
 from .exceptions import DataError
 from . import database
+from tyko import utils
 
 DATE_FORMAT = '%Y-%m-%d'
 
@@ -591,7 +592,7 @@ class ObjectDataConnector(AbsNotesConnector):
         try:
             matching_object = self._get_object(object_id, session)
             item_connector = ItemDataConnector(self.session_maker)
-            new_item_id = item_connector.create(**data)
+            new_item_id = item_connector.create(**data)['item_id']
 
             matching_object.collection_items.append(
                 item_connector.get(id=new_item_id)
@@ -611,13 +612,11 @@ class ObjectDataConnector(AbsNotesConnector):
                 object_id=object_id,
                 session=session
             )
+            matching_list = self._find_matching_section(matching_item, matching_object)
+            if matching_list is not None:
+                matching_list.remove(matching_item)
 
-            if matching_item not in matching_object.collection_items:
-                raise DataError(
-                    message="Item with ID: {} is not a child of object with "
-                            "ID: {}".format(item_id, object_id)
-                )
-            matching_object.collection_items.remove(matching_item)
+
             session.commit()
             return session.query(CollectionObject) \
                 .filter(CollectionObject.id == object_id) \
@@ -629,8 +628,8 @@ class ObjectDataConnector(AbsNotesConnector):
     @staticmethod
     def _find_item(item_id, session) -> CollectionItem:
         matching_items = \
-            session.query(CollectionItem).filter(
-                CollectionItem.table_id == item_id).all()
+            session.query(AVFormat).filter(
+                AVFormat.table_id == item_id).all()
 
         if len(matching_items) == 0:
             raise DataError(
@@ -670,6 +669,22 @@ class ObjectDataConnector(AbsNotesConnector):
                 datetime.strptime(data['originals_rec_date'], '%Y-%m-%d')
 
         return new_data
+
+    def _find_matching_section(self, matching_item,
+                               matching_object) -> Optional[list]:
+        subtypes = [
+            'audio_cassettes',
+            'audio_videos',
+            'collection_items',
+            'films',
+            'grooved_disc',
+            'open_reels',
+        ]
+
+        for subtype_name in subtypes:
+            subtype = getattr(matching_object, subtype_name)
+            if matching_item in subtype:
+                return subtype
 
 
 class FileNotesDataConnector(AbsDataProviderConnector):
@@ -815,13 +830,20 @@ class FilesDataConnector(AbsDataProviderConnector):
         finally:
             session.close()
 
-
 class ItemDataConnector(AbsNotesConnector):
 
     @staticmethod
     def _get_all(session):
-        all_collection_item = session.query(formats.AVFormat).all()
-        return all_collection_item
+        res = list(session.query(formats.Film).all()) + \
+              list(session.query(formats.AudioCassette).all()) + \
+              list(session.query(formats.AudioVideo).all()) + \
+              list(session.query(formats.GroovedDisc).all()) + \
+              list(session.query(formats.OpenReel).all()) + \
+              list(session.query(formats.CollectionItem).all())
+        if len(res) == 0:
+            res = list(session.query(formats.AVFormat)
+                       .all())
+        return res
 
     @staticmethod
     def _get_one(session, table_id: int):
@@ -900,25 +922,25 @@ class ItemDataConnector(AbsNotesConnector):
         session = self.session_maker()
         name = kwargs["name"]
         format_id = int(kwargs["format_id"])
-        format_type = session.query(formats.FormatTypes)\
-            .filter(formats.FormatTypes.id == format_id).one()
+        try:
+            format_type = session.query(formats.FormatTypes)\
+                .filter(formats.FormatTypes.id == format_id).one()
 
-        new_item = CollectionItem(
-            name=name,
-            format_type=format_type
-        )
+            new_item = CollectionItem(
+                name=name,
+                format_type=format_type
+            )
 
-        for instance_file in kwargs.get("files", []):
-            new_file = InstantiationFile(file_name=instance_file['name'])
+            for instance_file in kwargs.get("files", []):
+                new_file = InstantiationFile(file_name=instance_file['name'])
 
-            new_item.files.append(new_file)
-        # new_item.files.append(f)
-        session.add(new_item)
-        session.commit()
-        new_item_id = new_item.table_id
-        session.close()
-
-        return new_item_id
+                new_item.files.append(new_file)
+            # new_item.files.append(f)
+            session.add(new_item)
+            session.commit()
+            return new_item.serialize()
+        finally:
+            session.close()
 
     def update(self, id, changed_data):
         updated_item = None
@@ -1049,6 +1071,61 @@ class ItemDataConnector(AbsNotesConnector):
                 return note
         raise ValueError("No matching note for item")
 
+
+class AudioCassetteDataConnector(ItemDataConnector):
+
+    def create(self, *args, **kwargs):
+        new_base_item = super().create(*args, **kwargs)
+        session = self.session_maker()
+        try:
+            format_details = kwargs['format_details']
+            base_object = session.query(CollectionObject)\
+                .filter(CollectionObject.id == kwargs['object_id'])\
+                .one()
+
+            format_type_id = int(format_details['format_type_id'])
+
+            format_type = session.query(CassetteType)\
+                .filter(CassetteType.table_id == format_type_id)\
+                .one()
+
+            new_cassette = AudioCassette(
+                name=new_base_item['name'],
+                format_type=format_type,
+            )
+
+            self._add_optional_args(new_cassette, **format_details)
+
+            base_object.audio_cassettes.append(new_cassette)
+            session.add(new_cassette)
+            session.commit()
+            return new_cassette.serialize()
+        finally:
+            session.close()
+
+    def _add_optional_args(self, new_cassette, **params):
+        tape_thickness_id = params.get('Tape Thickness')
+        if tape_thickness_id is not None:
+            new_cassette.tape_thickness_id = int(tape_thickness_id)
+
+        date_inspected = params.get('DateInspected')
+        if date_inspected is not None and date_inspected.strip() != "":
+            new_cassette.inspection_date = \
+                utils.create_precision_datetime(date_inspected)
+
+        tape_type_id = params.get('Tape Type')
+        if tape_type_id is not None:
+            new_cassette.tape_type_id = int(tape_type_id)
+
+        date_recorded = params.get("date_recorded")
+        if date_recorded is not None:
+            date_prec = utils.identify_precision(date_recorded)
+
+            new_cassette.recording_date = utils.create_precision_datetime(
+                date=date_recorded,
+                precision=date_prec
+            )
+            new_cassette.recording_date_precision = date_prec
 
 class CollectionDataConnector(AbsDataProviderConnector):
 
@@ -1410,15 +1487,17 @@ class FileAnnotationTypeConnector(AbsDataProviderConnector):
 
 
 class CassetteTypeConnector(AbsDataProviderConnector):
+    table = CassetteType
+
     def get(self, id=None, serialize=False):
         session = self.session_maker()
         try:
             if id is not None:
-                cassette_types = session.query(CassetteType).filter(
-                    CassetteType.table_id == id
+                cassette_types = session.query().filter(
+                    self.table.table_id == id
                 )
             else:
-                cassette_types = session.query(CassetteType).all()
+                cassette_types = session.query(self.table).all()
             if serialize is False:
                 return cassette_types
 
@@ -1433,8 +1512,23 @@ class CassetteTypeConnector(AbsDataProviderConnector):
             session.close()
 
     def create(self, *args, **kwargs):
-        # TODO: CassetteTypeConnector.create()
-        pass
+        name = kwargs["name"]
+        session = self.session_maker()
+        try:
+            if self.entry_already_exists(name, session) is True:
+                raise ValueError(
+                    "Already a value stored for {}".format(self.table))
+            new_cassette_type = self.table(name=name)
+            session.add(new_cassette_type)
+            session.flush()
+            session.commit()
+            return new_cassette_type.serialize()
+        finally:
+            session.close()
+
+    def entry_already_exists(self, name, session):
+        return session.query(self.table).filter(
+            self.table.name == name).count() > 0
 
     def update(self, id, changed_data):
         # TODO: CassetteTypeConnector.update()
