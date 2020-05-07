@@ -671,7 +671,7 @@ class ObjectDataConnector(AbsNotesConnector):
         return new_data
 
     def _find_matching_section(self, matching_item,
-                               matching_object) -> Optional[list]:
+                               matching_object) -> Optional[List[AVFormat]]:
         subtypes = [
             'audio_cassettes',
             'audio_videos',
@@ -685,7 +685,7 @@ class ObjectDataConnector(AbsNotesConnector):
             subtype = getattr(matching_object, subtype_name)
             if matching_item in subtype:
                 return subtype
-
+        return None
 
 class FileNotesDataConnector(AbsDataProviderConnector):
 
