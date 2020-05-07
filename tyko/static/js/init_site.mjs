@@ -1,4 +1,4 @@
-export function initDb(init_url, restart_url) {
+export function initDb(initUrl, restartUrl) {
   const xhr = new XMLHttpRequest();
   xhr.withCredentials = false;
 
@@ -26,7 +26,7 @@ export function initDb(init_url, restart_url) {
       }
 
     };
-    xhr.open('post', init_url, true);
+    xhr.open('post', initUrl, true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send();
   }));
@@ -34,7 +34,7 @@ export function initDb(init_url, restart_url) {
   initDataRequest.then(function(res) {
     const response_data = res['response'];
     console.log('SUCCESS');
-    return restart_url;
+    return restartUrl;
   }).then(function(res) {
     console.log('running ' + res);
   }).catch(function(reason) {
