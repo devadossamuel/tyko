@@ -33,12 +33,12 @@ $('.tyko-form-new-entity').each(function() {
         for (let i = 0; i < rawData.length; i++) {
           const key = rawData[i].name.split('.');
 
-          if (key.length == 1) {
+          if (key.length === 1) {
             data[key[0]] = rawData[i].value;
             continue;
           }
 
-          if (key.length == 2) {
+          if (key.length === 2) {
             if (data.hasOwnProperty(key[0])) {
               data[key[0]][key[1]] = rawData[i].value;
             } else {
