@@ -52,21 +52,21 @@ $('.tyko-form-new-entity').each(function() {
         items.addItem(addUrl, data).then(function() {
           location.reload();
         }).catch(function(reason) {
-              let alertBox = $('#submitResultAlert');
-              let responsesMessage =
-                  '<div class="alert alert-danger alert-dismissible" role="alert" id="submitResultAlert">\n' +
-                  '<strong id="errorMessage">';
+          let alertBox = $('#submitResultAlert');
+          let responsesMessage =
+              '<div class="alert alert-danger alert-dismissible" role="alert" id="submitResultAlert">\n' +
+              '<strong id="errorMessage">';
 
-              responsesMessage += reason.statusText;
-              responsesMessage += '</strong>';
-              responsesMessage +=
-                  '    <button type="button" class="close" data-dismiss="alert" aria-label="Close">\n' +
-                  '        <span aria-hidden="true">&times;</span>\n' +
-                  '    </button>\n' +
-                  '</div>';
-              alertBox.html(responsesMessage);
-              console.error(reason.responseText);
-            },
+          responsesMessage += reason.statusText;
+          responsesMessage += '</strong>';
+          responsesMessage +=
+              '    <button type="button" class="close" data-dismiss="alert" aria-label="Close">\n' +
+              '        <span aria-hidden="true">&times;</span>\n' +
+              '    </button>\n' +
+              '</div>';
+          alertBox.html(responsesMessage);
+          console.error(reason.responseText);
+          },
         );
         return false;
       },
