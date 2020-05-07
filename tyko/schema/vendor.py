@@ -1,9 +1,13 @@
-from typing import Dict, List, Mapping
+from typing import Dict, List, Mapping, TYPE_CHECKING
 
 import sqlalchemy as db
 from sqlalchemy.orm import relationship
 
 from tyko.schema.avtables import AVTables, SerializedData
+
+if TYPE_CHECKING:
+    from tyko.schema.contacts import Contact  # noqa: F401
+    from tyko.schema.objects import CollectionObject  # noqa: F401
 
 vendor_has_contacts_table = db.Table(
     "vendor_has_contacts",

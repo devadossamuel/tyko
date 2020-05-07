@@ -1,9 +1,24 @@
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, TYPE_CHECKING
 
 import sqlalchemy as db
 from sqlalchemy.orm import relationship
 
 from tyko.schema.avtables import AVTables, SerializedData
+
+if TYPE_CHECKING:
+    from tyko.schema.treatment import Treatment  # noqa: F401
+
+    from tyko.schema.formats import (AudioCassette,  # noqa: F401
+                                     CollectionItem,
+                                     OpenReel,
+                                     Film,
+                                     AudioVideo,
+                                     GroovedDisc)
+
+    from tyko.schema.collection import Collection   # noqa: F401
+    from tyko.schema.projects import Project  # noqa: F401
+    from tyko.schema.notes import Note  # noqa: F401
+    from tyko.schema.contacts import Contact  # noqa: F401
 
 object_has_notes_table = db.Table(
     "object_has_notes",

@@ -2,12 +2,19 @@ import datetime
 import warnings
 from abc import ABC
 
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, TYPE_CHECKING
 import re
 import sqlalchemy as db
 from sqlalchemy.orm import relationship
 from tyko import utils
 from tyko.schema.avtables import AVTables, SerializedData
+
+if TYPE_CHECKING:
+    from tyko.schema.objects import CollectionObject  # noqa: F401
+    from tyko.schema.treatment import Treatment  # noqa: F401
+    from tyko.schema.instantiation import InstantiationFile  # noqa: F401
+    from tyko.schema.notes import Note  # noqa: F401
+
 
 item_has_notes_table = db.Table(
     "item_has_notes",

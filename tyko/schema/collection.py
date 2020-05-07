@@ -1,9 +1,12 @@
-from typing import Dict
+from typing import Dict, TYPE_CHECKING
 
 import sqlalchemy as db
 from sqlalchemy.orm import relationship
 
 from tyko.schema.avtables import AVTables, SerializedData
+
+if TYPE_CHECKING:
+    from tyko.schema.contacts import Contact  # noqa: F401
 
 
 class Collection(AVTables):
