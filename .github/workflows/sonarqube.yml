@@ -14,7 +14,7 @@ jobs:
           node-version: '12.x'
       - run: npm install -y
       - run: mkdir -p reports
-      - run: ./node_modules/.bin/eslint -f json -o reports/eslint_report.json tyko/static/js/
+      - run: ./node_modules/.bin/eslint -f json -o reports/eslint_report.json tyko/static/js/ --ext=.js,.mjs
         continue-on-error: true
       - run : sed -i 's/\/home\/runner\/work\/tyko\/tyko/\/github\/workspace/g' reports/eslint_report.json
       - name: Upload ESlint report
