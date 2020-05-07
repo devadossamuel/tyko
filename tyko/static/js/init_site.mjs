@@ -2,13 +2,13 @@ export function initDb(initUrl, restartUrl) {
   const xhr = new XMLHttpRequest();
   xhr.withCredentials = false;
 
-  let initDataRequest = new Promise(((resolve, reject) => {
+  const initDataRequest = new Promise(((resolve, reject) => {
     xhr.onreadystatechange = () => {
       if (xhr.readyState !== 4) {
         return;
       }
       if (xhr.status >= 200 && xhr.status < 300) {
-        let data = {
+        const data = {
           'status': xhr.status,
           'responseText': xhr.responseText,
           'statusText': xhr.statusText,

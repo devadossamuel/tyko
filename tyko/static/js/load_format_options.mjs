@@ -29,9 +29,9 @@ $('.tyko-form-new-entity').each(function() {
       function(event) {
         event.preventDefault();
         const rawData = $(this).serializeArray();
-        let data = {};
+        const data = {};
         for (let i = 0; i < rawData.length; i++) {
-          let key = rawData[i].name.split('.');
+          const key = rawData[i].name.split('.');
 
           if (key.length == 1) {
             data[key[0]] = rawData[i].value;
@@ -42,7 +42,7 @@ $('.tyko-form-new-entity').each(function() {
             if (data.hasOwnProperty(key[0])) {
               data[key[0]][key[1]] = rawData[i].value;
             } else {
-              let o = {};
+              const o = {};
               o[key[1]] = rawData[i].value;
               data[key[0]] = o;
             }
@@ -52,7 +52,7 @@ $('.tyko-form-new-entity').each(function() {
         items.addItem(addUrl, data).then(function() {
           location.reload();
         }).catch(function(reason) {
-          let alertBox = $('#submitResultAlert');
+          const alertBox = $('#submitResultAlert');
           let responsesMessage =
               '<div class="alert alert-danger alert-dismissible" role="alert" id="submitResultAlert">\n' +
               '<strong id="errorMessage">';
