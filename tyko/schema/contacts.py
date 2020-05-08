@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Mapping
 
 import sqlalchemy as db
 
@@ -18,7 +18,7 @@ class Contact(AVTables):
     last_name = db.Column("last_name", db.Text)
     email_address = db.Column("email_address", db.Text)
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
         return {
             "contact_id": self.id,
             "first_name": self.first_name,

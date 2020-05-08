@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Mapping
 
 import sqlalchemy as db
 from sqlalchemy.orm import relationship
@@ -41,7 +41,7 @@ class InstantiationFile(AVTables):
                     "note_id": file_note.id
                 }
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
         return {
             "id": self.file_id,
             "file_name": self.file_name,
@@ -68,7 +68,7 @@ class FileNotes(AVTables):
     file_id = db.Column(db.Integer,
                         db.ForeignKey("instantiation_files.file_id"))
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
         return {
             "id": self.id,
             "message": self.message,
@@ -84,7 +84,7 @@ class FileAnnotationType(AVTables):
     name = db.Column("name", db.Text, nullable=False)
     active = db.Column("active", db.Boolean, nullable=False, default=True)
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
         return {
             "type_id": self.id,
             "name": self.name,
@@ -108,7 +108,7 @@ class FileAnnotation(AVTables):
 
     annotation_content = db.Column("content", db.Text, nullable=False)
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
         return {
             "id": self.id,
             "type": self.annotation_type.serialize(recurse),

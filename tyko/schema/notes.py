@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Mapping
 
 import sqlalchemy as db
 from sqlalchemy.orm import relationship
@@ -17,7 +17,7 @@ class Note(AVTables):
 
     note_type = relationship("NoteTypes", foreign_keys=[note_type_id])
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
         data: Dict[str, SerializedData] = {
             "note_id": self.id,
             "text": self.text,
@@ -36,7 +36,7 @@ class NoteTypes(AVTables):
 
     name = db.Column("type_name", db.Text)
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
         return {
             "note_types_id": self.id,
             "name": self.name

@@ -1,4 +1,4 @@
-from typing import Dict, TYPE_CHECKING
+from typing import TYPE_CHECKING, Mapping
 
 import sqlalchemy as db
 from sqlalchemy.orm import relationship
@@ -22,7 +22,7 @@ class Collection(AVTables):
     contact = relationship("Contact")
     contact_id = db.Column(db.Integer, db.ForeignKey("contact.contact_id"))
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
         if self.contact is not None:
             contact = self.contact.serialize()
         else:

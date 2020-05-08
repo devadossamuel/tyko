@@ -2,7 +2,7 @@ import datetime
 import warnings
 from abc import ABC
 
-from typing import Dict, Optional, Tuple, TYPE_CHECKING
+from typing import Optional, Tuple, TYPE_CHECKING, Mapping
 import re
 import sqlalchemy as db
 from sqlalchemy.orm import relationship
@@ -70,10 +70,10 @@ class AVFormat(AVTables):
     def _iter_notes(self):
         yield from self.notes
 
-    def format_details(self) -> Dict[str, SerializedData]:
+    def format_details(self) -> Mapping[str, SerializedData]:
         return dict()
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
 
         data = {
             "item_id": self.table_id,
@@ -104,7 +104,7 @@ class FormatTypes(AVTables):
 
     name = db.Column("name", db.Text)
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
         return {
             "format_types_id": self.id,
             "name": self.name
@@ -138,7 +138,7 @@ class OpenReel(AVFormat):
     object = relationship("CollectionObject",
                           back_populates="open_reels")
 
-    def format_details(self) -> Dict[str, SerializedData]:
+    def format_details(self) -> Mapping[str, SerializedData]:
         return {
             "date_recorded": utils.serialize_precision_datetime(
                 self.date_recorded)
@@ -185,7 +185,7 @@ class Film(AVFormat, ABC):
     ad_test_date = db.Column("ad_test_date", db.Date)
     ad_test_level = db.Column("ad_test_level", db.Integer)
 
-    def format_details(self) -> Dict[str, SerializedData]:
+    def format_details(self) -> Mapping[str, SerializedData]:
         return {
             "date_of_film":
                 utils.serialize_precision_datetime(self.date_of_film)
@@ -230,7 +230,7 @@ class GroovedDisc(AVFormat, ABC):
     playback_direction = db.Column("playback_direction", db.Text)
     playback_speed = db.Column("playback_speed", db.Text)
 
-    def format_details(self) -> Dict[str, SerializedData]:
+    def format_details(self) -> Mapping[str, SerializedData]:
         return {
             "date_recorded": self.date_recorded,
             "side": self.side,
@@ -257,7 +257,7 @@ class AudioVideo(AVFormat):
     duration = db.Column("duration", db.Text)
     format_subtype = db.Column("format_subtype", db.Text)
 
-    def format_details(self) -> Dict[str, SerializedData]:
+    def format_details(self) -> Mapping[str, SerializedData]:
         return {
             "date_recorded":
                 utils.serialize_precision_datetime(
@@ -344,7 +344,7 @@ class AudioCassette(AVFormat, ABC):
 
         raise AttributeError("Unknown date format: {}".format(date_string))
 
-    def format_details(self) -> Dict[str, SerializedData]:
+    def format_details(self) -> Mapping[str, SerializedData]:
 
         serialized_data = {
             "cassette_type": self.cassette_type.serialize(),
@@ -378,7 +378,7 @@ class CollectionItem(AVFormat):
     object = relationship("CollectionObject",
                           back_populates="collection_items")
 
-    def format_details(self) -> Dict[str, SerializedData]:
+    def format_details(self) -> Mapping[str, SerializedData]:
         return dict()
 
 # ############################ End of AV Formats ##############################
@@ -389,7 +389,7 @@ class CassetteType(AVTables):
     table_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     name = db.Column("name", db.Text)
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
         return {
             "name": self.name,
             "id": self.table_id
@@ -401,7 +401,7 @@ class CassetteTapeType(AVTables):
     table_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     name = db.Column("name", db.Text)
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
         return {
             "name": self.name,
             "id": self.table_id
@@ -414,7 +414,7 @@ class CassetteTapeThickness(AVTables):
     value = db.Column("value", db.Text)
     unit = db.Column("unit", db.Text)
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
         return {
             "value": self.value,
             "unit": self.unit,

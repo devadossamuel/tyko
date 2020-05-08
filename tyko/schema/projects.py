@@ -1,4 +1,4 @@
-from typing import Dict, TYPE_CHECKING
+from typing import Dict, TYPE_CHECKING, Mapping
 
 import sqlalchemy as db
 from sqlalchemy.orm import relationship
@@ -46,7 +46,7 @@ class Project(AVTables):
         backref="object_source"
     )
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
         if self.status is not None:
             status_text = self.status.serialize()['name']
         else:
@@ -84,7 +84,7 @@ class ProjectStatus(AVTables):
 
     name = db.Column("name", db.Text)
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
         return {
             "project_status_id": self.id,
             "name": self.name

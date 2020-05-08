@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Mapping
 
 import sqlalchemy as db
 
@@ -15,7 +15,7 @@ class Treatment(AVTables):
     date = db.Column("date", db.Date)
     item_id = db.Column(db.Integer, db.ForeignKey("formats.item_id"))
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
         return {
             "treatment_id": self.id,
             "needed": self.needed,

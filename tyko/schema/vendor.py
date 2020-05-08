@@ -33,7 +33,7 @@ class Vendor(AVTables):
                             backref="vendor_id"
                             )
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
         contacts: List[Mapping[str, SerializedData]] = [
             contact.serialize() for contact in self.contacts
         ]
@@ -88,7 +88,7 @@ class VendorTransfer(AVTables):
         backref="transfer_object"
     )
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
         return {
             "vendor_transfer_id": self.id,
             "vendor_id": self.vendor_id,

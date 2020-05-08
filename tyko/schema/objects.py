@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List, TYPE_CHECKING
+from typing import Dict, Optional, List, TYPE_CHECKING, Union, Mapping
 
 import sqlalchemy as db
 from sqlalchemy.orm import relationship
@@ -73,7 +73,7 @@ class CollectionObject(AVTables):
             + self.collection_items
         return r
 
-    def serialize(self, recurse=False) -> Dict[str, SerializedData]:
+    def serialize(self, recurse=False) -> Mapping[str, SerializedData]:
 
         data: Dict[str, SerializedData] = {"object_id": self.id,
                                            "name": self.name,
@@ -114,7 +114,7 @@ class CollectionObject(AVTables):
 
         return data
 
-    def get_collection(self, recurse: bool) -> Optional[dict]:
+    def get_collection(self, recurse: bool) -> Optional[Union[dict, int]]:
         if self.collection is not None:
             if recurse is True:
                 return self.collection.serialize()
