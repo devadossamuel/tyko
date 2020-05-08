@@ -24,7 +24,6 @@ export function initDb(initUrl, restartUrl) {
       } else {
         reject(xhr.statusText);
       }
-
     };
     xhr.open('post', initUrl, true);
     xhr.setRequestHeader('Content-Type', 'application/json');
