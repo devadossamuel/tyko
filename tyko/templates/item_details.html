@@ -14,7 +14,7 @@
                 {{widgets.metadata_number_edit_widget("Object Sequence", item['obj_sequence'], 'obj_sequence', api_path)}}
             </tr>
             <tr>
-                <th>Format Type</th>
+                <th id="formatType">Format Type</th>
                 <td>
                     <div class="container">
                         {{ item['format']['name'] }}
@@ -62,6 +62,8 @@
 {% endblock %}
 {% macro casstte_display(data) %}
     <table class="table table-sm">
+      <caption hidden>Cassette Data</caption>
+
 {#        <thead>#}
 {#        <tr>#}
 {##}
