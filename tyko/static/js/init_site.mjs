@@ -32,7 +32,6 @@ export function initDb(initUrl, restartUrl) {
   }));
 
   initDataRequest.then(function(res) {
-    const response_data = res['response'];
     console.log('SUCCESS');
     return restartUrl;
   }).then(function(res) {
