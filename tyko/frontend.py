@@ -14,6 +14,7 @@ import pkg_resources
 from . import data_provider
 from .views.object_item import ObjectItemAPI
 
+
 @dataclass
 class FormField:
     form_type: str
@@ -385,7 +386,7 @@ class ItemFrontend(ProjectComponentDetailFrontend):
             fields=fields,
             breadcrumbs=breadcrumbs,
             show_bread_crumb=kwargs.get('show_bread_crumb'),
-            api_path=url_for("item", item_id = entity_id),
+            api_path=url_for("item", item_id=entity_id),
             item=selected_item)
 
     @property

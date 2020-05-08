@@ -670,7 +670,6 @@ class ObjectDataConnector(AbsNotesConnector):
 
         return new_data
 
-
     @staticmethod
     def _find_matching_section(matching_item,
                                matching_object) -> Optional[List[AVFormat]]:
@@ -922,7 +921,6 @@ class ItemDataConnector(AbsNotesConnector):
             )
             session.commit()
             return self._get_item(item_id, session=session).serialize()
-
 
         finally:
             session.close()
