@@ -1176,6 +1176,7 @@ def test_create_and_delete_file_annotation(server_with_object_item_file):
     assert del_resp.status_code == 202
     assert len(json.loads(server.get(file_annotations_url).data)['annotations']) == 0
 
+
 dates = [
     "1993",
     "11-1950",
@@ -1231,3 +1232,62 @@ def test_create_add_and_remove_cassette(date, server_with_object):
     delete_resp = server.delete(new_item_data['routes']['api'])
 
     assert delete_resp.status_code == 202
+
+
+def test_create_and_remove_cassette_with_notes(server_with_object):
+    server, data = server_with_object
+
+    object_add_url = url_for(
+        "object_item",
+        project_id=data['project']['id'],
+        object_id=data['object']['object_id']
+    )
+
+    new_item_resp = server.post(
+        object_add_url,
+        data=json.dumps({
+            "name": "dummy",
+            "format_id":
+                data['format_types']['audio cassette']["format_types_id"],
+            "format_details": {
+                "format_type_id":
+                    data['cassette_tape_formats']['compact cassette']['id'],
+                "date_recorded": "11-26-1993",
+            }
+        }),
+        content_type='application/json'
+    )
+    assert new_item_resp.status_code == 200, new_item_resp.status
+    new_item_data = json.loads(new_item_resp.data)
+
+    # add a note to the cassette tape
+    new_item_note_url = url_for("project_object_item_add_note",
+                                project_id=data['project']['id'],
+                                object_id=data['object']['object_id'],
+                                item_id=new_item_data['item']['item_id']
+                                )
+
+    new_note_resp = server.post(new_item_note_url,
+                                data=json.dumps({
+                                    "note_type_id": "3",
+                                    "text": "MY dumb note",
+                                }),
+                                content_type='application/json'
+                                )
+    assert new_note_resp.status_code == 200, new_note_resp.status
+
+    # Now the item should have a note
+    item_get_resp = server.get(new_item_data['routes']['api'])
+    item_post_add_data = json.loads(item_get_resp.data)
+    assert len(item_post_add_data['notes']) == 1
+
+    new_note_api_route = item_post_add_data['notes'][0]['route']['api']
+
+    delete_resp = server.delete(new_note_api_route)
+    assert delete_resp.status_code == 202, delete_resp.status
+
+    # Now the item should not have a note
+
+    assert len(
+        json.loads(server.get(new_item_data['routes']['api']).data)['notes']
+    ) == 0

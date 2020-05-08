@@ -54,7 +54,7 @@
 
     {% call widgets.card("Notes", "my-1")  %}
         {% call(note) notes_table(item['notes'], api_path) %}
-            {{ notes_table_row(note, url_for('note', note_id=note['note_id'])) }}
+            {{ notes_table_row(note, note['routes']['api']) }}
         {% endcall %}
         {{ note_editor("/api/project/" ~ project_id ~ "/object/" ~ object_id ~ "/item/" ~ item.item_id, valid_note_types) }}
     {% endcall %}

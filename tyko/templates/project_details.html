@@ -19,37 +19,37 @@
 
 {% block secondary_details %}
 
-{% call card("Objects", card_class="my-1") %}
-    <table class="table">
-        <caption hidden>Objects</caption>
-        <thead>
-            <tr>
-                <th scope="col" hidden>Object</th>
-                <th scope="col" hidden>Remove</th>
-            </tr>
-        </thead>
-        <tbody>
-            {%- for child_object in project['objects'] %}
-                {{ child_entity_row(
-                    child_object['name'],
-                    url_for('page_project_object_details', project_id=project_id, object_id=child_object.object_id),
-                    "removeObjectModal",
-                    url_for('project_object', project_id=project_id, object_id=child_object.object_id)
-                    ) }}
-            {%- endfor %}
-            {{ object_new_button_row(api_path + "/object", "newObjectModal") }}
-        </tbody>
-    </table>
-    {{ confirm_remove_entity_modal("removeObjectModal") }}
-    {{ new_object_modal("newObjectModal", collections, api_path + "/object") }}
-{% endcall %}
+    {% call card("Objects", card_class="my-1") %}
+        <table class="table">
+            <caption hidden>Objects</caption>
+            <thead>
+                <tr>
+                    <th scope="col" hidden>Object</th>
+                    <th scope="col" hidden>Remove</th>
+                </tr>
+            </thead>
+            <tbody>
+                {%- for child_object in project['objects'] %}
+                    {{ child_entity_row(
+                        child_object['name'],
+                        url_for('page_project_object_details', project_id=project_id, object_id=child_object.object_id),
+                        "removeObjectModal",
+                        url_for('project_object', project_id=project_id, object_id=child_object.object_id)
+                        ) }}
+                {%- endfor %}
+                {{ object_new_button_row(api_path + "/object", "newObjectModal") }}
+            </tbody>
+        </table>
+        {{ confirm_remove_entity_modal("removeObjectModal") }}
 
-{% call card("Notes", card_class="my-1") %}
-    {% call(note) notes_table(project['notes'], api_path) %}
-            {{ notes_table_row(note, url_for('project_notes', project_id=project_id, note_id=note['note_id'])) }}
+    {% endcall %}
+    {% call card("Notes", card_class="my-1") %}
+        {% call(note) notes_table(project['notes'], api_path) %}
+                {{ notes_table_row(note, url_for('project_notes', project_id=project_id, note_id=note['note_id'])) }}
         {% endcall %}
         {{ note_editor(api_path, valid_note_types) }}
-{% endcall %}
+    {% endcall %}
+    {{ new_object_modal("newObjectModal", collections, api_path + "/object") }}
 {%- endblock -%}
 {% block scripts %}
     {{ super() }}

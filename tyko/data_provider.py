@@ -2,7 +2,7 @@
 import abc
 from abc import ABC
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Iterator
 
 import sqlalchemy
 from sqlalchemy.sql.expression import true
@@ -614,7 +614,7 @@ class ObjectDataConnector(AbsNotesConnector):
             )
             matching_list = self._find_matching_section(matching_item,
                                                         matching_object)
-            if matching_list is not None:
+            if matching_list is not None and matching_item in matching_list:
                 matching_list.remove(matching_item)
 
             session.commit()
@@ -670,7 +670,9 @@ class ObjectDataConnector(AbsNotesConnector):
 
         return new_data
 
-    def _find_matching_section(self, matching_item,
+
+    @staticmethod
+    def _find_matching_section(matching_item,
                                matching_object) -> Optional[List[AVFormat]]:
         subtypes = [
             'audio_cassettes',
@@ -848,6 +850,15 @@ class ItemDataConnector(AbsNotesConnector):
         return res
 
     @staticmethod
+    def _iterall(session) -> Iterator[formats.AVFormat]:
+        yield from session.query(formats.Film).all()
+        yield from session.query(formats.AudioCassette).all()
+        yield from session.query(formats.AudioVideo).all()
+        yield from session.query(formats.GroovedDisc).all()
+        yield from session.query(formats.OpenReel).all()
+        yield from session.query(formats.CollectionItem).all()
+
+    @staticmethod
     def _get_one(session, table_id: int):
 
         res = list(session.query(formats.Film)
@@ -910,12 +921,8 @@ class ItemDataConnector(AbsNotesConnector):
                 self.new_note(session, note_text, note_type_id)
             )
             session.commit()
+            return self._get_item(item_id, session=session).serialize()
 
-            new_item = session.query(CollectionItem) \
-                .filter(CollectionItem.table_id == item_id) \
-                .one()
-
-            return new_item.serialize()
 
         finally:
             session.close()
@@ -987,33 +994,16 @@ class ItemDataConnector(AbsNotesConnector):
 
     @staticmethod
     def _get_item(item_id, session):
-        collection_items = session.query(CollectionItem) \
-            .filter(CollectionItem.table_id == item_id) \
-            .all()
-        if len(collection_items) == 0:
-            raise ValueError("Not a valid item")
-        collection_item = collection_items[0]
-        return collection_item
+        for i in ItemDataConnector._iterall(session):
+            if i.table_id == item_id:
+                return i
+        raise ValueError("Not a valid item")
 
     def remove_note(self, item_id, note_id):
         session = self.session_maker()
         try:
-            collection_items = session.query(CollectionItem)\
-                .filter(CollectionItem.table_id == item_id).all()
 
-            if len(collection_items) == 0:
-                raise DataError(
-                    message="Unable to locate item "
-                            "with ID: {}".format(collection_items),
-                    status_code=404
-                )
-
-            if len(collection_items) > 1:
-                raise DataError(
-                    message="Found multiple items with ID: {}".format(
-                        item_id))
-
-            item = collection_items[0]
+            item = self._get_item(item_id, session)
 
             if len(item.notes) == 0:
                 raise DataError(
@@ -1033,9 +1023,7 @@ class ItemDataConnector(AbsNotesConnector):
                 )
 
             session.commit()
-            return session.query(CollectionItem) \
-                .filter(CollectionItem.table_id == item_id) \
-                .one().serialize()
+            return self._get_item(item_id, session).serialize()
         finally:
             session.close()
 

@@ -90,12 +90,34 @@ class ObjectItemAPI(views.MethodView):
             return make_response("Invalid item data", 400)
 
     def get(self, project_id, object_id):  # noqa: E501  pylint: disable=W0613,C0301
-        item_id = request.args.get("item_id")
+        item_id = int(request.args.get("item_id"))
 
         connector = data_provider.ItemDataConnector(
             self._provider.db_session_maker)
 
-        return connector.get(id=item_id, serialize=True)
+        i = connector.get(id=item_id, serialize=True)
+        if i['parent_object_id'] != object_id:
+            raise AttributeError("object id doesn't match item id")
+        for note in i['notes']:
+            note['route'] = self.get_note_routes(
+                note,
+                object_id=object_id,
+                project_id=project_id,
+                item_id=item_id
+            )
+        return i
+
+    @staticmethod
+    def get_note_routes(note, item_id, object_id,
+                        project_id) -> Dict[str, str]:
+
+        return {
+            "api": url_for("item_notes",
+                           note_id=note['note_id'],
+                           item_id=item_id,
+                           object_id=object_id,
+                           project_id=project_id)
+        }
 
     def delete(self, project_id, object_id):  # noqa: E501  pylint: disable=W0613,C0301
         item_id = int(request.args.get("item_id"))

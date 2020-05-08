@@ -12,7 +12,7 @@ from flask import make_response, render_template, url_for
 
 import pkg_resources
 from . import data_provider
-
+from .views.object_item import ObjectItemAPI
 
 @dataclass
 class FormField:
@@ -347,8 +347,15 @@ class ItemFrontend(ProjectComponentDetailFrontend):
             Details(name="Medusa UUID", key="medusa_uuid", editable=True),
             Details(name="Object Sequence", key="obj_sequence", editable=True),
         ]
+        for note in selected_item['notes']:
+            note['routes'] = \
+                ObjectItemAPI.get_note_routes(
+                    note,
+                    item_id=selected_item['item_id'],
+                    object_id=selected_item['parent_object_id'],
+                    project_id=kwargs['project_id']
+                    )
 
-        api_path = f"{url_for('.page_index')}api/item/{entity_id}"
         for f in fields:
             if f.source_key is not None:
                 selected_item[f.key] = f.source_key()
@@ -378,7 +385,7 @@ class ItemFrontend(ProjectComponentDetailFrontend):
             fields=fields,
             breadcrumbs=breadcrumbs,
             show_bread_crumb=kwargs.get('show_bread_crumb'),
-            api_path=api_path,
+            api_path=url_for("item", item_id = entity_id),
             item=selected_item)
 
     @property
