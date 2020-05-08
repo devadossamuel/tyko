@@ -53,7 +53,10 @@
       "jsx",
       "node",
       "mjs"
-    ]
+    ],
+    "transform": {
+      "^.+\\.m?js$": "babel-jest"
+    }
   },
   "jestSonar": {
     "reportPath": "reports"
