@@ -285,7 +285,7 @@ class AudioCassette(AVFormat, ABC):
         db.ForeignKey("cassette_types.table_id")
     )
 
-    format_type = relationship("CassetteType")
+    cassette_type = relationship("CassetteType")
 
     tape_type_id = db.Column(db.Integer,
                              db.ForeignKey("cassette_tape_types.table_id"))
@@ -347,7 +347,7 @@ class AudioCassette(AVFormat, ABC):
     def format_details(self) -> Dict[str, SerializedData]:
 
         serialized_data = {
-            "format_type": self.format_type.serialize(),
+            "cassette_type": self.cassette_type.serialize(),
             "inspection_date":
                 utils.serialize_precision_datetime(
                     self.inspection_date)

@@ -1093,7 +1093,8 @@ class AudioCassetteDataConnector(ItemDataConnector):
 
             new_cassette = AudioCassette(
                 name=new_base_item['name'],
-                format_type=format_type,
+                cassette_type=format_type,
+                format_type_id=new_base_item['format_id']
             )
 
             self._add_optional_args(new_cassette, **format_details)
@@ -1101,7 +1102,8 @@ class AudioCassetteDataConnector(ItemDataConnector):
             base_object.audio_cassettes.append(new_cassette)
             session.add(new_cassette)
             session.commit()
-            return new_cassette.serialize()
+            i = new_cassette.serialize()
+            return i
         finally:
             session.close()
 

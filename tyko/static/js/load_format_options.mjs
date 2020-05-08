@@ -73,7 +73,7 @@ $('.tyko-form-new-entity').each(function() {
   );
 });
 
-$('.tyko-input-enum-api-options').each(function() {
+$('.tyko-input-enum-api-options').each(function(index) {
   const select = $(this);
   const apiUrl = $(this).data('enumapi');
   requests.get(apiUrl).then((data) => {

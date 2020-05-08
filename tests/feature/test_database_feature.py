@@ -824,7 +824,7 @@ def new_audio_item(dummy_database, new_audio_object, item_title, date_recorded,
         object=new_audio_object["object"],
         recording_date=recording_date,
         recording_date_precision=recording_date_precision,
-        format_type=schema.CassetteType(name=audio_type),
+        cassette_type=schema.CassetteType(name=audio_type),
         tape_thickness=schema.CassetteTapeThickness(value=tape_thickness),
         inspection_date=datetime.strptime(inspection_date, "%m-%d-%Y")
     )

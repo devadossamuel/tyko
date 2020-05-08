@@ -1187,6 +1187,7 @@ dates = [
     "01-06-1993"
 ]
 
+
 @pytest.mark.parametrize("date", dates)
 def test_create_add_and_remove_cassette(date, server_with_object):
     server, data = server_with_object
@@ -1213,16 +1214,17 @@ def test_create_add_and_remove_cassette(date, server_with_object):
     )
     assert new_item_resp.status_code == 200, new_item_resp.status
     new_item_data = json.loads(new_item_resp.data)
+    assert new_item_data["item"]['format']['name'] == "audio cassette"
     assert "routes" in new_item_data
 
     item_get_resp = server.get(new_item_data['routes']['api'])
     assert item_get_resp.status_code == 200, item_get_resp.status
     new_item_get_data = json.loads(item_get_resp.data)
-    assert "format_type" in new_item_get_data['format_details']
+    assert "cassette_type" in new_item_get_data['format_details']
 
     format_details = new_item_get_data['format_details']
-    format_type = format_details['format_type']
-    assert format_type['name'] == "compact cassette"
+    cassette_type = format_details['cassette_type']
+    assert cassette_type['name'] == "compact cassette"
 
     assert format_details['date_recorded'] == date
 
