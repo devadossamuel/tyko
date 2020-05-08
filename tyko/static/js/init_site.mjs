@@ -39,6 +39,4 @@ export function initDb(initUrl, restartUrl) {
   }).catch(function(reason) {
     console.error('Failed ' + reason);
   });
-
-  // location.reload()
 }
