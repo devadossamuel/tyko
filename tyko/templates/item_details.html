@@ -13,6 +13,14 @@
             <tr>
                 {{widgets.metadata_number_edit_widget("Object Sequence", item['obj_sequence'], 'obj_sequence', api_path)}}
             </tr>
+            <tr>
+                <th>Format Type</th>
+                <td>
+                    <div class="container">
+                        {{ item['format']['name'] }}
+                    </div>
+                </td>
+            </tr>
         {% endcall %}
     {% endcall %}
     {%  call widgets.card("Format Details", "my-1")  %}
