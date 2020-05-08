@@ -135,12 +135,6 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
 
         return abort(404)
 
-    def _add_generic_item(self, project_id, object_id):
-        pass
-
-    def _add_format_item(self, project_id, object_id, connector):
-        pass
-
     def pbcore(self, id):
         xml = pbcore.create_pbcore_from_object(
             object_id=id,
