@@ -14,9 +14,6 @@ import {items} from './api.js';
  * @param {displayCallback} [displayCallback]
  */
 function updateOptions(url, optionId, displayCallback = null) {
-  if (displayCallback === null) {
-
-  }
   requests.get(url).then((data) => {
     const jsonData = JSON.parse(data);
     jsonData.forEach(function(it) {
@@ -34,13 +31,20 @@ function updateOptions(url, optionId, displayCallback = null) {
   });
 }
 
-/**
- * Loads all the class attributes
- */
-function loadTykoClasses() {
-  $.each($('.tyko-form-new-entity'), function(i, element) {
+function loadInputDatePickerClass(className='tyko-input-fulldate') {
+  $.each($(`.${className}`), function(i, element) {
+    $(element).datepicker({
+      format: 'mm-dd-yyyy',
+      uiLibrary: 'bootstrap4',
+    });
+  });
+}
+
+function loadNewEntityFormClass(className='tyko-form-new-entity',
+                                apiElementDataName='addapiurl') {
+  $.each($(`.${className}`), function(i, element) {
     const form = $(element);
-    const addUrl = $(element).data('addapiurl');
+    const addUrl = $(element).data(apiElementDataName);
     form.unbind('submit').bind('submit',
         function(event) {
           event.preventDefault();
@@ -87,34 +91,51 @@ function loadTykoClasses() {
         },
     );
   });
+}
 
-  $.each($('.tyko-input-enum-api-options'), function(i, element) {
+/**
+ * Loads all the class attributes
+ */
+export function loadTykoClasses() {
+  loadNewEntityFormClass();
+  loadInputEnumOptionClass();
+  loadInputDatePickerClass();
+
+  if (window.hasOwnProperty('CASSETTE_TAPE_THICKNESS_URL') ){
+    updateOptions(CASSETTE_TAPE_THICKNESS_URL, 'cassetteTapeThicknessInput',
+        function(item) {
+          if (item['unit'] === null) {
+            return item['value'];
+          }
+          return `${item['value']} ${item['unit']}`;
+        });
+  }
+}
+
+/**
+ * Load the CSS class for <input> that have enumerated data the requires a
+ * rest call from the API
+ *
+ * @param {string} className - defaults to tyko-input-enum-api-options
+ * @param {string} apiElementDataName - name of the data attribute stored by
+ *  the element that contains the API
+ */
+export function loadInputEnumOptionClass(
+    className='tyko-input-enum-api-options',
+    apiElementDataName='enumapi') {
+
+  $.each($(`.${className}`), function(i, element) {
     const select = $(element);
-    const apiUrl = $(element).data('enumapi');
+    const apiUrl = $(element).data(apiElementDataName);
     requests.get(apiUrl).then((data) => {
       const jsonData = JSON.parse(data);
       jsonData.forEach(function(it) {
         select.append(`<option value="${it['id']}">${it['name']}</option>`);
       });
     }).catch((resp) => {
-      alert(`Failed to load data from ${apiUrl}`);
+      console.error(`Failed to load data from ${apiUrl}`);
     });
-  });
 
-  $.each($('.tyko-input-fulldate'), function(i, element) {
-    $(element).datepicker({
-      format: 'mm-dd-yyyy',
-      uiLibrary: 'bootstrap4',
-    });
   });
-
-  updateOptions(CASSETTE_TAPE_THICKNESS_URL, 'cassetteTapeThicknessInput',
-      function(item) {
-        if (item['unit'] === null) {
-          return item['value'];
-        }
-        return `${item['value']} ${item['unit']}`;
-      });
 }
-
 loadTykoClasses();
