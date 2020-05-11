@@ -77,7 +77,6 @@
         <label for="cassetteDateInspectedInput" class="col-sm-2 col-form-label">Date Inspected</label>
         <div class="col-sm-10">
             <input id="cassetteDateInspectedInput" class="form-control tyko-input-fulldate" name="format_details.DateInspected">
-    {#        TODO: Set this to a date picker#}
         </div>
     </div>
     <script type="application/javascript">
@@ -89,7 +88,15 @@
 
 {% macro new_item_modal(modal_id, formats, api_route) %}
 
-{{new_modal(modal_id, "New Item", api_route, new_item_form(formats)) }}
+{{new_modal(modal_id, "New Item", api_route, new_item_form(formats), formId="newItemForm") }}
+<script type="module">
+        $(".modal").on('hidden.bs.modal', function() {
+          document.getElementById('newItemForm').reset();
+          $('.format-row').each(function() {
+            $(this).attr("hidden", "");
+          });
+        })
+    </script>
 {% endmacro %}
 
 {% macro item_new_button_row(api_for_new, modal_id) %}

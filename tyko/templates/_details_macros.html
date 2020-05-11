@@ -57,7 +57,7 @@
 {% endmacro %}
 
 
-{% macro new_modal(modalName, modal_title, add_api_route, form) %}
+{% macro new_modal(modalName, modal_title, add_api_route, form, formId="newEntity") %}
 <div class="modal fade" id="{{modalName}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"  aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -67,7 +67,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form id="newEntity" class="tyko-form-new-entity" data-addapiurl="{{ add_api_route }}">
+                <form id={{ formId }} class="tyko-form-new-entity" data-addapiurl="{{ add_api_route }}">
                     {{ form }}
                     <button class="btn btn-primary" type="submit">Save changes</button>
                 </form>
@@ -76,6 +76,7 @@
         </div>
     </div>
 </div>
+
 {% endmacro %}
 
 {#<div class="alert alert-danger alert-dismissible d-none" role="alert" id="submitResultAlert">#}
