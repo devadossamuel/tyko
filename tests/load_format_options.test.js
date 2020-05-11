@@ -1,6 +1,10 @@
-import * as formatOptions from '../tyko/static/js/load_format_options';
+'use strict';
 
+import * as formatOptions from '../tyko/static/js/load_format_options';
+import {items} from "../tyko/static/js/api"
+import {requests} from '../tyko/static/js/request';
 jest.mock('../tyko/static/js/request.js');
+jest.mock('../tyko/static/js/api.js');
 
 describe('Testing loadInputEnumOptionclass', () => {
   beforeEach(() => {
@@ -39,5 +43,16 @@ describe('loadInputDatePickerClass', () => {
 
   test('loadInputDatePickerClass changes', () => {
     expect($('#dummy').attr('data-datepicker')).toBe('true');
+  });
+  test('loadInputDatePickerClass submit', () => {
+    items.addItem.mockImplementation((apiRoute, data) => {
+      const expected = {"format_details": {"DateInspected": "12-20-1999"}};
+      expect(data).toMatchObject(expected);
+      return new Promise(() => {
+        resolve(data)
+      });
+    });
+    $('#dummy').val("12-20-1999");
+  expect($("#newEntity").submit());
   });
 });

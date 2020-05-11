@@ -31,7 +31,7 @@ function updateOptions(url, optionId, displayCallback = null) {
   });
 }
 
-function loadInputDatePickerClass(className='tyko-input-fulldate') {
+function loadInputDatePickerClass(className = 'tyko-input-fulldate') {
   $.each($(`.${className}`), function(i, element) {
     $(element).datepicker({
       format: 'mm-dd-yyyy',
@@ -40,8 +40,13 @@ function loadInputDatePickerClass(className='tyko-input-fulldate') {
   });
 }
 
-function loadNewEntityFormClass(className='tyko-form-new-entity',
-                                apiElementDataName='addapiurl') {
+function loadNewEntityFormClass(
+    className = 'tyko-form-new-entity',
+    apiElementDataName = 'addapiurl',
+    onSuccess = null) {
+  onSuccess = onSuccess != null ? onSuccess : function() {
+    location.reload();
+  };
   $.each($(`.${className}`), function(i, element) {
     const form = $(element);
     const addUrl = $(element).data(apiElementDataName);
@@ -68,9 +73,7 @@ function loadNewEntityFormClass(className='tyko-form-new-entity',
               }
             }
           }
-          items.addItem(addUrl, data).then(function() {
-            location.reload();
-          }).catch(function(reason) {
+          items.addItem(addUrl, data).then(onSuccess).catch(function(reason) {
             const alertBox = $('#submitResultAlert');
             let responsesMessage =
                 '<div class="alert alert-danger alert-dismissible" ' +
@@ -101,7 +104,7 @@ export function loadTykoClasses() {
   loadInputEnumOptionClass();
   loadInputDatePickerClass();
 
-  if (window.hasOwnProperty('CASSETTE_TAPE_THICKNESS_URL') ){
+  if (window.hasOwnProperty('CASSETTE_TAPE_THICKNESS_URL')) {
     updateOptions(CASSETTE_TAPE_THICKNESS_URL, 'cassetteTapeThicknessInput',
         function(item) {
           if (item['unit'] === null) {
@@ -121,8 +124,8 @@ export function loadTykoClasses() {
  *  the element that contains the API
  */
 export function loadInputEnumOptionClass(
-    className='tyko-input-enum-api-options',
-    apiElementDataName='enumapi') {
+    className = 'tyko-input-enum-api-options',
+    apiElementDataName = 'enumapi') {
 
   $.each($(`.${className}`), function(i, element) {
     const select = $(element);
@@ -138,4 +141,5 @@ export function loadInputEnumOptionClass(
 
   });
 }
+
 loadTykoClasses();
