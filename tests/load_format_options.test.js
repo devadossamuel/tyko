@@ -23,7 +23,7 @@ describe('Testing loadInputEnumOptionclass', () => {
     formatOptions.loadTykoClasses();
   });
   test('loadInputEnumOptionclass changes', () => {
-    expect($('#dummy > *').length).toBe(7);
+    expect($('#dummy > *').length).toBe(8);
   });
 });
 

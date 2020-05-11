@@ -31,6 +31,11 @@ function updateOptions(url, optionId, displayCallback = null) {
   });
 }
 
+/**
+ * Load the CSS class for <input> that have use a date selector
+ *
+ * @param {string} className - defaults to tyko-input-fulldate
+ */
 function loadInputDatePickerClass(className = 'tyko-input-fulldate') {
   $.each($(`.${className}`), function(i, element) {
     $(element).datepicker({
@@ -40,14 +45,26 @@ function loadInputDatePickerClass(className = 'tyko-input-fulldate') {
   });
 }
 
+/**
+ * @callback successCallback
+ * @param {Object} response
+ */
+
+/**
+ * load new css class for form
+ * @param {string} className - element with the class name to be affecte3d,
+ * @param {string} apiElementDataName - data attribute name that contains the
+ *  api route information for post the data
+ * @param {successCallback} onSuccess - success callback
+ */
 function loadNewEntityFormClass(
     className = 'tyko-form-new-entity',
     apiElementDataName = 'addapiurl',
     onSuccess = null) {
-  onSuccess = onSuccess != null ? onSuccess : function() {
+  onSuccess = onSuccess != null ? onSuccess : function(response) {
     location.reload();
   };
-  $.each($(`.${className}`), function(i, element) {
+  $.each($(`.${className}`), function(index, element) {
     const form = $(element);
     const addUrl = $(element).data(apiElementDataName);
     form.unbind('submit').bind('submit',
@@ -73,23 +90,25 @@ function loadNewEntityFormClass(
               }
             }
           }
-          items.addItem(addUrl, data).then(onSuccess).catch(function(reason) {
-            const alertBox = $('#submitResultAlert');
-            let responsesMessage =
-                '<div class="alert alert-danger alert-dismissible" ' +
-                'role="alert" id="submitResultAlert">\n' +
-                '<strong id="errorMessage">';
+          items.addItem(addUrl, data).
+              then((resp) => onSuccess(resp)).
+              catch(function(reason) {
+                const alertBox = $('#submitResultAlert');
+                let responsesMessage =
+                    '<div class="alert alert-danger alert-dismissible" ' +
+                    'role="alert" id="submitResultAlert">\n' +
+                    '<strong id="errorMessage">';
 
-            responsesMessage += reason.statusText;
-            responsesMessage += '</strong>';
-            responsesMessage +=
-                '    <button type="button" class="close" ' +
-                'data-dismiss="alert" aria-label="Close">\n' +
-                '        <span aria-hidden="true">&times;</span>\n' +
-                '</div>';
-            alertBox.html(responsesMessage);
-            console.error(reason.responseText);
-          });
+                responsesMessage += reason.statusText;
+                responsesMessage += '</strong>';
+                responsesMessage +=
+                    '    <button type="button" class="close" ' +
+                    'data-dismiss="alert" aria-label="Close">\n' +
+                    '        <span aria-hidden="true">&times;</span>\n' +
+                    '</div>';
+                alertBox.html(responsesMessage);
+                console.error(reason.responseText);
+              });
           return false;
         },
     );
@@ -126,19 +145,28 @@ export function loadTykoClasses() {
 export function loadInputEnumOptionClass(
     className = 'tyko-input-enum-api-options',
     apiElementDataName = 'enumapi') {
-
   $.each($(`.${className}`), function(i, element) {
     const select = $(element);
     const apiUrl = $(element).data(apiElementDataName);
     requests.get(apiUrl).then((data) => {
       const jsonData = JSON.parse(data);
+      select.append(`<option value=""></option>`);
       jsonData.forEach(function(it) {
-        select.append(`<option value="${it['id']}">${it['name']}</option>`);
+        if (apiUrl.includes('cassette_tape_tape_thickness')) {
+          let displayText;
+          if (it['unit'] != null) {
+            displayText = `${it['value']} ${it['unit']}`;
+          } else {
+            displayText = `${it['value']}`;
+          }
+          select.append(`<option value="${it['id']}">${displayText}</option>`);
+        } else {
+          select.append(`<option value="${it['id']}">${it['name']}</option>`);
+        }
       });
     }).catch((resp) => {
       console.error(`Failed to load data from ${apiUrl}`);
     });
-
   });
 }
 

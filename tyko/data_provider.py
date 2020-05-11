@@ -1111,17 +1111,16 @@ class AudioCassetteDataConnector(ItemDataConnector):
                 .filter(CollectionObject.id == kwargs['object_id'])\
                 .one()
 
-            format_type_id = int(format_details['format_type_id'])
-
-            format_type = session.query(CassetteType)\
-                .filter(CassetteType.table_id == format_type_id)\
-                .one()
-
             new_cassette = AudioCassette(
                 name=new_base_item['name'],
-                cassette_type=format_type,
                 format_type_id=new_base_item['format_id']
             )
+
+            format_type_id = format_details.get('format_type_id')
+            if format_type_id is not None and str(format_type_id) != "":
+                new_cassette.cassette_type = session.query(CassetteType)\
+                    .filter(CassetteType.table_id == int(format_type_id))\
+                    .one()
 
             self._add_optional_args(new_cassette, **format_details)
 
@@ -1135,7 +1134,7 @@ class AudioCassetteDataConnector(ItemDataConnector):
 
     def _add_optional_args(self, new_cassette, **params):
         tape_thickness_id = params.get('tape_type_id')
-        if tape_thickness_id is not None:
+        if tape_thickness_id is not None and str(tape_thickness_id) != "":
             new_cassette.tape_thickness_id = int(tape_thickness_id)
 
         date_inspected = params.get('inspection_date')
@@ -1144,11 +1143,11 @@ class AudioCassetteDataConnector(ItemDataConnector):
                 utils.create_precision_datetime(date_inspected)
 
         tape_type_id = params.get('tape_type_id')
-        if tape_type_id is not None:
+        if tape_type_id is not None and str(tape_type_id) != "":
             new_cassette.tape_type_id = int(tape_type_id)
 
         date_recorded = params.get("date_recorded")
-        if date_recorded is not None:
+        if date_recorded is not None and str(date_recorded) != "":
             date_prec = utils.identify_precision(date_recorded)
 
             new_cassette.recording_date = utils.create_precision_datetime(
