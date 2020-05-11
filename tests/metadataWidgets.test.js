@@ -10,13 +10,26 @@ describe('Testing text widget', ()=> {
                 data-name="Audio Type"
                 data-displaydata="cassette tape">
             </tr>
+            <tr id="tapeThickness" 
+                class="tyko-metadata-entity"
+                data-name="Type Thickness"
+                data-enumurl="/api/formats/cassette_tape/cassette_tape_tape_thickness"
+                data-displaydata="cassette tape">
+            </tr>
         </tbody>
     </table>`;
   })
 
-  test("Appling the styles Transforms", ()=> {
+  test("Applying the styles Transforms", ()=> {
         applyStyles();
-        expect($("#dummy").html()).toEqual(expect.stringContaining("<td>cassette tape</td>"));
+        expect($("#dummy").html()).toEqual(expect.stringContaining("cassette tape"));
+      }
+  )
+  test("create callback", ()=> {
+        applyStyles();
+        $("#tapeThickness").metadataEntry({"requestEnums": function(url) {
+
+          }});
       }
   )
 })

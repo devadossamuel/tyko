@@ -107,6 +107,14 @@ class ObjectItemAPI(views.MethodView):
             )
         return i
 
+    def put(self, project_id, object_id):
+        item_id = request.args.get("item_id")
+        data = request.get_json()
+        connector = data_provider.ItemDataConnector(
+            self._provider.db_session_maker)
+        replacement_item = connector.update(int(item_id), data)
+        return replacement_item
+
     @staticmethod
     def get_note_routes(note, item_id, object_id,
                         project_id) -> Dict[str, str]:
