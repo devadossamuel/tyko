@@ -11,9 +11,21 @@ describe('Testing text widget', ()=> {
                 data-displaydata="cassette tape">
             </tr>
             <tr id="tapeThickness" 
-                class="tyko-metadata-entity"
+                class="tyko-metadata-entity tyko-metadata-entity-enum"
                 data-name="Type Thickness"
                 data-enumurl="/api/formats/cassette_tape/cassette_tape_tape_thickness"
+                data-displaydata="cassette tape">
+            </tr>
+            <tr id="tapeType" 
+                class="tyko-metadata-entity tyko-metadata-entity-enum"
+                data-name="Type Type"
+                data-enumoptions='[{"text": "I", "value": "1"}]'
+                data-displaydata="cassette tape">
+            </tr>
+            <tr id="inspectionDate" 
+                class="tyko-metadata-entity tyko-metadata-entity-fulldate"
+                data-name="Inspection Date"
+                data-enumurl="/api/project/10/object/28/item?item_id=139"
                 data-displaydata="cassette tape">
             </tr>
         </tbody>
@@ -23,13 +35,6 @@ describe('Testing text widget', ()=> {
   test("Applying the styles Transforms", ()=> {
         applyStyles();
         expect($("#dummy").html()).toEqual(expect.stringContaining("cassette tape"));
-      }
-  )
-  test("create callback", ()=> {
-        applyStyles();
-        $("#tapeThickness").metadataEntry({"requestEnums": function(url) {
-
-          }});
       }
   )
 })

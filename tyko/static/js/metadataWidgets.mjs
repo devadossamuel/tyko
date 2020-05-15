@@ -15,50 +15,19 @@ export function applyStyles() {
   });
 }
 
-function parseData(res) {
-  const data = []
-  JSON.parse(res).forEach((i) => {
-    data.push({'text': i['name'], 'value': i['id']});
+(function($) {
+  $.fn.extend({
+    loadEnumData: function(data) {
+      return $.each(this, function(i, e) {
+        const widget = $(e).data('widget');
+        if (widget === undefined) {
+          throw new Error('Unable to enumerated data widget');
+        }
+        widget.options = data;
+      });
+    },
   });
-  return data;
-}
-
-/**
- *
- * @param {Object} callbacks
- */
-function metadataEntryCallbacks(callbacks = {}) {
-  return {
-    "parseData": callbacks.parseData || parseData,
-    "requestEnums": callbacks.requestEnums || requestEnums,
-  }
-}
-
-function requestEnums(dataURL) {
-  return requests.get(dataURL).then((res) => {
-    return res;
-
-  }).catch((err) => {
-    alert('ERRot');
-  });
-}
-(function( $) {
-
-
-$.fn.extend({
-  loadEnumData: function(data) {
-    return $.each(this, function(i, e) {
-      const widget = $(e).data("widget");
-      if (widget === undefined){
-        throw new Error("Unable to enumerated data widget");
-      }
-      widget.options = data;
-
-    });
-  },
-})
-}(jQuery))
-// $.fn.metadataEntry = metadataEntry;
+}(jQuery));
 
 /**
  * Replace any existing content in a row with the rendered version
@@ -71,60 +40,68 @@ function metadataEntry(row) {
   builder.setDisplayText($(row).data('displaydata'));
   builder.setEdit($(row).is('.tyko-metadata-entity-editable'));
 
-  if ($(row).hasClass("tyko-metadata-entity-fulldate")){
-    builder.setMetadataWidget(MetadataEditDateWidget)
+  if ($(row).hasClass('tyko-metadata-entity-fulldate')) {
+    builder.setMetadataWidget(MetadataEditDateWidget);
   }
-  if ($(row).hasClass("tyko-metadata-entity-enum")) {
-    builder.setMetadataWidget(MetadataEditSelectEnumWidget)
+
+  if ($(row).hasClass('tyko-metadata-entity-enum')) {
+    builder.setMetadataWidget(MetadataEditSelectEnumWidget);
     const data = $(row).data('enumoptions');
     if (data) {
       data.forEach((i) => {
-        builder.options.push(i)
-      })
+        builder.options.push(i);
+      });
     }
     builder.setEnumUrl(
-        $(row).data('enumurl') !== undefined ? $(row).data('enumurl'): null
+        $(row).data('enumurl') !== undefined ? $(row).data('enumurl') : null,
     );
-
   }
+
   const widget = builder.build(row);
   $(widget.metadataValueElement).empty();
-  widget.apiUrl = $(row).data('apiroute') !== undefined ? $(row).data('apiroute'): null
-  widget.metadataKey = $(row).data('metadatakey') !== undefined ? $(row).data('metadatakey'): null
+  widget.apiUrl = $(row).data('apiroute') !== undefined ?
+      $(row).data('apiroute') :
+      null;
+  widget.metadataKey = $(row).data('metadatakey') !== undefined ?
+      $(row).data('metadatakey') :
+      null;
   widget.draw();
-  $(row).data("widget", widget);
-
-
+  $(row).data('widget', widget);
 }
 
 class MetadataWidgetState {
   constructor(parent) {
     this._parent = parent;
   }
-  draw() {}
-  isClickedOutsideOfRow(target){
-    if($(this._parent.parent).is(target)){
+
+  draw() {
+  }
+
+  isClickedOutsideOfRow(target) {
+    if ($(this._parent.parent).is(target)) {
       return false;
     }
-    if($(this._parent.parent).has(target).length > 0){
+    if ($(this._parent.parent).has(target).length > 0) {
       return false;
     }
-    if (this._parent.targetInEditDelegate(target)){
+    if (this._parent.targetInEditDelegate(target)) {
       return false;
     }
     return true;
   };
-  clickOffRow(event, row) {}
 
-  onCancel(){}
+  clickOffRow(event, row) {
+  }
+
+  onCancel() {
+  }
 }
 
 class ViewState extends MetadataWidgetState {
   draw(parent, row, value) {
-
     $(parent).text(value);
     this._parent.makeEditButtonVisible();
-    this._parent.makeConfirmButtonInvisible()
+    this._parent.makeConfirmButtonInvisible();
     $(parent).removeClass('edit').addClass('view');
   }
 }
@@ -139,10 +116,10 @@ class EditState extends MetadataWidgetState {
     $(row).find('#btnCancelEdit').off().on('click', () => {
       this.onCancel();
     });
-    $(row).find("#btnConfirmEdit").off().on('click', () => {
+    $(row).find('#btnConfirmEdit').off().on('click', () => {
       this.onConfirm();
     });
-    this._parent.assignEditHandles(parent)
+    this._parent.assignEditHandles(parent);
   }
 
   clickOffRow(event, row) {
@@ -157,9 +134,9 @@ class EditState extends MetadataWidgetState {
 
   onConfirm() {
     this._parent.onSubmit(
-        $("#editDelegate").val(),
+        $('#editDelegate').val(),
         this._parent.metadataKey,
-        this._parent.apiUrl
+        this._parent.apiUrl,
     );
     this._parent.viewMode();
     this._parent.tearDown();
@@ -190,10 +167,9 @@ class MetadataEditWidget {
     this.editButton = $(this.editElement).find('button');
 
     $(document).mouseup((event) => {
-      if(this.#state.isClickedOutsideOfRow(event.target) === true){
+      if (this.#state.isClickedOutsideOfRow(event.target) === true) {
         this.#state.clickOffRow(event, this.parent);
       }
-
     });
 
     this.editButton.on('click', (() => {
@@ -202,62 +178,64 @@ class MetadataEditWidget {
   }
 
   /**
+   * @param {jQuery}target
    * @return {boolean}
    */
   isClickedOutsideOfRow(target) {
-
-    if($(this.parent).is(target)){
+    if ($(this.parent).is(target)) {
       return false;
     }
 
-    if($(this.parent).has(target).length > 0){
+    if ($(this.parent).has(target).length > 0) {
       return false;
     }
     return true;
   }
 
-  onSubmit(data, key, url){
-    this.parent.parent().trigger("changesRequested", [[{key: key, value:data}], url])
-
+  onSubmit(data, key, url) {
+    this.parent.parent().
+        trigger('changesRequested', [[{key: key, value: data}], url]);
   }
 
-  targetInEditDelegate(target){
-
-    if ($(target).is("input")){
-        return true;
-      }
-      return false;
+  targetInEditDelegate(target) {
+    if ($(target).is('input')) {
+      return true;
+    }
+    return false;
   }
+
   draw() {
     this.#state.draw(this.metadataValueElement, this.parent, this.dataValue);
   }
-  tearDown(){
+
+  tearDown() {
     $(this.metadataValueElement).empty();
   }
 
   makeEditButtonVisible() {
-    $(this.editButton).parent().find(".edit").removeAttr("hidden")
+    $(this.editButton).parent().find('.edit').removeAttr('hidden');
   }
 
   makeConfirmButtonInvisible() {
-    $(this.editButton).parent().find(".btn-group-confirm").attr("hidden", "")
+    $(this.editButton).parent().find('.btn-group-confirm').attr('hidden', '');
   }
+
   makeConfirmButtonVisible() {
-    $(this.editButton).parent().find(".btn-group-confirm").removeAttr("hidden")
+    $(this.editButton).parent().find('.btn-group-confirm').removeAttr('hidden');
   }
+
   makeEditButtonInvisible() {
-    $(this.editButton).parent().find(".edit").attr("hidden", "")
-
+    $(this.editButton).parent().find('.edit').attr('hidden', '');
   }
 
-  assignEditHandles(base) {}
+  assignEditHandles(base) {
+  }
 
   viewMode() {
     this.#state = new ViewState(this);
   }
 
   toggleMode() {
-
     if ($(this.metadataValueElement).is('.edit')) {
       this.#state = new ViewState(this);
     } else {
@@ -273,10 +251,6 @@ class MetadataEditWidget {
     ];
   }
 
-  getValue() {
-    const metadataValue = $(row).find('.metadata-value');
-  }
-
   clickOffRow(event, row) {
     if ($(this.metadataValueElement).is('.edit')) {
       this.viewMode();
@@ -287,77 +261,71 @@ class MetadataEditWidget {
 }
 
 class MetadataEditSelectEnumWidget extends MetadataEditWidget {
+  options = [];
 
-  options = []
-  enumApiUrl = null;
-  updateOptions(){
-    if(enumApiUrl != null){
-      requests.get(this.enumApiUrl).then(function() {
-        console.log("got it")
-      })
-
-    }
-
-  }
-  buildInputGroup(value, id="editDelegate") {
-    const elements = []
+  buildInputGroup(value, id = 'editDelegate') {
+    const elements = [];
     elements.push('<div class="input-group">');
-  
+
     elements.push(`<select class="custom-select" id="${id}">`);
-    this.options.forEach((option)=>{
-      elements.push(`<option value="${option['value']}">${option['text']}</option>`);
-    })
+    this.options.forEach((option) => {
+      elements.push(
+          `<option value="${option['value']}">${option['text']}</option>`);
+    });
 
     elements.push('</select>');
     elements.push('</div>');
     return elements;
   }
 }
-class MetadataEditDateWidget extends MetadataEditWidget {
 
-  buildInputGroup(value, id="editDelegate") {
+class MetadataEditDateWidget extends MetadataEditWidget {
+  buildInputGroup(value, id = 'editDelegate') {
     const elements = [];
     elements.push('<div class="input-group">');
-    elements.push(`    <input id="${id}" class="form-control" value="${value}"/>`)
+    elements.push(
+        `    <input id="${id}" class="form-control" value="${value}"/>`);
     elements.push('</div>');
     return elements;
   }
 
   isClickedOutsideOfRow(target) {
-    let outside = super.isClickedOutsideOfRow(target);
-    return outside;
+    return super.isClickedOutsideOfRow(target);
   }
-  targetInEditDelegate(target){
-    if ($("div[role='calendar']").has(target).length > 0){
+
+  targetInEditDelegate(target) {
+    if ($('div[role=\'calendar\']').has(target).length > 0) {
       return true;
     }
     return false;
   }
+
   assignEditHandles(base) {
-    $(base).find("#editDelegate").datepicker({
+    $(base).find('#editDelegate').datepicker({
       format: 'mm-dd-yyyy',
       uiLibrary: 'bootstrap4',
     });
 
     // update the value of the input tag because gijgo datepicker doesn't
-    $(base).find("#editDelegate").on("change", (e)=>{
-      if (e.currentTarget.value !== $(e.target).attr("value")){
-        $(e.target).attr("value", e.currentTarget.value)
+    $(base).find('#editDelegate').on('change', (e) => {
+      if (e.currentTarget.value !== $(e.target).attr('value')) {
+        $(e.target).attr('value', e.currentTarget.value);
       }
-    })
+    });
     super.assignEditHandles(base);
   }
 
   tearDown() {
-    const datePicker = $(this.metadataValueElement).find("#datepicker");
-    if (datePicker.length > 0){
-      datePicker.datepicker().destroy()
+    const datePicker = $(this.metadataValueElement).find('#datepicker');
+    if (datePicker.length > 0) {
+      datePicker.datepicker().destroy();
     }
     super.tearDown();
   }
 }
+
 class MetadataEditTextWidget extends MetadataEditWidget {
-  buildInputGroup(value, id="editDelegate") {
+  buildInputGroup(value, id = 'editDelegate') {
     const elements = [];
     elements.push('<div class="input-group">');
     elements.push(`<input type="text" 
@@ -367,7 +335,6 @@ class MetadataEditTextWidget extends MetadataEditWidget {
     elements.push('</div>');
     return elements;
   }
-
 }
 
 /**
@@ -379,7 +346,7 @@ export class MetadataWidgetBuilder {
   #displayText = '';
   #widgetType = MetadataEditTextWidget;
   #enumUrl = null;
-  options = []
+  options = [];
 
   /**
    * How the header for the metadata should be displayed
@@ -389,9 +356,10 @@ export class MetadataWidgetBuilder {
     this.#metadataDisplayText = text;
   }
 
-  setMetadataWidget(widget){
-    this.#widgetType = widget
+  setMetadataWidget(widget) {
+    this.#widgetType = widget;
   }
+
   /**
    * How the content of the metadata should be displayed
    * @param {string} text
@@ -428,6 +396,7 @@ export class MetadataWidgetBuilder {
 
   /**
    * Build the row
+   * @param {jQuery} base
    * @return {MetadataEditWidget}
    */
   build(base) {
@@ -447,14 +416,14 @@ export class MetadataWidgetBuilder {
         $(base).find('.optionsRow')[0],
         this.#displayText,
     );
-    if (newWidget instanceof MetadataEditSelectEnumWidget){
-      if (this.options.length > 0){
+    if (newWidget instanceof MetadataEditSelectEnumWidget) {
+      if (this.options.length > 0) {
         this.options.forEach((selection) => {
-          newWidget.options.push(selection)
+          newWidget.options.push(selection);
         });
       }
 
-      if (this.#enumUrl != null){
+      if (this.#enumUrl != null) {
         newWidget.enumApiUrl = this.#enumUrl;
       }
     }
@@ -470,18 +439,27 @@ export class MetadataWidgetBuilder {
    */
   static buildEditRow(editable) {
     const items = [];
-    items.push('<td class="optionsRow" style=\'text-align:right;width: 93px\'>');
+    items.push(
+        '<td class="optionsRow" style=\'text-align:right;width: 93px\'>');
     if (editable === true) {
-      items.push('<div class="btn-group btn-group-sm btn-group-confirm" role="group" aria-label="Basic example" hidden>')
-            items.push(`<button id="btnConfirmEdit" 
+      items.push(
+          `<div class="btn-group btn-group-sm btn-group-confirm" 
+                role="group" 
+                aria-label="Basic example" hidden>`);
+      items.push(`<button id="btnConfirmEdit" 
 class="btn btn-outline-primary btn-sm" 
-type="button"><i class="material-icons">check</i> </button>`)
+type="button"><i class="material-icons">check</i> </button>`);
       items.push(`<button id="btnCancelEdit" 
-                             class="btn btn-sm btn-outline-danger" 
-                             type="button"><i class="material-icons md-18">cancel</i></button>`);
+                          class="btn btn-sm btn-outline-danger" 
+                          type="button">
+                          <i class="material-icons md-18">cancel</i>
+                  </button>`);
 
       items.push('</div>');
-      items.push(`<button class="btn btn-sm edit edit-delegate-text"><i class="material-icons">edit</i></button>`);
+      items.push(
+          `<button class="btn btn-sm edit edit-delegate-text">
+           <i class="material-icons">edit</i>
+           </button>`);
     }
 
     items.push('</td>');
