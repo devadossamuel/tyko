@@ -63,7 +63,14 @@
 
 {% macro casstte_display(data) %}
     <table class="table table-sm" id="formatDetails">
-      <caption hidden>Cassette Data</caption>
+        <caption hidden>Cassette Data</caption>
+        <thead hidden>
+            <tr>
+                <th scope="col">Key</th>
+                <th scope="col">Value</th>
+                <th scope="col">Options</th>
+            </tr>
+        </thead>
         <tbody>
             <tr id="cassetteAudioType"
                 class="tyko-metadata-entity tyko-metadata-entity-editable tyko-metadata-entity-enum"
