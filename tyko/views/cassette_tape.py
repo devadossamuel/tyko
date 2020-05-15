@@ -45,9 +45,21 @@ class CassetteTapeTapeTypesAPI(AbsEnumView):
     def connector(self):
         return CassetteTapeTypeConnector(self._provider.db_session_maker)
 
+    def post(self):
+        args = request.get_json()
+        name = args["name"]
+        res = self.connector.create(name=name)
+        return jsonify(res)
 
 class CassetteTapeThicknessAPI(AbsEnumView):
 
     @property
     def connector(self):
         return CassetteTapeThicknessConnector(self._provider.db_session_maker)
+
+    def post(self):
+        args = request.get_json()
+        value = args['value']
+        unit = args.get('unit')
+        res = self.connector.create(value=value, unit=unit)
+        return jsonify(res)

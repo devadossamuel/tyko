@@ -1,4 +1,6 @@
 import json
+from datetime import datetime
+
 import pytest
 from flask import Flask, url_for
 from flask_sqlalchemy import SQLAlchemy
@@ -706,28 +708,59 @@ def server_with_object():
         }
 
         cassette_tape_format_types_url = url_for("cassette_tape_format_types")
-        new_cassette_type_resp = server.post(
-            cassette_tape_format_types_url,
-            data=json.dumps({
-                "name": "compact cassette"
-            }),
-            content_type='application/json'
-        )
-        assert new_cassette_type_resp.status_code == 200, \
-            new_cassette_type_resp.status
+        formats = [
+            "compact cassette",
+            "DAT"
+
+        ]
+        for f in formats:
+            new_cassette_type_resp = server.post(
+                cassette_tape_format_types_url,
+                data=json.dumps({
+                    "name": f
+                }),
+                content_type='application/json'
+            )
+            assert new_cassette_type_resp.status_code == 200, \
+                new_cassette_type_resp.status
 
         cassette_tape_formats = {
             i['name']: i for i in json.loads(
                 server.get(cassette_tape_format_types_url).data
             )
         }
+        tape_thickness_values = [
+            ({"unit": "mm", "value": "0.5"}),
+            ({"unit": "mm", "value": "1.0"}),
+            ({"unit": "mm", "value": "1.5"}),
+        ]
+
+        tape_thickness_api_url = url_for("cassette_tape_tape_thickness")
+        for tape_thickness in tape_thickness_values:
+            resp = server.post(tape_thickness_api_url,
+                               data=json.dumps(tape_thickness),
+                               content_type='application/json'
+                               )
+            assert resp.status_code == 200, resp.status
+
+        tape_tape_type_api_url = url_for("cassette_tape_tape_types")
+        for value in ["I", "II", "IV"]:
+            resp = server.post(tape_tape_type_api_url,
+                               data=json.dumps({"name": value}),
+                               content_type='application/json'
+                               )
+            assert resp.status_code == 200, resp.status
 
         data = {
             "collection": new_collection_data,
             "project": new_project_data,
             "object": json.loads(post_new_object_project_resp.data)['object'],
             "format_types": format_types,
-            "cassette_tape_formats": cassette_tape_formats
+            "cassette_tape_formats": cassette_tape_formats,
+            "tape_thicknesses": json.loads(
+                server.get(tape_thickness_api_url).data),
+            "cassette_tape_tape_types": json.loads(
+                server.get(tape_tape_type_api_url).data)
         }
         yield server, data
 
@@ -1208,7 +1241,10 @@ def test_create_add_and_remove_cassette(date, server_with_object):
             "format_details": {
                 "format_type_id":
                     data['cassette_tape_formats']['compact cassette']['id'],
-                    "date_recorded": date
+                "date_recorded": date,
+                "inspection_date": "12-10-2019",
+                "tape_thickness_id": data['tape_thicknesses'][0]['id'],
+                'tape_type_id': data["cassette_tape_tape_types"][0]['id']
             }
         }),
         content_type='application/json'
@@ -1228,6 +1264,9 @@ def test_create_add_and_remove_cassette(date, server_with_object):
     assert cassette_type['name'] == "compact cassette"
 
     assert format_details['date_recorded'] == date
+    assert format_details['inspection_date'] == "12-10-2019"
+    assert format_details['tape_thickness']['id'] == data['tape_thicknesses'][0]['id']
+    assert format_details['tape_type']['id'] == data["cassette_tape_tape_types"][0]['id']
 
     delete_resp = server.delete(new_item_data['routes']['api'])
 
@@ -1291,3 +1330,70 @@ def test_create_and_remove_cassette_with_notes(server_with_object):
     assert len(
         json.loads(server.get(new_item_data['routes']['api']).data)['notes']
     ) == 0
+
+@pytest.fixture()
+def server_with_cassette(server_with_object):
+    server, data = server_with_object
+
+    object_add_url = url_for(
+        "object_item",
+        project_id=data['project']['id'],
+        object_id=data['object']['object_id']
+    )
+
+    new_item_resp = server.post(
+        object_add_url,
+        data=json.dumps({
+            "name": "dummy",
+            "format_id":
+                data['format_types']['audio cassette']["format_types_id"],
+            "format_details": {
+                "format_type_id":
+                    data['cassette_tape_formats']['compact cassette']['id'],
+                "date_recorded": "11-26-1993",
+                "inspection_date": "12-10-2019",
+                "tape_thickness_id": data['tape_thicknesses'][0]['id'],
+                'tape_type_id': data["cassette_tape_tape_types"][0]['id']
+
+            }
+        }),
+        content_type='application/json'
+    )
+    assert new_item_resp.status_code == 200, new_item_resp.status
+    new_item_data = json.loads(new_item_resp.data)
+    new_item_data['item']['routes'] = new_item_data['routes']
+    data['item'] = new_item_data['item']
+    yield server, data
+
+
+cassette_data = [
+    ("date_recorded", lambda x: x["date_recorded"], "1993"),
+    ("inspection_date", lambda x: x["inspection_date"], "04-12-2019"),
+    ("format_type_id", lambda x: x['cassette_type']["id"], 2),
+    ("tape_thickness_id", lambda x: x['tape_thickness']["id"], 2),
+    ("tape_type_id", lambda x: x['tape_type']["id"], 2),
+]
+@pytest.mark.parametrize("key,server_key, value", cassette_data)
+def test_update_cassette_records(key, server_key, value, server_with_cassette):
+    server, data = server_with_cassette
+
+    put_res = server.put(
+        data['item']['routes']['api'],
+        data=json.dumps(
+            {
+                "format_details": {
+                    key: value
+                }
+            }),
+        content_type='application/json'
+    )
+
+    assert put_res.status_code == 200, put_res.status
+    put_data = json.loads(put_res.data)
+
+    assert server_key(put_data['format_details']) == value
+
+    get_data = json.loads(server.get(data['item']['routes']['api']).data)
+
+    assert server_key(get_data['format_details']) == value
+

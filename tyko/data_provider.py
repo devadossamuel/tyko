@@ -952,6 +952,7 @@ class ItemDataConnector(AbsNotesConnector):
     def update(self, id, changed_data):
         updated_item = None
         item = self.get_item(id)
+        session = self.session_maker()
         if item:
             if "name" in changed_data:
                 item.name = changed_data['name']
@@ -959,24 +960,59 @@ class ItemDataConnector(AbsNotesConnector):
             if "obj_sequence" in changed_data:
                 item.obj_sequence = int(changed_data["obj_sequence"])
 
-            session = self.session_maker()
+            if "format_details" in changed_data:
+                format_details = changed_data['format_details']
+                if item.type == 'audio_cassettes':
+                    if 'date_recorded' in format_details:
+                        precision = utils.identify_precision(
+                            format_details['date_recorded']
+                        )
+                        item.recording_date = \
+                            utils.create_precision_datetime(
+                                format_details['date_recorded'], precision
+                            )
+                        item.recording_date_precision = precision
 
-            session.add(item)
-            session.commit()
-            updated_item = session.query(CollectionItem)\
-                .filter(CollectionItem.table_id == id)\
-                .one()
-        return updated_item.serialize()
+                    if "inspection_date" in format_details:
+                        item.inspection_date = \
+                            utils.create_precision_datetime(
+                                format_details['inspection_date'])
+
+                    if "format_type_id" in format_details:
+                        f_id = format_details['format_type_id']
+                        item.cassette_type = \
+                            session.query(formats.CassetteType)\
+                                .filter(formats.CassetteType.table_id == f_id)\
+                                .one()
+
+                    tape_thickness_id = format_details.get("tape_thickness_id")
+                    if tape_thickness_id:
+                        item.tape_thickness_id = int(tape_thickness_id)
+
+                    tape_type_id = format_details.get('tape_type_id')
+                    if tape_type_id:
+                        item.tape_type_id = tape_type_id
+
+            try:
+                session.add(item)
+                session.commit()
+                updated_item = item.serialize()
+            finally:
+                session.close()
+        return updated_item
 
     def delete(self, id):
         if id:
             session = self.session_maker()
+            try:
 
-            items_deleted = session.query(CollectionItem)\
-                .filter(CollectionItem.table_id == id).delete()
+                items_deleted = session.query(CollectionItem)\
+                    .filter(CollectionItem.table_id == id).delete()
 
-            success = items_deleted > 0
-            session.commit()
+                success = items_deleted > 0
+                session.commit()
+            finally:
+                session.close()
             return success
         return False
 
@@ -1094,16 +1130,16 @@ class AudioCassetteDataConnector(ItemDataConnector):
             session.close()
 
     def _add_optional_args(self, new_cassette, **params):
-        tape_thickness_id = params.get('Tape Thickness')
+        tape_thickness_id = params.get('tape_type_id')
         if tape_thickness_id is not None:
             new_cassette.tape_thickness_id = int(tape_thickness_id)
 
-        date_inspected = params.get('DateInspected')
+        date_inspected = params.get('inspection_date')
         if date_inspected is not None and date_inspected.strip() != "":
             new_cassette.inspection_date = \
                 utils.create_precision_datetime(date_inspected)
 
-        tape_type_id = params.get('Tape Type')
+        tape_type_id = params.get('tape_type_id')
         if tape_type_id is not None:
             new_cassette.tape_type_id = int(tape_type_id)
 
@@ -1116,6 +1152,10 @@ class AudioCassetteDataConnector(ItemDataConnector):
                 precision=date_prec
             )
             new_cassette.recording_date_precision = date_prec
+
+        tape_thickness_id = params.get('tape_thickness_id')
+        if tape_thickness_id:
+            new_cassette.tape_thickness_id = tape_thickness_id
 
 
 class CollectionDataConnector(AbsDataProviderConnector):
@@ -1554,8 +1594,14 @@ class CassetteTapeTypeConnector(AbsDataProviderConnector):
             session.close()
 
     def create(self, *args, **kwargs):
-        # TODO: CassetteTypeConnector.create()
-        pass
+        new_tape_type = CassetteTapeType(name=kwargs['name'])
+        session = self.session_maker()
+        try:
+            session.add(new_tape_type)
+            session.commit()
+            return new_tape_type.serialize()
+        finally:
+            session.close()
 
     def update(self, id, changed_data):
         # TODO: CassetteTypeConnector.update()
@@ -1590,8 +1636,18 @@ class CassetteTapeThicknessConnector(AbsDataProviderConnector):
             session.close()
 
     def create(self, *args, **kwargs):
-        # TODO: CassetteTypeConnector.create()
-        pass
+        session = self.session_maker()
+        value = kwargs['value']
+        unit = kwargs['unit']
+        try:
+            new_thickness = \
+                CassetteTapeThickness(value=value, unit=unit)
+
+            session.add(new_thickness)
+            session.commit()
+            return new_thickness.serialize()
+        finally:
+            session.close()
 
     def update(self, id, changed_data):
         # TODO: CassetteTypeConnector.update()

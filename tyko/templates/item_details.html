@@ -60,39 +60,110 @@
             </div>
     {% endcall %}
 {% endblock %}
-{% macro casstte_display(data) %}
-    <table class="table table-sm">
-      <caption hidden>Cassette Data</caption>
 
-{#        <thead>#}
-{#        <tr>#}
-{##}
-{#            <th scope="col" ></th>#}
-{#            <th scope="col"></th>#}
-{#            <th scope="col"></th>#}
-{#        </tr>#}
-{#        </thead>#}
+{% macro casstte_display(data) %}
+    <table class="table table-sm" id="formatDetails">
+      <caption hidden>Cassette Data</caption>
         <tbody>
-            <tr class="tyko-metadata-entity"
+            <tr id="cassetteAudioType"
+                class="tyko-metadata-entity tyko-metadata-entity-editable tyko-metadata-entity-enum"
                 data-name="Audio Type"
-                data-displaydata="{{ data['cassette_type']['name'] }}">
+                data-displaydata="{{ data['cassette_type']['name'] }}"
+                data-apiroute="{{ url_for("object_item", project_id=project_id, object_id=object_id, item_id=item['item_id']) }}"
+                data-metadatakey="format_details.format_type_id"
+            >
             </tr>
-            <tr class="tyko-metadata-entity"
+            <tr class="tyko-metadata-entity tyko-metadata-entity-editable tyko-metadata-entity-fulldate"
                 data-name="Inspection Date"
-                data-displaydata="{{ data['inspection_date'] }}">
-            </tr>
-            <tr class="tyko-metadata-entity"
-                data-name="Date Recorded"
-                data-displaydata="{{ data['date_recorded'] }}">
+                data-displaydata="{{ data['inspection_date'] }}"
+                data-apiroute="{{ url_for("object_item", project_id=project_id, object_id=object_id, item_id=item['item_id']) }}"
+                data-metadatakey="format_details.inspection_date"
+            >
             </tr>
             <tr class="tyko-metadata-entity tyko-metadata-entity-editable"
+                data-name="Date Recorded"
+                data-displaydata="{{ data['date_recorded'] }}"
+                data-apiroute="{{ url_for("object_item", project_id=project_id, object_id=object_id, item_id=item['item_id']) }}"
+                data-metadatakey="format_details.date_recorded"
+            >
+            </tr>
+            <tr id="rowTapeTape"
+                class="tyko-metadata-entity tyko-metadata-entity-editable tyko-metadata-entity-enum"
                 data-name="Tape Type"
-                data-displaydata="{{ data['tape_type']['name'] }}">
+                data-displaydata="{{ data['tape_type']['name'] }}"
+                data-apiroute="{{ url_for("object_item", project_id=project_id, object_id=object_id, item_id=item['item_id']) }}"
+                data-metadatakey="format_details.tape_type_id"
+            >
             </tr>
-            <tr class="tyko-metadata-entity"
+            <tr id="cassetteTapeThickness"
+                class="tyko-metadata-entity tyko-metadata-entity-editable tyko-metadata-entity-enum"
                 data-name="Tape Thickness"
-                data-displaydata="{{ data['tape_thickness']['name'] }}">
+                data-displaydata="{{ data['tape_thickness']['value']}}{{ " "~data['tape_thickness']['unit'] if data['tape_thickness']['unit'] else ""}} "
+                data-apiroute="{{ url_for("object_item", project_id=project_id, object_id=object_id, item_id=item['item_id']) }}"
+                data-metadatakey="format_details.tape_thickness_id"
+            >
             </tr>
+            <script type="module">
+                import {requests} from "/static/js/request.js"
+                import {parseUpdateRequestData} from "/static/js/utils.mjs"
+
+                const tapeTypes = requests.get("{{ url_for('cassette_tape_tape_types') }}");
+                const formatTypes = requests.get("{{ url_for('cassette_tape_format_types') }}");
+                const tapeThickness = requests.get("{{ url_for('cassette_tape_tape_thickness') }}");
+
+                function reportError(response){
+                  alert(`Unable to load enumerated values. ${response}`)
+                }
+                function parseOptionsNameId(data){
+                  const newOptions = [];
+                      data.forEach((en) =>{
+                        newOptions.push({text: en['name'], value: en['id']})
+                      });
+                      return newOptions;
+                }
+                function parseOptionsUnits(data){
+                  const newOptions = [];
+                  data.forEach((en) => {
+                    const text = en['unit'] != null ? `${en['value']} ${en['unit']}` : en['value'];
+                    newOptions.push({text: text, value: en['id']});
+                  });
+                  return newOptions;
+                }
+
+
+
+                $(document).ready(()=>{
+                    tapeTypes.then(JSON.parse)
+                    .then(parseOptionsNameId)
+                    .then((newOptions)=>{
+                      $('#rowTapeTape').loadEnumData(newOptions);
+                    }).catch(reportError);
+
+
+                    formatTypes.then(JSON.parse)
+                    .then(parseOptionsNameId)
+                    .then((newOptions)=>{
+                      $('#cassetteAudioType').loadEnumData(newOptions);
+                    }).catch(reportError);
+
+                    tapeThickness.then(JSON.parse)
+                    .then(parseOptionsUnits)
+                    .then((newOptions)=>{
+                      $('#cassetteTapeThickness').loadEnumData(newOptions);
+                    }).catch(reportError);
+
+                    $("#formatDetails").on("changesRequested", (event, data, url)=>{
+                      const parsedData = parseUpdateRequestData(data);
+                      requests.put(url, parsedData).then((res)=>{
+                        location.reload();
+
+                      }).catch((res)=>{
+                        alert(res.responseText)
+                      });
+
+                    })
+                });
+            </script>
         </tbody>
     </table>
     <script type="module" src="{{ url_for('static', filename='js/metadataWidgets.mjs')}}"></script>
