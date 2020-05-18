@@ -705,7 +705,7 @@ pipeline {
                                     sshCommand remote: remote, command: """cd package &&
         docker-compose -f deploy/docker-compose.yml -p tyko build ${SERVER_COLOR}_api ${SERVER_COLOR}_db &&
         docker-compose -f deploy/docker-compose.yml -p tyko up -d ${START_WEBSERVER ? 'nginx': ''} ${SERVER_COLOR}_api ${SERVER_COLOR}_db"""
-                                    sshRemove remote: remote, path: "package", failOnError: false
+                                    // sshRemove remote: remote, path: "package", failOnError: false
                                     if(SERVER_COLOR == "green"){
                                         addBadge(icon: 'success.gif', id: '', link: "http://${SERVER_URL}:8000/", text: 'Server Application Deployed')
                                     } else if (SERVER_COLOR == "blue"){
