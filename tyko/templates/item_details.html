@@ -97,7 +97,7 @@
             <tr id="rowTapeTape"
                 class="tyko-metadata-entity tyko-metadata-entity-editable tyko-metadata-entity-enum"
                 data-name="Tape Type"
-                data-displaydata="{{ data['tape_type']['name'] }}"
+                data-displaydata="{{ data['tape_type']['name'] if 'tape_type' in data}}"
                 data-apiroute="{{ url_for("object_item", project_id=project_id, object_id=object_id, item_id=item['item_id']) }}"
                 data-metadatakey="format_details.tape_type_id"
             >
@@ -105,71 +105,29 @@
             <tr id="cassetteTapeThickness"
                 class="tyko-metadata-entity tyko-metadata-entity-editable tyko-metadata-entity-enum"
                 data-name="Tape Thickness"
+                {% if 'tape_thickness' in data %}
                 data-displaydata="{{ data['tape_thickness']['value']}}{{ " "~data['tape_thickness']['unit'] if data['tape_thickness']['unit'] else ""}} "
+                {% else %}
+                data-displaydata=""
+                {% endif %}
                 data-apiroute="{{ url_for("object_item", project_id=project_id, object_id=object_id, item_id=item['item_id']) }}"
                 data-metadatakey="format_details.tape_thickness_id"
             >
             </tr>
-            <script type="module">
-                import {requests} from "/static/js/request.js"
-                import {parseUpdateRequestData} from "/static/js/utils.mjs"
-
-                const tapeTypes = requests.get("{{ url_for('cassette_tape_tape_types') }}");
-                const formatTypes = requests.get("{{ url_for('cassette_tape_format_types') }}");
-                const tapeThickness = requests.get("{{ url_for('cassette_tape_tape_thickness') }}");
-
-                function reportError(response){
-                  alert(`Unable to load enumerated values. ${response}`)
+            <script id="glue" type="module">
+                import * as loader from "{{ url_for("static", filename='js/item_details.mjs') }}";
+                loader.urls['tapeTypesUrl'] = "{{ url_for('cassette_tape_tape_types') }}";
+                loader.urls['cassetteTypesUrl'] = "{{ url_for('cassette_tape_format_types') }}";
+                loader.urls['cassetteTapeTapeThicknessURL'] = "{{ url_for('cassette_tape_tape_thickness') }}"
+                async function start(){
+                    await loader.load();
+                    loader.refresh()
                 }
-                function parseOptionsNameId(data){
-                  const newOptions = [];
-                      data.forEach((en) =>{
-                        newOptions.push({text: en['name'], value: en['id']})
-                      });
-                      return newOptions;
+                try{
+                  start();
+                } catch (err) {
+                  alert(err)
                 }
-                function parseOptionsUnits(data){
-                  const newOptions = [];
-                  data.forEach((en) => {
-                    const text = en['unit'] != null ? `${en['value']} ${en['unit']}` : en['value'];
-                    newOptions.push({text: text, value: en['id']});
-                  });
-                  return newOptions;
-                }
-
-
-
-                $(document).ready(()=>{
-                    tapeTypes.then(JSON.parse)
-                    .then(parseOptionsNameId)
-                    .then((newOptions)=>{
-                      $('#rowTapeTape').loadEnumData(newOptions);
-                    }).catch(reportError);
-
-
-                    formatTypes.then(JSON.parse)
-                    .then(parseOptionsNameId)
-                    .then((newOptions)=>{
-                      $('#cassetteAudioType').loadEnumData(newOptions);
-                    }).catch(reportError);
-
-                    tapeThickness.then(JSON.parse)
-                    .then(parseOptionsUnits)
-                    .then((newOptions)=>{
-                      $('#cassetteTapeThickness').loadEnumData(newOptions);
-                    }).catch(reportError);
-
-                    $("#formatDetails").on("changesRequested", (event, data, url)=>{
-                      const parsedData = parseUpdateRequestData(data);
-                      requests.put(url, parsedData).then((res)=>{
-                        location.reload();
-
-                      }).catch((res)=>{
-                        alert(res.responseText)
-                      });
-
-                    })
-                });
             </script>
         </tbody>
     </table>
@@ -195,7 +153,7 @@
 {% block scripts %}
     {{ super() }}
     <script type="application/javascript">
-        var $table = $('#filesTable');
+        let $table = $('#filesTable');
         $table.bootstrapTable({
             onLoadSuccess: function (data, status, jqXHR) {
                 $table.bootstrapTable('load', data.item.files);

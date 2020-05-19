@@ -362,9 +362,13 @@ class AudioCassette(AVFormat, ABC):
 
         if self.tape_type is not None:
             serialized_data["tape_type"] = self.tape_type.serialize()
+        else:
+            serialized_data["tape_type"] = None
 
         if self.tape_thickness is not None:
             serialized_data["tape_thickness"] = self.tape_thickness.serialize()
+        else:
+            serialized_data["tape_thickness"] = None
 
         return serialized_data
 
