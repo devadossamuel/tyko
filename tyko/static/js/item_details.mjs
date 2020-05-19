@@ -99,8 +99,8 @@ export function refresh() {
 $(metadataWidgets).ready(() => {
   refresh();
 
-  $('#formatDetails').on('changesRequested', (event, data, url) => {
-    const parsedData = parseUpdateRequestData(data);
+  $('#formatDetails').on('changesRequested', (event, InData, url) => {
+    const parsedData = parseUpdateRequestData(InData);
     requests.put(url, parsedData).then((res) => {
       location.reload();
     }).catch((res) => {
