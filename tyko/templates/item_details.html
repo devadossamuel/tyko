@@ -76,6 +76,7 @@
                 class="tyko-metadata-entity tyko-metadata-entity-editable tyko-metadata-entity-enum"
                 data-name="Audio Type"
                 data-displaydata="{{ data['cassette_type']['name'] }}"
+                data-value="{{ data['cassette_type']['id'] }}"
                 data-apiroute="{{ url_for("object_item", project_id=project_id, object_id=object_id, item_id=item['item_id']) }}"
                 data-metadatakey="format_details.format_type_id"
             >
@@ -98,6 +99,7 @@
                 class="tyko-metadata-entity tyko-metadata-entity-editable tyko-metadata-entity-enum"
                 data-name="Tape Type"
                 data-displaydata="{{ data['tape_type']['name'] if 'tape_type' in data}}"
+                data-value="{{ data['tape_type']['id'] if 'id' in data}}"
                 data-apiroute="{{ url_for("object_item", project_id=project_id, object_id=object_id, item_id=item['item_id']) }}"
                 data-metadatakey="format_details.tape_type_id"
             >
@@ -110,6 +112,7 @@
                 {% else %}
                 data-displaydata=""
                 {% endif %}
+                data-value="{{ data['tape_thickness']['id'] if data['tape_thickness']['id'] else "" }}"
                 data-apiroute="{{ url_for("object_item", project_id=project_id, object_id=object_id, item_id=item['item_id']) }}"
                 data-metadatakey="format_details.tape_thickness_id"
             >

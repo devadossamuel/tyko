@@ -1,5 +1,3 @@
-import {requests} from './request.js';
-
 $(document).ready(
     function() {
       applyStyles();
@@ -38,6 +36,7 @@ function metadataEntry(row) {
   const builder = new MetadataWidgetBuilder();
   builder.setMetadataDisplay($(row).data('name'));
   builder.setDisplayText($(row).data('displaydata'));
+
   builder.setEdit($(row).is('.tyko-metadata-entity-editable'));
 
   if ($(row).hasClass('tyko-metadata-entity-fulldate')) {
@@ -47,6 +46,10 @@ function metadataEntry(row) {
   if ($(row).hasClass('tyko-metadata-entity-enum')) {
     builder.setMetadataWidget(MetadataEditSelectEnumWidget);
     const data = $(row).data('enumoptions');
+    if ($(row).data('value')) {
+      builder.setCurrentValue($(row).data('value'));
+    }
+    builder.setDisplayText($(row).data('displaydata'));
     if (data) {
       data.forEach((i) => {
         builder.options.push(i);
@@ -262,6 +265,7 @@ class MetadataEditWidget {
 
 class MetadataEditSelectEnumWidget extends MetadataEditWidget {
   options = [];
+  selected = null;
 
   buildInputGroup(value, id = 'editDelegate') {
     const elements = [];
@@ -269,8 +273,14 @@ class MetadataEditSelectEnumWidget extends MetadataEditWidget {
 
     elements.push(`<select class="custom-select" id="${id}">`);
     this.options.forEach((option) => {
-      elements.push(
-          `<option value="${option['value']}">${option['text']}</option>`);
+      if (this.selected === option['value']) {
+        elements.push(
+            `<option value="${option['value']}" selected>
+                    ${option['text']}</option>`);
+      } else {
+        elements.push(
+            `<option value="${option['value']}">${option['text']}</option>`);
+      }
     });
 
     elements.push('</select>');
@@ -346,6 +356,7 @@ export class MetadataWidgetBuilder {
   #displayText = '';
   #widgetType = MetadataEditTextWidget;
   #enumUrl = null;
+  #currentValue = null;
   options = [];
 
   /**
@@ -422,6 +433,9 @@ export class MetadataWidgetBuilder {
           newWidget.options.push(selection);
         });
       }
+      if (this.#currentValue != null) {
+        newWidget.selected = this.#currentValue;
+      }
 
       if (this.#enumUrl != null) {
         newWidget.enumApiUrl = this.#enumUrl;
@@ -468,5 +482,9 @@ type="button"><i class="material-icons">check</i> </button>`);
 
   setEnumUrl(enumUrl) {
     this.#enumUrl = enumUrl;
+  }
+
+  setCurrentValue(value) {
+    this.#currentValue = value;
   }
 }
