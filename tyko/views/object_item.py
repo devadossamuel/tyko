@@ -52,13 +52,18 @@ class ObjectItemAPI(views.MethodView):
             request_data["format_id"], serialize=True)[0]
         connectors = {
             "audio cassette": data_provider.AudioCassetteDataConnector,
-            'casette tape': data_provider.AudioCassetteDataConnector,
+            'cassette tape': data_provider.AudioCassetteDataConnector,
 
         }
         connector_class = connectors.get(format_type['name'])
         if connector_class is not None:
             connector = connector_class(self._provider.db_session_maker)
-            new_item = connector.create(**request_data, object_id=object_id)
+            new_data = {
+                "name": request_data['name'],
+                "format_id": int(request_data['format_id']),
+                "format_details": request_data.get('format_details')
+            }
+            new_item = connector.create(**new_data, object_id=object_id)
         else:
             data_connector = \
                 data_provider.ObjectDataConnector(

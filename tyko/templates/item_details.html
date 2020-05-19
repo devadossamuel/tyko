@@ -27,7 +27,7 @@
             <div class="container">
                 <div class="row mb-3">
                     {% with %}
-                        {% set format_displays = {'casette tape': casstte_display} %}
+                        {% set format_displays = {'cassette tape': casstte_display} %}
                         {%  if item['format']['name'] in format_displays %}
                             {{ format_displays[item['format']['name']](item['format_details']) }}
                         {% else %}

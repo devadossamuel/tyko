@@ -15,6 +15,7 @@ const sampleNotesData = `
     }
   ]
 }`;
+
 const sampleFormatData = `[
   {
     "format_types_id": 1,
@@ -42,7 +43,7 @@ const sampleFormatData = `[
   },
   {
     "format_types_id": 7,
-    "name": "casette tape"
+    "name": "cassette tape"
   }
 ]`;
 
@@ -61,6 +62,7 @@ const cassetteTapeTapeTypes = `[
   }
 ]
 `;
+
 const cassetteTapeTypes = `[
   {
     "id": 1, 
@@ -78,7 +80,7 @@ const cassetteTapeTypes = `[
     "id": 4, 
     "name": "Other"
   }
-]`
+]`;
 
 const cassetteTapeTapeThickness = `[
   {
@@ -101,7 +103,7 @@ const cassetteTapeTapeThickness = `[
     "unit": null,
     "value": "unknown"
   }
-]`
+]`;
 
 export const requests = {
   'get': (apiPath) => {

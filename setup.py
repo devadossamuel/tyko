@@ -22,6 +22,7 @@ setup(
             "static/css/*.css",
             "static/css/*.css.map",
             "static/js/*.js",
+            "static/js/*.mjs",
             "static/js/*.js.map",
         ],
         "tyko.pbcore.templates":[
