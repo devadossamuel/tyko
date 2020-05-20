@@ -962,36 +962,7 @@ class ItemDataConnector(AbsNotesConnector):
 
             if "format_details" in changed_data:
                 format_details = changed_data['format_details']
-                if item.type == 'audio_cassettes':
-                    if 'date_recorded' in format_details:
-                        precision = utils.identify_precision(
-                            format_details['date_recorded']
-                        )
-                        item.recording_date = \
-                            utils.create_precision_datetime(
-                                format_details['date_recorded'], precision
-                            )
-                        item.recording_date_precision = precision
-
-                    if "inspection_date" in format_details:
-                        item.inspection_date = \
-                            utils.create_precision_datetime(
-                                format_details['inspection_date'])
-
-                    if "format_type_id" in format_details:
-                        f_id = format_details['format_type_id']
-                        item.cassette_type = \
-                            session.query(formats.CassetteType)\
-                                .filter(formats.CassetteType.table_id == f_id)\
-                                .one()
-
-                    tape_thickness_id = format_details.get("tape_thickness_id")
-                    if tape_thickness_id:
-                        item.tape_thickness_id = int(tape_thickness_id)
-
-                    tape_type_id = format_details.get('tape_type_id')
-                    if tape_type_id:
-                        item.tape_type_id = tape_type_id
+                self.update_cassette_tape(session, format_details, item)
 
             try:
                 session.add(item)
@@ -1000,6 +971,39 @@ class ItemDataConnector(AbsNotesConnector):
             finally:
                 session.close()
         return updated_item
+
+    @staticmethod
+    def update_cassette_tape(session, format_details, item):
+        if item.type == 'audio_cassettes':
+            if 'date_recorded' in format_details:
+                precision = utils.identify_precision(
+                    format_details['date_recorded']
+                )
+                item.recording_date = \
+                    utils.create_precision_datetime(
+                        format_details['date_recorded'], precision
+                    )
+                item.recording_date_precision = precision
+
+            if "inspection_date" in format_details:
+                item.inspection_date = \
+                    utils.create_precision_datetime(
+                        format_details['inspection_date'])
+
+            if "format_type_id" in format_details:
+                f_id = format_details['format_type_id']
+                item.cassette_type = \
+                    session.query(formats.CassetteType) \
+                        .filter(formats.CassetteType.table_id == f_id) \
+                        .one()
+
+            tape_thickness_id = format_details.get("tape_thickness_id")
+            if tape_thickness_id:
+                item.tape_thickness_id = int(tape_thickness_id)
+
+            tape_type_id = format_details.get('tape_type_id')
+            if tape_type_id:
+                item.tape_type_id = tape_type_id
 
     def delete(self, id):
         if id:
