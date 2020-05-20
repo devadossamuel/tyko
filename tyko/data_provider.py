@@ -1,6 +1,6 @@
 # pylint: disable=redefined-builtin, invalid-name
 import abc
-from abc import ABC, ABCMeta, abstractmethod
+from abc import ABC, ABCMeta
 from datetime import datetime
 from typing import List, Optional, Iterator
 
@@ -993,9 +993,8 @@ class ItemDataConnector(AbsNotesConnector):
             if "format_type_id" in format_details:
                 f_id = format_details['format_type_id']
                 item.cassette_type = \
-                    session.query(formats.CassetteType) \
-                        .filter(formats.CassetteType.table_id == f_id) \
-                        .one()
+                    session.query(formats.CassetteType).filter(
+                        formats.CassetteType.table_id == f_id).one()
 
             tape_thickness_id = format_details.get("tape_thickness_id")
             if tape_thickness_id:

@@ -39,7 +39,10 @@ class AbsEnumView(views.MethodView):
     def put(self):
         requested_id = int(request.args["id"])
         request_data_to_modify = request.get_json()
-        invalid_keys = set(request_data_to_modify.keys()).difference(self.editable_fields)
+
+        invalid_keys = set(request_data_to_modify.keys()).difference(
+            self.editable_fields)
+
         if len(invalid_keys) > 0:
             return make_response(f"Invalid keys {' '.join(invalid_keys)}", 400)
 
@@ -48,7 +51,6 @@ class AbsEnumView(views.MethodView):
 
 
 class CassetteTapeFormatTypesAPI(AbsEnumView):
-
 
     @property
     def connector(self):
