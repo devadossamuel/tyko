@@ -374,7 +374,7 @@ class Routes:
                 "cassette_tape_tape_types",
                 provider=self.db_engine
             ),
-            methods=["GET", "POST"]
+            methods=["GET", "POST", "DELETE", "PUT"]
         )
         yield UrlRule(
             "/api/formats/cassette_tape/cassette_tape_format_types",
@@ -382,7 +382,7 @@ class Routes:
                 "cassette_tape_format_types",
                 provider=self.db_engine
             ),
-            methods=["GET", "POST"]
+            methods=["GET", "POST", "DELETE", "PUT"]
         )
         yield UrlRule(
             "/api/formats/cassette_tape/cassette_tape_tape_thickness",
@@ -390,7 +390,7 @@ class Routes:
                 "cassette_tape_tape_thickness",
                 provider=self.db_engine
             ),
-            methods=["GET", "POST"]
+            methods=["GET", "POST", "DELETE", "PUT"]
         )
 
     def get_api_file_routes(self):

@@ -707,60 +707,11 @@ def server_with_object():
             for format_type in json.loads(formats_response.data)
         }
 
-        cassette_tape_format_types_url = url_for("cassette_tape_format_types")
-        formats = [
-            "compact cassette",
-            "DAT"
-
-        ]
-        for f in formats:
-            new_cassette_type_resp = server.post(
-                cassette_tape_format_types_url,
-                data=json.dumps({
-                    "name": f
-                }),
-                content_type='application/json'
-            )
-            assert new_cassette_type_resp.status_code == 200, \
-                new_cassette_type_resp.status
-
-        cassette_tape_formats = {
-            i['name']: i for i in json.loads(
-                server.get(cassette_tape_format_types_url).data
-            )
-        }
-        tape_thickness_values = [
-            ({"unit": "mm", "value": "0.5"}),
-            ({"unit": "mm", "value": "1.0"}),
-            ({"unit": "mm", "value": "1.5"}),
-        ]
-
-        tape_thickness_api_url = url_for("cassette_tape_tape_thickness")
-        for tape_thickness in tape_thickness_values:
-            resp = server.post(tape_thickness_api_url,
-                               data=json.dumps(tape_thickness),
-                               content_type='application/json'
-                               )
-            assert resp.status_code == 200, resp.status
-
-        tape_tape_type_api_url = url_for("cassette_tape_tape_types")
-        for value in ["I", "II", "IV"]:
-            resp = server.post(tape_tape_type_api_url,
-                               data=json.dumps({"name": value}),
-                               content_type='application/json'
-                               )
-            assert resp.status_code == 200, resp.status
-
         data = {
             "collection": new_collection_data,
             "project": new_project_data,
             "object": json.loads(post_new_object_project_resp.data)['object'],
             "format_types": format_types,
-            "cassette_tape_formats": cassette_tape_formats,
-            "tape_thicknesses": json.loads(
-                server.get(tape_thickness_api_url).data),
-            "cassette_tape_tape_types": json.loads(
-                server.get(tape_tape_type_api_url).data)
         }
         yield server, data
 
@@ -1223,8 +1174,8 @@ dates = [
 
 
 @pytest.mark.parametrize("date", dates)
-def test_create_add_and_remove_cassette(date, server_with_object):
-    server, data = server_with_object
+def test_create_add_and_remove_cassette(date, server_with_enums):
+    server, data = server_with_enums
 
     object_add_url = url_for(
         "object_item",
@@ -1273,8 +1224,8 @@ def test_create_add_and_remove_cassette(date, server_with_object):
     assert delete_resp.status_code == 202
 
 
-def test_create_and_remove_cassette_with_notes(server_with_object):
-    server, data = server_with_object
+def test_create_and_remove_cassette_with_notes(server_with_enums):
+    server, data = server_with_enums
 
     object_add_url = url_for(
         "object_item",
@@ -1332,8 +1283,8 @@ def test_create_and_remove_cassette_with_notes(server_with_object):
     ) == 0
 
 @pytest.fixture()
-def server_with_cassette(server_with_object):
-    server, data = server_with_object
+def server_with_cassette(server_with_enums):
+    server, data = server_with_enums
 
     object_add_url = url_for(
         "object_item",
@@ -1397,3 +1348,142 @@ def test_update_cassette_records(key, server_key, value, server_with_cassette):
 
     assert server_key(get_data['format_details']) == value
 
+
+@pytest.fixture()
+def server_with_enums(server_with_object):
+    server, data = server_with_object
+
+    # ===================== cassette_tape_tape_thickness ======================
+    tape_thickness_values = [
+        ({"unit": "mm", "value": "0.5"}),
+        ({"unit": "mm", "value": "1.0"}),
+        ({"unit": "mm", "value": "1.5"}),
+        ({"unit": None, "value": "unknown"})
+    ]
+    tape_thickness_api_url = url_for("cassette_tape_tape_thickness")
+
+    for tape_thickness in tape_thickness_values:
+        resp = server.post(tape_thickness_api_url,
+                           data=json.dumps(tape_thickness),
+                           content_type='application/json'
+                           )
+        assert resp.status_code == 200, resp.status
+    data["tape_thicknesses"] = json.loads(
+        server.get(tape_thickness_api_url).data)
+
+    # ====================== cassette_tape_format_types =======================
+    formats = [
+        "compact cassette",
+        "DAT",
+        "ADAT",
+        "Other"
+
+    ]
+    cassette_tape_format_types_url = url_for("cassette_tape_format_types")
+    for f in formats:
+        new_cassette_type_resp = server.post(
+            cassette_tape_format_types_url,
+            data=json.dumps({
+                "name": f
+            }),
+            content_type='application/json'
+        )
+        assert new_cassette_type_resp.status_code == 200, \
+            new_cassette_type_resp.status
+    cassette_tape_formats = {
+        i['name']: i for i in json.loads(
+            server.get(cassette_tape_format_types_url).data
+        )
+    }
+    data["cassette_tape_formats"] = cassette_tape_formats
+
+    # ========================== cassette_tape_tape_types ======================
+
+    tape_tape_type_api_url = url_for("cassette_tape_tape_types")
+    for value in ["I", "II", "IV"]:
+        resp = server.post(tape_tape_type_api_url,
+                           data=json.dumps({"name": value}),
+                           content_type='application/json'
+                           )
+        assert resp.status_code == 200, resp.status
+
+    data["cassette_tape_tape_types"] = json.loads(
+        server.get(tape_tape_type_api_url).data)
+    yield server, data
+
+
+enum_endpoints = [
+    ('cassette_tape_tape_types', {"name": "X"}, "name"),
+    ("cassette_tape_tape_thickness", {"value": "2.0", "unit": "mm"}, "value"),
+    ("cassette_tape_format_types", {"name": "ultra new cassette tape format"}, "name")
+]
+
+
+@pytest.mark.parametrize("endpoint,_,_a", enum_endpoints)
+def test_api_enum_get(endpoint, _, _a, server_with_enums):
+    server, data = server_with_enums
+    api_url = url_for(endpoint)
+    get_resp = server.get(api_url)
+    assert get_resp.status_code == 200, get_resp.status
+
+
+@pytest.mark.parametrize("endpoint,new_enum_data,name_key", enum_endpoints)
+def test_api_enum_post(endpoint, new_enum_data, name_key, server_with_enums):
+    server, data = server_with_enums
+    api_url = url_for(endpoint)
+    post_resp = server.post(api_url,
+                            data=json.dumps(new_enum_data),
+                            content_type='application/json')
+
+    assert post_resp.status_code == 200, post_resp.status
+
+    get_resp = server.get(api_url)
+    assert get_resp.status_code == 200, get_resp.status
+
+    enums = json.loads(get_resp.data)
+    for enum in enums:
+        if enum[name_key] == new_enum_data[name_key]:
+            assert True
+            break
+    else:
+        assert False, f"{new_enum_data['name']} not found in returned enums"
+
+
+@pytest.mark.parametrize("endpoint,enum_data,name_key", enum_endpoints)
+def test_api_enum_get_id(endpoint, enum_data, name_key, server_with_enums):
+    server, data = server_with_enums
+    api_url = url_for(endpoint, id=1)
+    get_resp = server.get(api_url)
+    assert get_resp.status_code == 200, get_resp.status
+    get_data = json.loads(get_resp.data)
+    assert int(get_data['id']) == 1
+
+
+@pytest.mark.parametrize("endpoint,enum_data,name_key", enum_endpoints)
+def test_api_enum_delete_id(endpoint, enum_data, name_key, server_with_enums):
+    server, data = server_with_enums
+    api_id_url = url_for(endpoint, id=1)
+    del_resp = server.delete(api_id_url)
+    assert del_resp.status_code == 204, f"{endpoint} failed to delete request. reason: {del_resp.status}"
+
+    get_resp = server.get(url_for(endpoint))
+    get_data = json.loads(get_resp.data)
+    for enum in get_data:
+        if enum['id'] == 1:
+            assert False, "enum was not deleted"
+
+
+@pytest.mark.parametrize("endpoint,enum_data,name_key", enum_endpoints)
+def test_api_enum_put_id(endpoint, enum_data, name_key, server_with_enums):
+    server, data = server_with_enums
+    api_id_url = url_for(endpoint, id=1)
+
+    put_resp = server.put(api_id_url,
+                          data=json.dumps(enum_data),
+                          content_type='application/json')
+    assert put_resp.status_code == 200, put_resp.status
+
+    get_resp = server.get(api_id_url)
+    assert get_resp.status_code == 200, get_resp.status
+    get_data = json.loads(get_resp.data)
+    assert get_data[name_key] == enum_data[name_key]
