@@ -72,14 +72,31 @@ function metadataEntry(row) {
   $(row).data('widget', widget);
 }
 
+/**
+ * Widget state for MetadataWidget
+ */
 class MetadataWidgetState {
+  /**
+   * Set up the state of a widget
+   * @param {jQuery} parent
+   */
   constructor(parent) {
     this._parent = parent;
   }
 
+  /**
+   * Draw the widget for the given stage.
+   * @abstract
+   */
   draw() {
   }
 
+  /**
+   * check if target is outside of the row
+   * @param {jQuery} target
+   * @return {boolean} - if clicked outside the row return true else return
+   *  false
+   */
   isClickedOutsideOfRow(target) {
     if ($(this._parent.parent).is(target)) {
       return false;
@@ -93,14 +110,31 @@ class MetadataWidgetState {
     return true;
   };
 
+  /**
+   * Check if use has clicked outside the row
+   * @param {Event} event
+   * @param {jQuery} row
+   */
   clickOffRow(event, row) {
   }
 
+  /**
+   * What to do when an edit delegate is canceled by user
+   */
   onCancel() {
   }
 }
 
+/**
+ * View state for MetadataWidgets
+ */
 class ViewState extends MetadataWidgetState {
+  /**
+   * Draw the view widget
+   * @param {jQuery} parent
+   * @param {jQuery} row
+   * @param {String|Number} value
+   */
   draw(parent, row, value) {
     $(parent).text(value);
     this._parent.makeEditButtonVisible();
@@ -109,7 +143,16 @@ class ViewState extends MetadataWidgetState {
   }
 }
 
+/**
+ * Edit state for MetadataWidgets
+ */
 class EditState extends MetadataWidgetState {
+  /**
+   * Draw the edit widget
+   * @param {jQuery} parent
+   * @param {jQuery} row
+   * @param {String|Number} value - starting value
+   */
   draw(parent, row, value) {
     this._parent.makeEditButtonInvisible();
     this._parent.makeConfirmButtonVisible();
@@ -125,16 +168,27 @@ class EditState extends MetadataWidgetState {
     this._parent.assignEditHandles(parent);
   }
 
+  /**
+   * Clicking off of a row
+   * @param {Event} event
+   * @param {jQuery} row
+   */
   clickOffRow(event, row) {
     this.onCancel();
   }
 
+  /**
+   * When cancel remove the edit state widget and switch to the view mode
+   */
   onCancel() {
     this._parent.viewMode();
     this._parent.tearDown();
     this._parent.draw();
   }
 
+  /**
+   * When confirmed, run onSubmit with the metadata and the api url
+   */
   onConfirm() {
     this._parent.onSubmit(
         $('#editDelegate').val(),
@@ -147,11 +201,22 @@ class EditState extends MetadataWidgetState {
   }
 }
 
+/**
+ * Base class for creating metadata editor
+ */
 class MetadataEditWidget {
   #state;
   apiUrl = null;
   metadataKey = null;
 
+  /**
+   *
+   * @param {jQuery} parent
+   * @param {Object} metadataKeyElement
+   * @param {Object} displayElement
+   * @param {Object} editElement
+   * @param {String|Number} dataValue
+   */
   constructor(
       parent, metadataKeyElement, displayElement, editElement, dataValue) {
     this.parent = parent;
@@ -161,7 +226,7 @@ class MetadataEditWidget {
     this.dataValue = dataValue;
     this.#state = new ViewState(this);
 
-    $(this.metadataValueElement).on('draw:toggle', () => {
+    $(this.parent).on('draw:toggle', () => {
       this.toggleMode();
       this.tearDown();
       this.draw();
@@ -195,11 +260,23 @@ class MetadataEditWidget {
     return true;
   }
 
+  /**
+   * Trigger the changesRequested event
+   * @param {Object} data
+   * @param {String} key
+   * @param {String} url
+   */
   onSubmit(data, key, url) {
     this.parent.parent().
         trigger('changesRequested', [[{key: key, value: data}], url]);
   }
 
+  /**
+   * Check if the area clicked is outside of the ROI
+   * @param {jQuery} target - Area clicked on by the user
+   * @return {boolean} - Returns true the click was inside the widget,
+   *  else returns false
+   */
   targetInEditDelegate(target) {
     if ($(target).is('input')) {
       return true;
@@ -207,37 +284,72 @@ class MetadataEditWidget {
     return false;
   }
 
+  /**
+   * Draw the widget to the DOM
+   */
   draw() {
     this.#state.draw(this.metadataValueElement, this.parent, this.dataValue);
   }
 
+  /**
+   * Commands that need to run when destroying the widget
+   */
   tearDown() {
     $(this.metadataValueElement).empty();
   }
 
+  /**
+   * Makes the edit button visible
+   */
   makeEditButtonVisible() {
     $(this.editButton).parent().find('.edit').removeAttr('hidden');
   }
 
+  /**
+   * Make the confirm button invisible
+   */
   makeConfirmButtonInvisible() {
     $(this.editButton).parent().find('.btn-group-confirm').attr('hidden', '');
   }
 
+  /**
+   * Make the confirm button visible
+   */
   makeConfirmButtonVisible() {
     $(this.editButton).parent().find('.btn-group-confirm').removeAttr('hidden');
   }
 
+  /**
+   * Hide the edit button
+   */
   makeEditButtonInvisible() {
     $(this.editButton).parent().find('.edit').attr('hidden', '');
   }
 
+  /**
+   * Configure any signals when editing
+   * @param {jQuery} base
+   */
   assignEditHandles(base) {
   }
 
+  /**
+   * Set the current mode to view
+   */
   viewMode() {
     this.#state = new ViewState(this);
   }
 
+  /**
+   * Set the current mode to edit
+   */
+  editMode() {
+    this.#state = new EditState(this);
+  }
+
+  /**
+   * Fip modes, from View to Edit and vice-versa
+   */
   toggleMode() {
     if ($(this.metadataValueElement).is('.edit')) {
       this.#state = new ViewState(this);
@@ -246,6 +358,10 @@ class MetadataEditWidget {
     }
   }
 
+  /**
+   * Get the row used by this widget
+   * @return {(*|jQuery.fn.init|jQuery|HTMLElement)[]}
+   */
   row() {
     return [
       $(this.metadataKeyElement),
@@ -254,6 +370,11 @@ class MetadataEditWidget {
     ];
   }
 
+  /**
+   * Do something when the user clicks off of the ROI
+   * @param {Event} event
+   * @param {jQuery} row
+   */
   clickOffRow(event, row) {
     if ($(this.metadataValueElement).is('.edit')) {
       this.viewMode();
@@ -263,10 +384,19 @@ class MetadataEditWidget {
   }
 }
 
+/**
+ * Drop down widget for selecting based an enumerated values
+ */
 class MetadataEditSelectEnumWidget extends MetadataEditWidget {
   options = [];
   selected = null;
 
+  /**
+   * Build the a select/options-based dropdown input
+   * @param {String} value - starting value
+   * @param {String} id - Html id for the element being produced
+   * @return {jQuery[]} - Elements to be used
+   */
   buildInputGroup(value, id = 'editDelegate') {
     const elements = [];
     elements.push('<div class="input-group">');
@@ -289,7 +419,16 @@ class MetadataEditSelectEnumWidget extends MetadataEditWidget {
   }
 }
 
+/**
+ * Widget for editing a datetime field
+ */
 class MetadataEditDateWidget extends MetadataEditWidget {
+  /**
+   * Build form input element
+   * @param {String} value - starting value
+   * @param {String} id - Html id for the element being produced
+   * @return {jQuery[]} - Elements to be used
+   */
   buildInputGroup(value, id = 'editDelegate') {
     const elements = [];
     elements.push('<div class="input-group">');
@@ -299,10 +438,22 @@ class MetadataEditDateWidget extends MetadataEditWidget {
     return elements;
   }
 
+  /**
+   * Check if the a target is outside the ROI of the edit row
+   * @param {jQuery} target - ROI
+   * @return {boolean} - Returns true if the target is outside of the ROI
+   * else returns false
+   */
   isClickedOutsideOfRow(target) {
     return super.isClickedOutsideOfRow(target);
   }
 
+  /**
+   * Check if the area clicked is outside of the ROI
+   * @param {jQuery} target - Area clicked on by the user
+   * @return {boolean} - Returns true the click was inside the widget,
+   *  else returns false
+   */
   targetInEditDelegate(target) {
     if ($('div[role=\'calendar\']').has(target).length > 0) {
       return true;
@@ -310,6 +461,10 @@ class MetadataEditDateWidget extends MetadataEditWidget {
     return false;
   }
 
+  /**
+   * Adds the correct date format and use bootstrap 4 style to match
+   * @param {jQuery} base - source where the delegate datepicker is located
+   */
   assignEditHandles(base) {
     $(base).find('#editDelegate').datepicker({
       format: 'mm-dd-yyyy',
@@ -325,6 +480,9 @@ class MetadataEditDateWidget extends MetadataEditWidget {
     super.assignEditHandles(base);
   }
 
+  /**
+   * Destroy the datepicker widget when closing
+   */
   tearDown() {
     const datePicker = $(this.metadataValueElement).find('#datepicker');
     if (datePicker.length > 0) {
@@ -334,7 +492,16 @@ class MetadataEditDateWidget extends MetadataEditWidget {
   }
 }
 
+/**
+ * Text line-edit widget
+ */
 class MetadataEditTextWidget extends MetadataEditWidget {
+  /**
+   * Build the a text input
+   * @param {String} value - starting value
+   * @param {String} id - Html id for the element being produced
+   * @return {jQuery[]} - Elements to be used
+   */
   buildInputGroup(value, id = 'editDelegate') {
     const elements = [];
     elements.push('<div class="input-group">');
@@ -367,6 +534,10 @@ export class MetadataWidgetBuilder {
     this.#metadataDisplayText = text;
   }
 
+  /**
+   *
+   * @param {MetadataEditWidget.constructor} widget
+   */
   setMetadataWidget(widget) {
     this.#widgetType = widget;
   }
@@ -442,6 +613,16 @@ export class MetadataWidgetBuilder {
       }
     }
 
+    $(base).on('mode:edit', function() {
+      newWidget.editMode();
+      newWidget.draw();
+    });
+
+    $(base).on('mode:view', function() {
+      newWidget.viewMode();
+      newWidget.draw();
+    });
+
     return newWidget;
   }
 
@@ -480,10 +661,18 @@ type="button"><i class="material-icons">check</i> </button>`);
     return items.join('');
   }
 
+  /**
+   * Set the REST url used to request the valid enumerated values
+   * @param {String} enumUrl - REST url
+   */
   setEnumUrl(enumUrl) {
     this.#enumUrl = enumUrl;
   }
 
+  /**
+   * Set the starting value used by select/option drop down menu widgets
+   * @param {String|Number} value - Starting value
+   */
   setCurrentValue(value) {
     this.#currentValue = value;
   }

@@ -20,12 +20,12 @@ describe('Testing text widget', ()=> {
                 class="tyko-metadata-entity tyko-metadata-entity-enum"
                 data-name="Type Type"
                 data-enumoptions='[{"text": "I", "value": "1"}]'
+                data-value="1"
                 data-displaydata="cassette tape">
             </tr>
             <tr id="inspectionDate" 
                 class="tyko-metadata-entity tyko-metadata-entity-fulldate"
                 data-name="Inspection Date"
-                data-enumurl="/api/project/10/object/28/item?item_id=139"
                 data-displaydata="cassette tape">
             </tr>
         </tbody>
@@ -37,4 +37,19 @@ describe('Testing text widget', ()=> {
         expect($("#dummy").html()).toEqual(expect.stringContaining("cassette tape"));
       }
   )
+
+  test("Set edit mode", ()=>{
+    applyStyles()
+    const row = $('#inspectionDate');
+    row.trigger("mode:edit");
+    expect($(row).html()).toContain("input")
+  })
+
+  test("Set edit mode and then view mode", ()=>{
+    applyStyles()
+    const row = $('#inspectionDate');
+    row.trigger("mode:edit");
+    row.trigger("mode:view");
+    expect($(row).html()).not.toContain("input")
+  })
 })
