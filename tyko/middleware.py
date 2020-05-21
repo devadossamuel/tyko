@@ -114,55 +114,26 @@ class ObjectMiddlwareEntity(AbsMiddlwareEntity):
         current_object = self._data_connector.get(id, serialize=True)
 
         if current_object:
+            for item in current_object['items']:
+                item['routes'] = {
+                    "api": url_for(
+                        'object_item',
+                        item_id=item['item_id'],
+                        object_id=id,
+                        project_id=current_object['parent_project_id']
+                    ),
+                    "frontend": url_for(
+                        'page_project_object_item_details',
+                        item_id=item['item_id'],
+                        object_id=id,
+                        project_id=current_object['parent_project_id']
+                    )
+                }
             return jsonify({
                 "object": current_object
             })
 
         return abort(404)
-
-    def add_item(self, project_id, object_id):
-
-        project_json = ProjectMiddlwareEntity(
-            self._data_provider).get_project_by_id(project_id).get_json()
-
-        current_project = project_json['project']
-
-        # make sure that the project has that object
-        for child_object in current_project['objects']:
-            if child_object['object_id'] == object_id:
-                break
-        else:
-            return make_response(
-                f"Project with id {project_id} does not have an object with an"
-                f" id of {object_id}",
-                404)
-        request_data = request.get_json()
-
-        try:
-            try:
-                new_item_data = {
-                    "name": request_data["name"],
-                    "format_id": request_data["format_id"],
-                    "files": request_data.get("files", [])
-
-                }
-            except KeyError as e:
-                traceback.print_exc(file=sys.stderr)
-                return make_response(
-                    "missing required value {}".format(e), 400)
-
-            new_item = self._data_connector.add_item(
-                object_id=object_id,
-                data=new_item_data)
-
-            return jsonify(
-                {
-                    "item": new_item
-                }
-            )
-        except AttributeError:
-            traceback.print_exc(file=sys.stderr)
-            return make_response("Invalid item data", 400)
 
     def pbcore(self, id):
         xml = pbcore.create_pbcore_from_object(
@@ -408,7 +379,11 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
 
     def get(self, serialize=False, **kwargs):
         if "id" in kwargs:
-            return self.get_project_by_id(kwargs["id"])
+            return jsonify(
+                {
+                    "project": self.get_project_by_id(kwargs["id"])
+                }
+            )
 
         limit = request.args.get("limit")
         offset = request.args.get("offset")
@@ -441,11 +416,16 @@ class ProjectMiddlwareEntity(AbsMiddlwareEntity):
         current_project = self._data_connector.get(id, serialize=True)
 
         if current_project:
-            return jsonify(
-                {
-                    "project": current_project
+            for obj in current_project['objects']:
+                obj['routes'] = {
+                    "frontend": url_for("page_project_object_details",
+                                        project_id=id,
+                                        object_id=obj['object_id']),
+                    "api":  url_for("project_object",
+                                    project_id=id,
+                                    object_id=obj['object_id'])
                 }
-            )
+            return current_project
 
         return abort(404)
 
@@ -732,19 +712,17 @@ class ItemMiddlwareEntity(AbsMiddlwareEntity):
         data = request.get_json()
         name = data['name']
         format_id = data['format_id']
-        medusa_uuid = data.get("medusa_uuid")
 
-        new_item_id = self._data_connector.create(
+        new_item = self._data_connector.create(
             name=name,
             files=data.get("files", []),
-            medusa_uuid=medusa_uuid,
             format_id=format_id
         )
 
         return jsonify(
             {
-                "id": new_item_id,
-                "url": url_for("item", item_id=new_item_id)
+                "id": new_item['item_id'],
+                "url": url_for("item", item_id=new_item['item_id'])
             }
         )
 

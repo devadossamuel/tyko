@@ -57,7 +57,7 @@
 {% endmacro %}
 
 
-{% macro new_modal(modalName, modal_title, form) %}
+{% macro new_modal(modalName, modal_title, add_api_route, form, formId="newEntity") %}
 <div class="modal fade" id="{{modalName}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"  aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -67,7 +67,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form id="newEntity">
+                <form id={{ formId }} class="tyko-form-new-entity" data-addapiurl="{{ add_api_route }}">
                     {{ form }}
                     <button class="btn btn-primary" type="submit">Save changes</button>
                 </form>
@@ -76,6 +76,7 @@
         </div>
     </div>
 </div>
+
 {% endmacro %}
 
 {#<div class="alert alert-danger alert-dismissible d-none" role="alert" id="submitResultAlert">#}
@@ -236,29 +237,28 @@ function remove(apiPath) {
 
 {% macro breadcrumbs_widget(breadcrumbs) %}
 {% if breadcrumbs %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-    {% for breadcrumb in breadcrumbs %}
-        <li class="breadcrumb-item {{'active' if breadcrumb.current}}"
-            {{ 'aria-current="page"' if breadcrumb.current }}>
-            {% if breadcrumb.current %}
-                {{ breadcrumb.name }}
-            {% else %}
-                <a href="{{breadcrumb.link}}">{{ breadcrumb.name }}</a></li>
-            {% endif %}
-    {% endfor %}
-    </ol>
-</nav>
+    <nav aria-label="breadcrumb" class="nav nav-fill">
+        <ol class="breadcrumb mb-0 nav">
+            {% for breadcrumb in breadcrumbs %}
+            <li class="breadcrumb-item {{'active' if breadcrumb.current}}"
+                {{ 'aria-current="page"' if breadcrumb.current }}>
+                {% if breadcrumb.current %}
+                    {{ breadcrumb.name }}
+                {% else %}
+                    <a href="{{breadcrumb.link}}">{{ breadcrumb.name }}</a>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ol>
+    </nav>
 {% endif %}
 {% endmacro %}
 
 {% macro metadata_widget(field_name, field_value) %}
     <td style="width: 16.66%" class="font-weight-bold">{{field_name}}</td>
     <td>
-        <div id="{{field_name}}Data">
-            <div class="container">
-                <p>{{field_value}}</p>
-            </div>
+        <div id="{{field_name}}Data" class="container">
+            <p>{{field_value}}</p>
         </div>
         {{ caller() }}
     </td>
@@ -371,8 +371,10 @@ function remove(apiPath) {
 
             let displayWidget = getWidget("textEditor",
                 document.getElementById("{{field_name}}Data"),
+                {% autoescape false %}
                 "{{ field_name }}",
                 "{{ field_value }}",
+                {% endautoescape %}
             );
             displayWidget.onEdited = function (data) {
                 const newData= {

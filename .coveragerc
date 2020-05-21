@@ -1,0 +1,10 @@
+[run]
+branch = True
+source = tyko
+
+[paths]
+source = tyko
+
+[report]
+exclude_lines =
+    if TYPE_CHECKING:

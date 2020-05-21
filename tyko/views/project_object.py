@@ -1,4 +1,4 @@
-from flask import views
+from flask import views, jsonify, make_response, url_for
 
 from tyko import middleware
 
@@ -6,6 +6,35 @@ from tyko import middleware
 class ProjectObjectAPI(views.MethodView):
     def __init__(self, project: middleware.ProjectMiddlwareEntity) -> None:
         self._project = project
+
+    def get(self, project_id, object_id):
+
+        p = self._project.get_project_by_id(id=project_id)
+        for o in p['objects']:
+            if object_id == o['object_id']:
+                for item in o['items']:
+                    routes = {
+                        "frontend": url_for(
+                            "page_project_object_item_details",
+                            project_id=project_id,
+                            object_id=object_id,
+                            item_id=item['item_id']
+                        ),
+                        "api": url_for(
+                            "object_item",
+                            project_id=project_id,
+                            object_id=object_id,
+                            item_id=item['item_id']
+                        )
+                    }
+                    item['routes'] = routes
+                return jsonify(
+                    {
+                        **o,
+                        "parent_project_id": project_id
+                    }
+                )
+        return make_response("no matching item", 404)
 
     def delete(self, project_id, object_id):
         return self._project.remove_object(project_id, object_id)

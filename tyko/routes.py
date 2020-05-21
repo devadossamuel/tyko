@@ -13,6 +13,7 @@ from .views.object_item import ItemAPI
 from .views.project import ProjectNotesAPI, ProjectAPI
 from .views.project_object import ProjectObjectAPI, ObjectApi, \
     ProjectObjectNotesAPI
+from .views import cassette_tape
 
 
 @dataclass
@@ -183,8 +184,6 @@ class Routes:
                 show_bread_crumb=True)
         )
 
-
-
     def init_website_routes(self):
         if self.app:
             for rule, endpoint, func in \
@@ -234,7 +233,7 @@ class Routes:
             endpoint="project_object",
             view_func=ProjectObjectAPI.as_view("project_objects",
                                                project=project),
-            methods=["DELETE"]
+            methods=["GET", "DELETE"]
         )
 
         yield UrlRule(
@@ -254,17 +253,8 @@ class Routes:
             methods=[
                 "GET",
                 "DELETE",
-                "PUT"
+                "PUT",
             ]
-        )
-
-        yield UrlRule(
-            "/api/project/<int:project_id>/object/<int:object_id>/item",
-            "project_object_add_item",
-            lambda project_id, object_id: project_object.add_item(
-                project_id=project_id, object_id=object_id),
-            methods=["POST"]
-
         )
 
         yield UrlRule(
@@ -301,21 +291,22 @@ class Routes:
             view_func=lambda serialize=True: project_object.get(serialize),
         )
 
-        yield UrlRule(
-            "/api/project/<int:project_id>/object/<int:object_id>/item"
-            "/<int:item_id>",
-            view_func=ObjectItemAPI.as_view(
-                "object_item",
-                parent=project_object),
-            methods=[
-                "DELETE"
-            ]
-        )
-
     def get_api_item_routes(self) -> Iterator[UrlRule]:
 
         item = middleware.ItemMiddlwareEntity(self.db_engine)
-
+        yield UrlRule(
+            "/api/project/<int:project_id>/object/<int:object_id>/item",
+            view_func=ObjectItemAPI.as_view(
+                "object_item",
+                provider=self.db_engine
+            ),
+            methods=[
+                "GET",
+                "DELETE",
+                "POST",
+                "PUT"
+            ]
+        )
         yield UrlRule(
             rule="/api/project/<int:project_id>/object/<int:object_id>"
                  "/item/<int:item_id>/notes",
@@ -375,6 +366,31 @@ class Routes:
                 "item_notes",
                 item=item),
             methods=["PUT", "DELETE"]
+        )
+
+        yield UrlRule(
+            "/api/formats/cassette_tape/cassette_tape_tape_types",
+            view_func=cassette_tape.CassetteTapeTapeTypesAPI.as_view(
+                "cassette_tape_tape_types",
+                provider=self.db_engine
+            ),
+            methods=["GET", "POST", "DELETE", "PUT"]
+        )
+        yield UrlRule(
+            "/api/formats/cassette_tape/cassette_tape_format_types",
+            view_func=cassette_tape.CassetteTapeFormatTypesAPI.as_view(
+                "cassette_tape_format_types",
+                provider=self.db_engine
+            ),
+            methods=["GET", "POST", "DELETE", "PUT"]
+        )
+        yield UrlRule(
+            "/api/formats/cassette_tape/cassette_tape_tape_thickness",
+            view_func=cassette_tape.CassetteTapeThicknessAPI.as_view(
+                "cassette_tape_tape_thickness",
+                provider=self.db_engine
+            ),
+            methods=["GET", "POST", "DELETE", "PUT"]
         )
 
     def get_api_file_routes(self):

@@ -5,7 +5,7 @@
 {% import "_item_macros.html" as item_widgets %}
 
 {% block main_details %}
-    {%  call widgets.card("Details", "my-1 h-100")  %}
+    {%  call widgets.card("Details", "my-1")  %}
         {%  call metadata_table() %}
             <tr>
                 {{widgets.metadata_text_edit_widget("Name", item['name'], 'name', api_path)}}
@@ -13,10 +13,131 @@
             <tr>
                 {{widgets.metadata_number_edit_widget("Object Sequence", item['obj_sequence'], 'obj_sequence', api_path)}}
             </tr>
+            <tr>
+                <th id="formatType">Format Type</th>
+                <td>
+                    <div class="container">
+                        {{ item['format']['name'] }}
+                    </div>
+                </td>
+            </tr>
         {% endcall %}
+    {% endcall %}
+    {%  call widgets.card("Format Details", "my-1")  %}
+            <div class="container">
+                <div class="row mb-3">
+                    {% with %}
+                        {% set format_displays = {'cassette tape': casstte_display} %}
+                        {%  if item['format']['name'] in format_displays %}
+                            {{ format_displays[item['format']['name']](item['format_details']) }}
+                        {% else %}
+                        <table class="table table-sm">
+                            <caption hidden>Metadata</caption>
+                            <thead>
+                                <tr hidden>
+                                    <th scope="col">Type</th>
+                                    <th scope="col">Data</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for field_name,field_value in item['format_details'].items() %}
+                                <tr>
+                                    <th scope="row" style="width: 16.66%">
+                                        {{field_name}}
+                                    </th>
+                                    <td>
+                                        <div id="{{field_name}}Data" class="container-sm">
+                                            <p>{{field_value}}</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
     {% endcall %}
 {% endblock %}
 
+{% macro casstte_display(data) %}
+    <table class="table table-sm" id="formatDetails">
+        <caption hidden>Cassette Data</caption>
+        <thead hidden>
+            <tr>
+                <th scope="col">Key</th>
+                <th scope="col">Value</th>
+                <th scope="col">Options</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr id="cassetteAudioType"
+                class="tyko-metadata-entity tyko-metadata-entity-editable tyko-metadata-entity-enum"
+                data-name="Audio Type"
+                data-displaydata="{{ data['cassette_type']['name'] }}"
+                data-value="{{ data['cassette_type']['id'] }}"
+                data-apiroute="{{ url_for("object_item", project_id=project_id, object_id=object_id, item_id=item['item_id']) }}"
+                data-metadatakey="format_details.format_type_id"
+            >
+            </tr>
+            <tr class="tyko-metadata-entity tyko-metadata-entity-editable tyko-metadata-entity-fulldate"
+                data-name="Inspection Date"
+                data-displaydata="{{ data['inspection_date'] }}"
+                data-apiroute="{{ url_for("object_item", project_id=project_id, object_id=object_id, item_id=item['item_id']) }}"
+                data-metadatakey="format_details.inspection_date"
+            >
+            </tr>
+            <tr class="tyko-metadata-entity tyko-metadata-entity-editable"
+                data-name="Date Recorded"
+                data-displaydata="{{ data['date_recorded'] }}"
+                data-apiroute="{{ url_for("object_item", project_id=project_id, object_id=object_id, item_id=item['item_id']) }}"
+                data-metadatakey="format_details.date_recorded"
+            >
+            </tr>
+            <tr id="rowTapeTape"
+                class="tyko-metadata-entity tyko-metadata-entity-editable tyko-metadata-entity-enum"
+                data-name="Tape Type"
+                data-displaydata="{{ data['tape_type']['name'] if 'tape_type' in data}}"
+                data-value="{{ data['tape_type']['id'] if 'id' in data}}"
+                data-apiroute="{{ url_for("object_item", project_id=project_id, object_id=object_id, item_id=item['item_id']) }}"
+                data-metadatakey="format_details.tape_type_id"
+            >
+            </tr>
+            <tr id="cassetteTapeThickness"
+                class="tyko-metadata-entity tyko-metadata-entity-editable tyko-metadata-entity-enum"
+                data-name="Tape Thickness"
+                {% if 'tape_thickness' in data %}
+                data-displaydata="{{ data['tape_thickness']['value']}}{{ " "~data['tape_thickness']['unit'] if data['tape_thickness']['unit'] else ""}} "
+                {% else %}
+                data-displaydata=""
+                {% endif %}
+                data-value="{{ data['tape_thickness']['id'] if data['tape_thickness']['id'] else "" }}"
+                data-apiroute="{{ url_for("object_item", project_id=project_id, object_id=object_id, item_id=item['item_id']) }}"
+                data-metadatakey="format_details.tape_thickness_id"
+            >
+            </tr>
+            <script id="glue" type="module">
+                import * as loader from "{{ url_for("static", filename='js/item_details.mjs') }}";
+                loader.urls['tapeTypesUrl'] = "{{ url_for('cassette_tape_tape_types') }}";
+                loader.urls['cassetteTypesUrl'] = "{{ url_for('cassette_tape_format_types') }}";
+                loader.urls['cassetteTapeTapeThicknessURL'] = "{{ url_for('cassette_tape_tape_thickness') }}"
+                async function start(){
+                    await loader.load();
+                    loader.refresh()
+                }
+                try{
+                  start();
+                } catch (err) {
+                  alert(err)
+                }
+            </script>
+        </tbody>
+    </table>
+    <script type="module" src="{{ url_for('static', filename='js/metadataWidgets.mjs')}}"></script>
+
+
+{% endmacro %}
 {% block secondary_details %}
     {%  call widgets.card("Files", "my-1")  %}
         {{ filesTable(api_path, item_id=item['item_id'], object_id=object_id, project_id=project_id) }}
@@ -25,7 +146,7 @@
 
     {% call widgets.card("Notes", "my-1")  %}
         {% call(note) notes_table(item['notes'], api_path) %}
-            {{ notes_table_row(note, url_for('note', note_id=note['note_id'])) }}
+            {{ notes_table_row(note, note['routes']['api']) }}
         {% endcall %}
         {{ note_editor("/api/project/" ~ project_id ~ "/object/" ~ object_id ~ "/item/" ~ item.item_id, valid_note_types) }}
     {% endcall %}
@@ -35,7 +156,7 @@
 {% block scripts %}
     {{ super() }}
     <script type="application/javascript">
-        var $table = $('#filesTable');
+        let $table = $('#filesTable');
         $table.bootstrapTable({
             onLoadSuccess: function (data, status, jqXHR) {
                 $table.bootstrapTable('load', data.item.files);

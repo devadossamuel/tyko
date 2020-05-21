@@ -40,7 +40,7 @@ def test_view_web_object(app):
         ).get_json()['id']
 
         collection_id = server.post(
-           url_for("add_collection"),
+            url_for("add_collection"),
             data=json.dumps(
                 {
                     "collection_name": "my dumb collection",
@@ -138,7 +138,7 @@ def test_view_web_file(app):
             }),
             content_type='application/json'
         ).data)['object']['object_id']
-        new_item_url = url_for("project_object_add_item",
+        new_item_url = url_for("object_item",
                                project_id=new_project_id,
                                object_id=new_object_id
                                )
@@ -198,7 +198,7 @@ def test_view_web_item(app):
         ).get_json()['object']['object_id']
         new_item_rep = server.post(
             url_for(
-                'project_object_add_item',
+                'object_item',
                 project_id=project_id,
                 object_id=object_id
             ),

@@ -2,6 +2,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import sessionmaker
 
 import tyko
+import tyko.schema.formats
+import tyko.schema.projects
 from tyko import routes, data_provider, schema
 from tyko.run import is_correct_db_version
 import tyko.database
@@ -73,7 +75,7 @@ def test_api_formats(test_app):
     assert resp.status == "200 OK"
     tmp_data = json.loads(resp.data)
 
-    for k, v in tyko.schema.format_types.items():
+    for k, v in tyko.schema.formats.format_types.items():
         for entry in tmp_data:
             if entry["name"] == k:
                 assert entry["format_types_id"] == v[0]
@@ -236,8 +238,8 @@ def test_project_status_by_name_invalid_multiple_with_same_name():
     dummy_session = sessionmaker(bind=engine)
     project_provider = data_provider.ProjectDataConnector(dummy_session)
     session = dummy_session()
-    session.add(tyko.schema.ProjectStatus(name="double"))
-    session.add(tyko.schema.ProjectStatus(name="double"))
+    session.add(tyko.schema.projects.ProjectStatus(name="double"))
+    session.add(tyko.schema.projects.ProjectStatus(name="double"))
     session.commit()
 
     with pytest.raises(tyko.exceptions.DataError):

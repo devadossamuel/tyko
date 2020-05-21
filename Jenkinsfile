@@ -482,7 +482,7 @@ pipeline {
                                 catchError(buildResult: 'SUCCESS', message: 'ESlint found issues', stageResult: 'UNSTABLE') {
                                     sh(
                                         label:  "Running ESlint",
-                                        script: "./node_modules/.bin/eslint --format checkstyle tyko/static/js/ -o reports/eslint.xml"
+                                        script: "./node_modules/.bin/eslint --format checkstyle tyko/static/js/ --ext=.js,.mjs  -o reports/eslint.xml"
                                     )
                                 }
                             }

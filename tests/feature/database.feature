@@ -112,17 +112,16 @@ Feature: database
     And a staff contact named <first_name> <last_name>
     And a new object for the collection with a barcode
     And a new <media_type> item with <file_name> added to the object
-    Then the database has 1 CollectionItem records
-    And the database has 1 CollectionObject records
-    And the database has item record with the <file_name> and has a corresponding <media_type> record with the same item id
+    Then the database has 1 CollectionObject records
+    And the database has item record with the <file_name> and has a corresponding <media_type> record in a <format_class> with the same item id
 
     Examples:
-    | first_name | last_name | media_type         |  file_name    |
-    | Henry      | Borchers  | open reel          |  myfile.wav   |
-    | John       | Smith     | open reel          |  my2file.wav  |
-    | John       | Smith     | film               |  myfilm.mov   |
-    | John       | Smith     | grooved disc       |  mydisc.wav   |
-    | John       | Smith     | audio video        |  myvideo.mov  |
+    | first_name | last_name | media_type         |  file_name    | format_class |
+    | Henry      | Borchers  | open reel          |  myfile.wav   | OpenReel     |
+    | John       | Smith     | open reel          |  my2file.wav  | OpenReel     |
+    | John       | Smith     | film               |  myfilm.mov   | Film         |
+#    | John       | Smith     | grooved disc       |  mydisc.wav   |
+#    | John       | Smith     | audio video        |  myvideo.mov  |
 
 
   Scenario Outline: Create a open reel project
@@ -130,7 +129,7 @@ Feature: database
     And a staff contact named <first_name> <last_name>
     And a new object for the collection with a barcode
     When a new open reel item recorded on <date_recorded> to <tape_size> tape on a <base> base with <file_name> added to the object
-    Then the database has 1 CollectionItem records
+    Then the database has 1 OpenReel records
     And the database has 1 CollectionObject records
     And the database has item record with the <file_name>
     And the database has open reel record with a <tape_size> sized tape
@@ -205,8 +204,7 @@ Scenario Outline: Create a new media project where a file has a note and an anno
     And a new object for the collection with a barcode
     And annotations for <annotation_type> configured in the database
     When a new <media_type> item with <file_name> with <note> and an annotation of <annotation_type> and <annotation_content> added to the object
-    Then the database has 1 CollectionItem records
-    And the database has 1 CollectionObject records
+    Then the database has 1 CollectionObject records
     And the database has item record with the <file_name> that contains a note that reads <note>
     And the database has item record with the <file_name> that contains a <annotation_type> annotation containing <annotation_content>
 
@@ -214,3 +212,19 @@ Scenario Outline: Create a new media project where a file has a note and an anno
     | media_type   |  file_name    | note         | annotation_type      | annotation_content       |
     | open reel    |  myfile.wav   | sample note  | Encode Software Name | Wavelab                  |
     | film         |  myfilm.mkv   | another note | Video Capture Card   | AJA KONA LHe Plus HD-SDI |
+
+Scenario Outline: Create a new media project with audio cassettes
+    Given a database with a project and a collection
+    And a new <object_title> audio recording is added
+    When a tape named <item_title> recorded on <date_recorded> using a <audio_type> type <tape_type> and <tape_thickness> which was inspected on <inspection_date>
+    Then the database has 1 AudioCassette records
+    And the database has a an object entitled <object_title> with an AudioCassette
+    And AudioCassette in <object_title> is titled <item_title> was recorded on the date <date_recorded>
+    And AudioCassette in <object_title> with title <item_title> used type <tape_type> cassette and with <tape_thickness>
+    And AudioCassette in <object_title> with title <item_title> was inspected on <inspection_date>
+
+    Examples:
+    | object_title           | item_title         | date_recorded | audio_type       | tape_type | tape_thickness | inspection_date |
+    | John Doe Oral history  | The beginning part | 11-26-1999    | compact cassette | I         | "0.5"          | 12-10-2019      |
+    | Brass Band Recording   |                    | 01-1997       | ADAT             |           | "0.5"          | 12-12-2019      |
+    | Famous Amazing Speech  |                    | 1997          | DAT              |           | NA             | 12-11-2019      |

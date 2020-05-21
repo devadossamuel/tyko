@@ -11,6 +11,7 @@ setup(
     description='Database for handling entering metadata for AV content',
     packages=[
         'tyko',
+        'tyko.schema',
         'tyko.views',
         'tyko.pbcore',
         'tyko.pbcore.templates',
@@ -21,6 +22,7 @@ setup(
             "static/css/*.css",
             "static/css/*.css.map",
             "static/js/*.js",
+            "static/js/*.mjs",
             "static/js/*.js.map",
         ],
         "tyko.pbcore.templates":[

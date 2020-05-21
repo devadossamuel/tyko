@@ -1,15 +1,26 @@
 # pylint: disable=redefined-builtin, invalid-name
 import abc
-from abc import ABC
+from abc import ABC, ABCMeta
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Iterator
 
 import sqlalchemy
 from sqlalchemy.sql.expression import true
 from sqlalchemy import orm
+
+from .schema.collection import Collection
+from .schema import formats
+from .schema.instantiation import FileNotes, InstantiationFile, \
+    FileAnnotation, FileAnnotationType
+from .schema import CollectionItem
+from .schema.notes import Note, NoteTypes
+from .schema.objects import CollectionObject
+from .schema.projects import Project, ProjectStatus
+from .schema.formats import CassetteType, CassetteTapeType, \
+    CassetteTapeThickness, AudioCassette, AVFormat
 from .exceptions import DataError
-from . import schema
 from . import database
+from tyko import utils
 
 DATE_FORMAT = '%Y-%m-%d'
 
@@ -39,8 +50,8 @@ class AbsDataProviderConnector(metaclass=abc.ABCMeta):
 class AbsNotesConnector(AbsDataProviderConnector, ABC):  # noqa: E501 pylint: disable=abstract-method
     @staticmethod
     def get_note_type(session, note_type_id):
-        note_types = session.query(schema.NoteTypes) \
-            .filter(schema.NoteTypes.id == note_type_id) \
+        note_types = session.query(NoteTypes) \
+            .filter(NoteTypes.id == note_type_id) \
             .all()
 
         if len(note_types) == 0:
@@ -49,7 +60,7 @@ class AbsNotesConnector(AbsDataProviderConnector, ABC):  # noqa: E501 pylint: di
 
     @classmethod
     def new_note(cls, session, text: str, note_type_id: int):
-        new_note = schema.Note(
+        new_note = Note(
             text=text,
             note_type=cls.get_note_type(session, note_type_id)
         )
@@ -62,12 +73,12 @@ class ProjectDataConnector(AbsNotesConnector):
     def get(self, id=None, serialize=False):
         session = self.session_maker()
         if id:
-            all_projects = session.query(schema.Project)\
-                .filter(schema.Project.id == id)\
+            all_projects = session.query(Project)\
+                .filter(Project.id == id)\
                 .all()
 
         else:
-            all_projects = session.query(schema.Project).all()
+            all_projects = session.query(Project).all()
 
         if serialize is True:
             serialized_projects = []
@@ -83,7 +94,7 @@ class ProjectDataConnector(AbsNotesConnector):
 
         return all_projects
 
-    def get_all_project_status(self) -> List[schema.ProjectStatus]:
+    def get_all_project_status(self) -> List[ProjectStatus]:
         """Get the list of all possible statuses that a project can be
 
         Returns:
@@ -92,13 +103,13 @@ class ProjectDataConnector(AbsNotesConnector):
         """
         session = self.session_maker()
         try:
-            return session.query(schema.ProjectStatus).all()
+            return session.query(ProjectStatus).all()
         finally:
             session.close()
 
     def get_project_status_by_name(self, name: str,
                                    create_if_not_exists: bool = False
-                                   ) -> schema.ProjectStatus:
+                                   ) -> ProjectStatus:
         """ Check if an existing status exists and if so, return that, if not
         and create_if_not_exists is false throw an DataError exception
 
@@ -108,15 +119,15 @@ class ProjectDataConnector(AbsNotesConnector):
         """
         session = self.session_maker()
         try:
-            names = session.query(schema.ProjectStatus)\
-                .filter(schema.ProjectStatus.name == name).all()
+            names = session.query(ProjectStatus)\
+                .filter(ProjectStatus.name == name).all()
 
             if len(names) > 1:
                 raise DataError(
                     "Database contained multiple matches for {}".format(name))
             if len(names) == 0:
                 if create_if_not_exists is True:
-                    new_project_status = schema.ProjectStatus(name=name)
+                    new_project_status = ProjectStatus(name=name)
                     session.add(new_project_status)
                     return new_project_status
 
@@ -136,7 +147,7 @@ class ProjectDataConnector(AbsNotesConnector):
         session = self.session_maker()
 
         try:
-            new_project = schema.Project(
+            new_project = Project(
                 title=title,
                 project_code=project_code,
                 current_location=current_location,
@@ -165,8 +176,7 @@ class ProjectDataConnector(AbsNotesConnector):
 
             session.commit()
             new_project = \
-                session.query(schema.Project).filter(
-                    schema.Project.id == project_id).one()
+                session.query(Project).filter(Project.id == project_id).one()
 
             new_project_data = new_project.serialize()
         finally:
@@ -184,16 +194,15 @@ class ProjectDataConnector(AbsNotesConnector):
                 note.text = changed_data['text']
             if "note_type_id" in changed_data:
 
-                note_type = session.query(schema.NoteTypes).filter(
-                    schema.NoteTypes.id == changed_data['note_type_id']).one()
+                note_type = session.query(NoteTypes).filter(
+                    NoteTypes.id == changed_data['note_type_id']).one()
 
                 if note_type is not None:
                     note.note_type = note_type
 
             session.commit()
             new_project = \
-                session.query(schema.Project).filter(
-                    schema.Project.id == project_id).one()
+                session.query(Project).filter(Project.id == project_id).one()
 
             return new_project.serialize()
         finally:
@@ -236,8 +245,8 @@ class ProjectDataConnector(AbsNotesConnector):
             session.commit()
             session.close()
 
-            updated_project = session.query(schema.Project)\
-                .filter(schema.Project.id == id)\
+            updated_project = session.query(Project)\
+                .filter(Project.id == id)\
                 .one()
 
         return updated_project.serialize()
@@ -245,8 +254,8 @@ class ProjectDataConnector(AbsNotesConnector):
     def delete(self, id):
         if id:
             session = self.session_maker()
-            items_deleted = session.query(schema.Project)\
-                .filter(schema.Project.id == id)\
+            items_deleted = session.query(Project)\
+                .filter(Project.id == id)\
                 .delete()
 
             session.commit()
@@ -257,7 +266,7 @@ class ProjectDataConnector(AbsNotesConnector):
     def get_note_types(self):
         session = self.session_maker()
         try:
-            return session.query(schema.NoteTypes).all()
+            return session.query(NoteTypes).all()
         finally:
             session.close()
 
@@ -283,8 +292,8 @@ class ProjectDataConnector(AbsNotesConnector):
                 )
 
             session.commit()
-            return session.query(schema.Project) \
-                .filter(schema.Project.id == project_id) \
+            return session.query(Project) \
+                .filter(Project.id == project_id) \
                 .one().serialize()
         finally:
             session.close()
@@ -316,8 +325,8 @@ class ProjectDataConnector(AbsNotesConnector):
                 if child_object.id == object_id:
                     project.objects.remove(child_object)
                     session.commit()
-                    return session.query(schema.Project) \
-                        .filter(schema.Project.id == project_id) \
+                    return session.query(Project) \
+                        .filter(Project.id == project_id) \
                         .one().serialize()
             raise DataError(
                 message="Project id {} contains no object with an"
@@ -329,8 +338,8 @@ class ProjectDataConnector(AbsNotesConnector):
 
     @staticmethod
     def _get_project(session, project_id):
-        projects = session.query(schema.Project).filter(
-            schema.Project.id == project_id).all()
+        projects = session.query(Project).filter(
+            Project.id == project_id).all()
 
         if len(projects) == 0:
             raise DataError(
@@ -354,15 +363,15 @@ class ObjectDataConnector(AbsNotesConnector):
         try:
             if id is not None:
                 all_collection_object = \
-                    session.query(schema.CollectionObject).filter(
-                        schema.CollectionObject.id == id).all()
+                    session.query(CollectionObject).filter(
+                        CollectionObject.id == id).all()
                 if len(all_collection_object) == 0:
                     raise DataError(
                         message="Unable to find object: {}".format(id))
             else:
                 all_collection_object = \
-                    session.query(schema.CollectionObject).filter(
-                        schema.CollectionObject.project is not None).all()
+                    session.query(CollectionObject).filter(
+                        CollectionObject.project is not None).all()
         except sqlalchemy.exc.DatabaseError as e:
             raise DataError(message="Unable to find object: {}".format(e))
 
@@ -370,7 +379,7 @@ class ObjectDataConnector(AbsNotesConnector):
             serialized_all_collection_object = []
             for collection_object in all_collection_object:
                 serialized_all_collection_object.append(
-                    collection_object.serialize(True)
+                    collection_object.serialize(False)
                 )
 
             all_collection_object = serialized_all_collection_object
@@ -384,9 +393,7 @@ class ObjectDataConnector(AbsNotesConnector):
     def create(self, *args, **kwargs):
         name = kwargs["name"]
         data = self.get_data(kwargs)
-        new_object = schema.CollectionObject(
-            name=name,
-        )
+        new_object = CollectionObject(name=name)
         if 'originals_rec_date' in data:
             new_object.originals_rec_date = data['originals_rec_date']
 
@@ -395,8 +402,8 @@ class ObjectDataConnector(AbsNotesConnector):
             new_object.barcode = barcode
         session = self.session_maker()
         if "collection_id" in kwargs and kwargs['collection_id'] is not None:
-            collection = session.query(schema.Collection).filter(
-                schema.Collection.id == kwargs['collection_id']).one()
+            collection = session.query(Collection).filter(
+                Collection.id == kwargs['collection_id']).one()
 
             if collection is None:
                 raise ValueError("Not a valid collection")
@@ -422,8 +429,8 @@ class ObjectDataConnector(AbsNotesConnector):
                     collection_object.barcode = changed_data['barcode']
 
                 if "collection_id" in changed_data:
-                    collection = session.query(schema.Collection)\
-                        .filter(schema.Collection.id ==
+                    collection = session.query(Collection)\
+                        .filter(Collection.id ==
                                 changed_data['collection_id'])\
                         .one()
 
@@ -445,8 +452,8 @@ class ObjectDataConnector(AbsNotesConnector):
                 session.add(collection_object)
                 session.commit()
 
-                updated_object = session.query(schema.CollectionObject)\
-                    .filter(schema.CollectionObject.id == id)\
+                updated_object = session.query(CollectionObject)\
+                    .filter(CollectionObject.id == id)\
                     .one()
                 return updated_object.serialize()
 
@@ -457,8 +464,8 @@ class ObjectDataConnector(AbsNotesConnector):
         if id:
             session = self.session_maker()
 
-            items_deleted = session.query(schema.CollectionObject)\
-                .filter(schema.CollectionObject.id == id).delete()
+            items_deleted = session.query(CollectionObject)\
+                .filter(CollectionObject.id == id).delete()
 
             success = items_deleted > 0
             session.commit()
@@ -468,7 +475,7 @@ class ObjectDataConnector(AbsNotesConnector):
     def get_note_types(self):
         session = self.session_maker()
         try:
-            return session.query(schema.NoteTypes).all()
+            return session.query(NoteTypes).all()
         finally:
             session.close()
 
@@ -484,8 +491,8 @@ class ObjectDataConnector(AbsNotesConnector):
             )
             session.commit()
 
-            new_object = session.query(schema.CollectionObject) \
-                .filter(schema.CollectionObject.id == object_id) \
+            new_object = session.query(CollectionObject) \
+                .filter(CollectionObject.id == object_id) \
                 .one()
 
             return new_object.serialize()
@@ -496,8 +503,9 @@ class ObjectDataConnector(AbsNotesConnector):
     def remove_note(self, object_id, note_id):
         session = self.session_maker()
         try:
-            objects = session.query(schema.CollectionObject).filter(
-                schema.CollectionObject.id == object_id).all()
+            objects = session.query(CollectionObject)\
+                .filter(CollectionObject.id == object_id)\
+                .all()
 
             if len(objects) == 0:
                 raise DataError(
@@ -530,9 +538,10 @@ class ObjectDataConnector(AbsNotesConnector):
                 )
 
             session.commit()
-            return session.query(schema.CollectionObject) \
-                .filter(schema.CollectionObject.id == object_id) \
-                .one().serialize()
+            return session.query(CollectionObject) \
+                .filter(CollectionObject.id == object_id) \
+                .one()\
+                .serialize()
         finally:
             session.close()
 
@@ -546,16 +555,16 @@ class ObjectDataConnector(AbsNotesConnector):
                 note.text = changed_data['text']
             if "note_type_id" in changed_data:
 
-                note_type = session.query(schema.NoteTypes).filter(
-                    schema.NoteTypes.id == changed_data['note_type_id']).one()
+                note_type = session.query(NoteTypes)\
+                    .filter(NoteTypes.id == changed_data['note_type_id']).one()
 
                 if note_type is not None:
                     note.note_type = note_type
 
             session.commit()
             new_object = \
-                session.query(schema.CollectionObject).filter(
-                    schema.CollectionObject.id == object_id).one()
+                session.query(CollectionObject).filter(
+                    CollectionObject.id == object_id).one()
 
             return new_object.serialize()
         finally:
@@ -563,8 +572,8 @@ class ObjectDataConnector(AbsNotesConnector):
 
     @staticmethod
     def _get_object(object_id, session):
-        collection_object = session.query(schema.CollectionObject) \
-            .filter(schema.CollectionObject.id == object_id) \
+        collection_object = session.query(CollectionObject) \
+            .filter(CollectionObject.id == object_id) \
             .all()
         if len(collection_object) == 0:
             raise ValueError("Not a valid object")
@@ -583,8 +592,12 @@ class ObjectDataConnector(AbsNotesConnector):
         try:
             matching_object = self._get_object(object_id, session)
             item_connector = ItemDataConnector(self.session_maker)
-            new_item_id = item_connector.create(**data)
-            matching_object.items.append(item_connector.get(id=new_item_id))
+            new_item_id = item_connector.create(**data)['item_id']
+
+            matching_object.collection_items.append(
+                item_connector.get(id=new_item_id)
+            )
+
             session.commit()
             return item_connector.get(id=new_item_id, serialize=True)
         finally:
@@ -599,26 +612,24 @@ class ObjectDataConnector(AbsNotesConnector):
                 object_id=object_id,
                 session=session
             )
+            matching_list = self._find_matching_section(matching_item,
+                                                        matching_object)
+            if matching_list is not None and matching_item in matching_list:
+                matching_list.remove(matching_item)
 
-            if matching_item not in matching_object.items:
-                raise DataError(
-                    message="Item with ID: {} is not a child of object with "
-                            "ID: {}".format(item_id, object_id)
-                )
-            matching_object.items.remove(matching_item)
             session.commit()
-            return session.query(schema.CollectionObject) \
-                .filter(schema.CollectionObject.id == object_id) \
+            return session.query(CollectionObject) \
+                .filter(CollectionObject.id == object_id) \
                 .one().serialize()
 
         finally:
             session.close()
 
     @staticmethod
-    def _find_item(item_id, session) -> schema.CollectionItem:
+    def _find_item(item_id, session) -> CollectionItem:
         matching_items = \
-            session.query(schema.CollectionItem).filter(
-                schema.CollectionItem.id == item_id).all()
+            session.query(AVFormat).filter(
+                AVFormat.table_id == item_id).all()
 
         if len(matching_items) == 0:
             raise DataError(
@@ -632,10 +643,10 @@ class ObjectDataConnector(AbsNotesConnector):
         return matching_items[0]
 
     @staticmethod
-    def _find_object(object_id, session) -> schema.CollectionObject:
+    def _find_object(object_id, session) -> CollectionObject:
         matching_objects = \
-            session.query(schema.CollectionObject).filter(
-                schema.CollectionObject.id == object_id).all()
+            session.query(CollectionObject).filter(
+                CollectionObject.id == object_id).all()
 
         if len(matching_objects) == 0:
             raise DataError(
@@ -659,6 +670,24 @@ class ObjectDataConnector(AbsNotesConnector):
 
         return new_data
 
+    @staticmethod
+    def _find_matching_section(matching_item,
+                               matching_object) -> Optional[List[AVFormat]]:
+        subtypes = [
+            'audio_cassettes',
+            'audio_videos',
+            'collection_items',
+            'films',
+            'grooved_disc',
+            'open_reels',
+        ]
+
+        for subtype_name in subtypes:
+            subtype = getattr(matching_object, subtype_name)
+            if matching_item in subtype:
+                return subtype
+        return None
+
 
 class FileNotesDataConnector(AbsDataProviderConnector):
 
@@ -667,12 +696,11 @@ class FileNotesDataConnector(AbsDataProviderConnector):
         try:
             if id is not None:
                 all_notes = \
-                    session.query(schema.FileNotes).filter(
-                        schema.FileNotes.id == id).all()
+                    session.query(FileNotes).filter(FileNotes.id == id).all()
             else:
                 all_notes = \
-                    session.query(schema.CollectionObject).filter(
-                        schema.CollectionObject.project is not None).all()
+                    session.query(CollectionObject).filter(
+                        CollectionObject.project is not None).all()
 
             if serialize:
                 serialized_notes = []
@@ -692,8 +720,9 @@ class FileNotesDataConnector(AbsDataProviderConnector):
     def create(self, *args, **kwargs):
         session = self.session_maker()
         try:
-            new_note = schema.FileNotes(file_id=kwargs['file_id'],
-                                        message=kwargs['message'])
+            new_note = FileNotes(file_id=kwargs['file_id'],
+                                 message=kwargs['message'])
+
             session.add(new_note)
             session.commit()
             return new_note.serialize()
@@ -703,8 +732,8 @@ class FileNotesDataConnector(AbsDataProviderConnector):
     def update(self, id, changed_data):
         session = self.session_maker()
         try:
-            note_record = session.query(schema.FileNotes) \
-                .filter(schema.FileNotes.id == id).one()
+            note_record = session.query(FileNotes) \
+                .filter(FileNotes.id == id).one()
 
             if "message" in changed_data:
                 note_record.message = changed_data['message']
@@ -716,8 +745,9 @@ class FileNotesDataConnector(AbsDataProviderConnector):
     def delete(self, id):
         session = self.session_maker()
         try:
-            items_deleted = session.query(schema.FileNotes). \
-                filter(schema.FileNotes.id == id).delete()
+            items_deleted = session.query(FileNotes)\
+                .filter(FileNotes.id == id).delete()
+
             success = items_deleted > 0
             session.commit()
             return success
@@ -730,8 +760,9 @@ class FilesDataConnector(AbsDataProviderConnector):
     def get(self, id=None, serialize=False):
         session = self.session_maker()
         try:
-            matching_file = session.query(schema.InstantiationFile)\
-                .filter(schema.InstantiationFile.file_id == id).one()
+            matching_file = session.query(InstantiationFile)\
+                .filter(InstantiationFile.file_id == id).one()
+
             if serialize is True:
                 res = matching_file.serialize(recurse=True)
                 return res
@@ -745,9 +776,10 @@ class FilesDataConnector(AbsDataProviderConnector):
         generation = kwargs['generation']
         session = self.session_maker()
         try:
-            matching_item = session.query(schema.CollectionItem)\
-                .filter(schema.CollectionItem.id == item_id).one()
-            new_file = schema.InstantiationFile(file_name=name)
+            matching_item = session.query(CollectionItem)\
+                .filter(CollectionItem.table_id == item_id).one()
+
+            new_file = InstantiationFile(file_name=name)
 
             if generation is not None:
                 new_file.generation = generation
@@ -762,8 +794,9 @@ class FilesDataConnector(AbsDataProviderConnector):
     def update(self, id, changed_data):
         session = self.session_maker()
         try:
-            matching_file = session.query(schema.InstantiationFile) \
-                .filter(schema.InstantiationFile.file_id == id).one()
+            matching_file = session.query(InstantiationFile) \
+                .filter(InstantiationFile.file_id == id).one()
+
             if "file_name" in changed_data:
                 matching_file.file_name = changed_data['file_name']
             if "generation" in changed_data:
@@ -776,8 +809,9 @@ class FilesDataConnector(AbsDataProviderConnector):
     def delete(self, id: int):
         session = self.session_maker()
         try:
-            items_deleted = session.query(schema.InstantiationFile)\
-                .filter(schema.InstantiationFile.file_id == id).delete()
+            items_deleted = session.query(InstantiationFile)\
+                .filter(InstantiationFile.file_id == id).delete()
+
             session.commit()
             return items_deleted > 0
         finally:
@@ -786,8 +820,9 @@ class FilesDataConnector(AbsDataProviderConnector):
     def remove(self, item_id: int, file_id: int):
         session = self.session_maker()
         try:
-            item = session.query(schema.CollectionItem)\
-                .filter(schema.CollectionItem.id == item_id).one()
+            item = session.query(CollectionItem)\
+                .filter(CollectionItem.table_id == item_id).one()
+
             for f in item.files:
                 if f.file_id == file_id:
                     item.files.remove(f)
@@ -800,25 +835,74 @@ class FilesDataConnector(AbsDataProviderConnector):
 
 class ItemDataConnector(AbsNotesConnector):
 
+    @staticmethod
+    def _get_all(session):
+        res = list(session.query(formats.Film).all()) + \
+              list(session.query(formats.AudioCassette).all()) + \
+              list(session.query(formats.AudioVideo).all()) + \
+              list(session.query(formats.GroovedDisc).all()) + \
+              list(session.query(formats.OpenReel).all()) + \
+              list(session.query(formats.CollectionItem).all())
+        if len(res) == 0:
+            res = list(session.query(formats.AVFormat)
+                       .all())
+        return res
+
+    @staticmethod
+    def _iterall(session) -> Iterator[formats.AVFormat]:
+        yield from session.query(formats.Film).all()
+        yield from session.query(formats.AudioCassette).all()
+        yield from session.query(formats.AudioVideo).all()
+        yield from session.query(formats.GroovedDisc).all()
+        yield from session.query(formats.OpenReel).all()
+        yield from session.query(formats.CollectionItem).all()
+
+    @staticmethod
+    def _get_one(session, table_id: int):
+
+        res = list(session.query(formats.Film)
+                   .filter(formats.AVFormat.table_id == table_id)
+                   .all()) + \
+              list(session.query(formats.AudioCassette)
+                   .filter(formats.AVFormat.table_id == table_id)
+                   .all()) + \
+              list(session.query(formats.AudioVideo)
+                   .filter(formats.AVFormat.table_id == table_id)
+                   .all()) + \
+              list(session.query(formats.GroovedDisc)
+                   .filter(formats.AVFormat.table_id == table_id)
+                   .all()) + \
+              list(session.query(formats.OpenReel)
+                   .filter(formats.AVFormat.table_id == table_id)
+                   .all()) + \
+              list(session.query(formats.CollectionItem)
+                   .filter(formats.AVFormat.table_id == table_id)
+                   .all())
+        if len(res) == 0:
+            res = list(session.query(formats.AVFormat)
+                       .filter(formats.AVFormat.table_id == table_id)
+                       .all())
+        return res
+
+    @staticmethod
+    def _serialize(items):
+        serialized_all_collection_item = []
+        for collection_item in items:
+            serialized_all_collection_item.append(
+                collection_item.serialize(true))
+
+        return serialized_all_collection_item
+
     def get(self, id=None, serialize=False):
         session = self.session_maker()
         try:
-            if id:
-                all_collection_item = session.query(schema.CollectionItem)\
-                    .filter(schema.CollectionItem.id == id)\
-                    .all()
+            if id is not None:
+                all_collection_item = self._get_one(session, id)
             else:
-                all_collection_item = \
-                    session.query(schema.CollectionItem).all()
+                all_collection_item = self._get_all(session)
 
             if serialize:
-                serialized_all_collection_item = []
-
-                for collection_item in all_collection_item:
-                    serialized_all_collection_item.append(
-                        collection_item.serialize())
-
-                all_collection_item = serialized_all_collection_item
+                all_collection_item = self._serialize(all_collection_item)
 
             if id is not None:
                 return all_collection_item[0]
@@ -836,12 +920,7 @@ class ItemDataConnector(AbsNotesConnector):
                 self.new_note(session, note_text, note_type_id)
             )
             session.commit()
-
-            new_item = session.query(schema.CollectionItem) \
-                .filter(schema.CollectionItem.id == item_id) \
-                .one()
-
-            return new_item.serialize()
+            return self._get_item(item_id, session=session).serialize()
 
         finally:
             session.close()
@@ -850,59 +929,93 @@ class ItemDataConnector(AbsNotesConnector):
         session = self.session_maker()
         name = kwargs["name"]
         format_id = int(kwargs["format_id"])
-        format_type = session.query(schema.FormatTypes)\
-            .filter(schema.FormatTypes.id == format_id).one()
+        try:
+            format_type = session.query(formats.FormatTypes)\
+                .filter(formats.FormatTypes.id == format_id).one()
 
-        medusa_uuid = kwargs.get("medusa_uuid")
-        new_item = schema.CollectionItem(
-            name=name,
-            medusa_uuid=medusa_uuid,
-            format_type=format_type
-        )
-        for instance_file in kwargs.get("files", []):
-            new_file = \
-                schema.InstantiationFile(file_name=instance_file['name'])
+            new_item = CollectionItem(
+                name=name,
+                format_type=format_type
+            )
 
-            new_item.files.append(new_file)
-        # new_item.files.append(f)
-        session.add(new_item)
-        session.commit()
-        new_item_id = new_item.id
-        session.close()
+            for instance_file in kwargs.get("files", []):
+                new_file = InstantiationFile(file_name=instance_file['name'])
 
-        return new_item_id
+                new_item.files.append(new_file)
+            # new_item.files.append(f)
+            session.add(new_item)
+            session.commit()
+            return new_item.serialize()
+        finally:
+            session.close()
 
     def update(self, id, changed_data):
         updated_item = None
         item = self.get_item(id)
+        session = self.session_maker()
         if item:
             if "name" in changed_data:
                 item.name = changed_data['name']
 
-            if "medusa_uuid" in changed_data:
-                item.medusa_uuid = changed_data["medusa_uuid"]
-
             if "obj_sequence" in changed_data:
                 item.obj_sequence = int(changed_data["obj_sequence"])
 
-            session = self.session_maker()
+            if "format_details" in changed_data:
+                format_details = changed_data['format_details']
+                self.update_cassette_tape(session, format_details, item)
 
-            session.add(item)
-            session.commit()
-            updated_item = session.query(schema.CollectionItem)\
-                .filter(schema.CollectionItem.id == id)\
-                .one()
-        return updated_item.serialize()
+            try:
+                session.add(item)
+                session.commit()
+                updated_item = item.serialize()
+            finally:
+                session.close()
+        return updated_item
+
+    @staticmethod
+    def update_cassette_tape(session, format_details, item):
+        if item.type == 'audio_cassettes':
+            if 'date_recorded' in format_details:
+                precision = utils.identify_precision(
+                    format_details['date_recorded']
+                )
+                item.recording_date = \
+                    utils.create_precision_datetime(
+                        format_details['date_recorded'], precision
+                    )
+                item.recording_date_precision = precision
+
+            if "inspection_date" in format_details:
+                item.inspection_date = \
+                    utils.create_precision_datetime(
+                        format_details['inspection_date'])
+
+            if "format_type_id" in format_details:
+                f_id = format_details['format_type_id']
+                item.cassette_type = \
+                    session.query(formats.CassetteType).filter(
+                        formats.CassetteType.table_id == f_id).one()
+
+            tape_thickness_id = format_details.get("tape_thickness_id")
+            if tape_thickness_id:
+                item.tape_thickness_id = int(tape_thickness_id)
+
+            tape_type_id = format_details.get('tape_type_id')
+            if tape_type_id:
+                item.tape_type_id = tape_type_id
 
     def delete(self, id):
         if id:
             session = self.session_maker()
+            try:
 
-            items_deleted = session.query(schema.CollectionItem)\
-                .filter(schema.CollectionItem.id == id).delete()
+                items_deleted = session.query(CollectionItem)\
+                    .filter(CollectionItem.table_id == id).delete()
 
-            success = items_deleted > 0
-            session.commit()
+                success = items_deleted > 0
+                session.commit()
+            finally:
+                session.close()
             return success
         return False
 
@@ -912,39 +1025,22 @@ class ItemDataConnector(AbsNotesConnector):
     def get_note_types(self):
         session = self.session_maker()
         try:
-            return session.query(schema.NoteTypes).all()
+            return session.query(NoteTypes).all()
         finally:
             session.close()
 
     @staticmethod
     def _get_item(item_id, session):
-        collection_items = session.query(schema.CollectionItem) \
-            .filter(schema.CollectionItem.id == item_id) \
-            .all()
-        if len(collection_items) == 0:
-            raise ValueError("Not a valid item")
-        collection_item = collection_items[0]
-        return collection_item
+        for i in ItemDataConnector._iterall(session):
+            if i.table_id == item_id:
+                return i
+        raise ValueError("Not a valid item")
 
     def remove_note(self, item_id, note_id):
         session = self.session_maker()
         try:
-            collection_items = session.query(schema.CollectionItem).filter(
-                schema.CollectionItem.id == item_id).all()
 
-            if len(collection_items) == 0:
-                raise DataError(
-                    message="Unable to locate item "
-                            "with ID: {}".format(collection_items),
-                    status_code=404
-                )
-
-            if len(collection_items) > 1:
-                raise DataError(
-                    message="Found multiple items with ID: {}".format(
-                        item_id))
-
-            item = collection_items[0]
+            item = self._get_item(item_id, session)
 
             if len(item.notes) == 0:
                 raise DataError(
@@ -964,9 +1060,7 @@ class ItemDataConnector(AbsNotesConnector):
                 )
 
             session.commit()
-            return session.query(schema.CollectionItem) \
-                .filter(schema.CollectionItem.id == item_id) \
-                .one().serialize()
+            return self._get_item(item_id, session).serialize()
         finally:
             session.close()
 
@@ -980,16 +1074,18 @@ class ItemDataConnector(AbsNotesConnector):
                 note.text = changed_data['text']
             if "note_type_id" in changed_data:
 
-                note_type = session.query(schema.NoteTypes).filter(
-                    schema.NoteTypes.id == changed_data['note_type_id']).one()
+                note_type = session.query(NoteTypes)\
+                    .filter(NoteTypes.id == changed_data['note_type_id'])\
+                    .one()
 
                 if note_type is not None:
                     note.note_type = note_type
 
             session.commit()
             new_item = \
-                session.query(schema.CollectionItem).filter(
-                    schema.CollectionItem.id == item_id).one()
+                session.query(CollectionItem).filter(
+                    CollectionItem.table_id == item_id).one()
+
             return new_item.serialize()
 
         finally:
@@ -1003,17 +1099,78 @@ class ItemDataConnector(AbsNotesConnector):
         raise ValueError("No matching note for item")
 
 
+class AudioCassetteDataConnector(ItemDataConnector):
+
+    def create(self, *args, **kwargs):
+        new_base_item = super().create(*args, **kwargs)
+        session = self.session_maker()
+        try:
+            format_details = kwargs['format_details']
+            base_object = session.query(CollectionObject)\
+                .filter(CollectionObject.id == kwargs['object_id'])\
+                .one()
+
+            new_cassette = AudioCassette(
+                name=new_base_item['name'],
+                format_type_id=new_base_item['format_id']
+            )
+
+            format_type_id = format_details.get('format_type_id')
+            if format_type_id is not None and str(format_type_id) != "":
+                new_cassette.cassette_type = session.query(CassetteType)\
+                    .filter(CassetteType.table_id == int(format_type_id))\
+                    .one()
+
+            self._add_optional_args(new_cassette, **format_details)
+
+            base_object.audio_cassettes.append(new_cassette)
+            session.add(new_cassette)
+            session.commit()
+            i = new_cassette.serialize()
+            return i
+        finally:
+            session.close()
+
+    def _add_optional_args(self, new_cassette, **params):
+        tape_thickness_id = params.get('tape_type_id')
+        if tape_thickness_id is not None and str(tape_thickness_id) != "":
+            new_cassette.tape_thickness_id = int(tape_thickness_id)
+
+        date_inspected = params.get('inspection_date')
+        if date_inspected is not None and date_inspected.strip() != "":
+            new_cassette.inspection_date = \
+                utils.create_precision_datetime(date_inspected)
+
+        tape_type_id = params.get('tape_type_id')
+        if tape_type_id is not None and str(tape_type_id) != "":
+            new_cassette.tape_type_id = int(tape_type_id)
+
+        date_recorded = params.get("date_recorded")
+        if date_recorded is not None and str(date_recorded) != "":
+            date_prec = utils.identify_precision(date_recorded)
+
+            new_cassette.recording_date = utils.create_precision_datetime(
+                date=date_recorded,
+                precision=date_prec
+            )
+            new_cassette.recording_date_precision = date_prec
+
+        tape_thickness_id = params.get('tape_thickness_id')
+        if tape_thickness_id:
+            new_cassette.tape_thickness_id = tape_thickness_id
+
+
 class CollectionDataConnector(AbsDataProviderConnector):
 
     def get(self, id=None, serialize=False):
         session = self.session_maker()
         if id:
-            all_collections = session.query(schema.Collection)\
-                .filter(schema.Collection.id == id)\
+            all_collections = session.query(Collection)\
+                .filter(Collection.id == id)\
                 .all()
         else:
             all_collections = \
-                session.query(schema.Collection).all()
+                session.query(Collection).all()
 
         if serialize:
             serialized_collections = []
@@ -1033,7 +1190,7 @@ class CollectionDataConnector(AbsDataProviderConnector):
         department = kwargs.get("department")
         record_series = kwargs.get("record_series")
 
-        new_collection = schema.Collection(
+        new_collection = Collection(
             collection_name=collection_name,
             department=department,
             record_series=record_series
@@ -1066,17 +1223,18 @@ class CollectionDataConnector(AbsDataProviderConnector):
 
             session.add(collection)
             session.commit()
-            updated_collection = session.query(schema.Collection)\
-                .filter(schema.Collection.id == id)\
+            updated_collection = session.query(Collection)\
+                .filter(Collection.id == id)\
                 .one()
+
         return updated_collection.serialize()
 
     def delete(self, id):
         if id:
             session = self.session_maker()
 
-            collections_deleted = session.query(schema.Collection)\
-                .filter(schema.Collection.id == id).delete()
+            collections_deleted = session.query(Collection)\
+                .filter(Collection.id == id).delete()
 
             success = collections_deleted > 0
             session.commit()
@@ -1089,12 +1247,12 @@ class NotesDataConnector(AbsDataProviderConnector):
     def get(self, id=None, serialize=False):
         session = self.session_maker()
         if id:
-            all_notes = session.query(schema.Note) \
-                .filter(schema.Note.id == id) \
+            all_notes = session.query(Note) \
+                .filter(Note.id == id) \
                 .all()
         else:
             all_notes = \
-                session.query(schema.Note).all()
+                session.query(Note).all()
 
         if serialize:
             serialized_notes = []
@@ -1112,7 +1270,7 @@ class NotesDataConnector(AbsDataProviderConnector):
                 note_data['parent_object_ids'] = objects_mentioned
 
                 items_mentioned = [
-                    obj.id for obj in note.item_sources
+                    obj.id for obj in note.item_source
                 ]
                 note_data['parent_item_ids'] = items_mentioned
 
@@ -1130,11 +1288,11 @@ class NotesDataConnector(AbsDataProviderConnector):
         note_types_id = kwargs.get("note_types_id")
         text = kwargs.get("text")
 
-        new_note = schema.Note(
+        new_note = Note(
             text=text,
             note_type_id=note_types_id
-
         )
+
         session = self.session_maker()
         session.add(new_note)
         session.commit()
@@ -1152,8 +1310,8 @@ class NotesDataConnector(AbsDataProviderConnector):
                 note.text = changed_data['text']
 
             if 'note_type_id' in changed_data:
-                note_types = session.query(schema.NoteTypes).filter(
-                    schema.NoteTypes.id == changed_data['note_type_id'])
+                note_types = session.query(NoteTypes)\
+                    .filter(NoteTypes.id == changed_data['note_type_id'])
 
                 note_type = note_types.one()
                 note.note_type = note_type
@@ -1162,17 +1320,18 @@ class NotesDataConnector(AbsDataProviderConnector):
             session.commit()
             session.close()
 
-            updated_note = session.query(schema.Note) \
-                .filter(schema.Note.id == id) \
+            updated_note = session.query(Note) \
+                .filter(Note.id == id) \
                 .one()
         return updated_note.serialize()
 
     def delete(self, id):
         if id:
             session = self.session_maker()
-            items_deleted = session.query(schema.Note) \
-                .filter(schema.Note.id == id) \
+            items_deleted = session.query(Note) \
+                .filter(Note.id == id) \
                 .delete()
+
             session.commit()
             session.close()
             return items_deleted > 0
@@ -1194,11 +1353,11 @@ class DataProvider:
             session = self.db_session_maker()
 
             if id:
-                all_formats = session.query(schema.FormatTypes)\
-                    .filter(schema.FormatTypes.id == id)\
+                all_formats = session.query(formats.FormatTypes)\
+                    .filter(formats.FormatTypes.id == id)\
                     .all()
             else:
-                all_formats = session.query(schema.FormatTypes).all()
+                all_formats = session.query(formats.FormatTypes).all()
             session.close()
 
         except sqlalchemy.exc.DatabaseError as e:
@@ -1231,8 +1390,8 @@ class FileAnnotationsConnector(AbsDataProviderConnector):
     def get_single_annotations(self, annotation_id, serialize):
         session = self.session_maker()
         try:
-            annotation = session.query(schema.FileAnnotation)\
-                .filter(schema.FileAnnotation.id == annotation_id)\
+            annotation = session.query(FileAnnotation)\
+                .filter(FileAnnotation.id == annotation_id)\
                 .one()
             if serialize is True:
                 return annotation.serialize()
@@ -1245,9 +1404,9 @@ class FileAnnotationsConnector(AbsDataProviderConnector):
         try:
             annotations = []
 
-            for annotation in session.query(
-                    schema.FileAnnotationType)\
-                    .filter(schema.FileAnnotationType.active == true()):
+            for annotation in session.query(FileAnnotationType)\
+                    .filter(FileAnnotationType.active == true()):
+
                 if serialize:
                     annotations.append(annotation.serialize())
                 else:
@@ -1267,9 +1426,10 @@ class FileAnnotationsConnector(AbsDataProviderConnector):
         annotation_type_id = kwargs['annotation_type_id']
         session = self.session_maker()
         try:
-            new_data = schema.FileAnnotation(file_id=file_id,
-                                             annotation_content=content,
-                                             type_id=annotation_type_id)
+            new_data = FileAnnotation(file_id=file_id,
+                                      annotation_content=content,
+                                      type_id=annotation_type_id)
+
             session.add(new_data)
             session.flush()
             session.refresh(new_data)
@@ -1282,8 +1442,9 @@ class FileAnnotationsConnector(AbsDataProviderConnector):
     def update(self, id, changed_data):
         session = self.session_maker()
         try:
-            annotation = session.query(schema.FileAnnotation)\
-                .filter(schema.FileAnnotation.id == id)\
+            annotation = \
+                session.query(FileAnnotation)\
+                .filter(FileAnnotation.id == id)\
                 .one()
 
             if "content" in changed_data:
@@ -1298,8 +1459,8 @@ class FileAnnotationsConnector(AbsDataProviderConnector):
     def delete(self, id):
         session = self.session_maker()
         try:
-            items_deleted = session.query(schema.FileAnnotation)\
-                .filter(schema.FileAnnotation.id == id)\
+            items_deleted = session.query(FileAnnotation)\
+                .filter(FileAnnotation.id == id)\
                 .delete()
             session.commit()
             session.close()
@@ -1318,7 +1479,7 @@ class FileAnnotationTypeConnector(AbsDataProviderConnector):
         annotation_message = kwargs['text']
         session = self.session_maker()
         try:
-            new_annotation_type = schema.FileAnnotationType(
+            new_annotation_type = FileAnnotationType(
                 name=annotation_message,
                 active=True
             )
@@ -1348,10 +1509,185 @@ class FileAnnotationTypeConnector(AbsDataProviderConnector):
         """
         session = self.session_maker()
         try:
-            annotation_type = session.query(schema.FileAnnotationType) \
-                .filter(schema.FileAnnotationType.id == id).one()
+            annotation_type = session.query(FileAnnotationType) \
+                .filter(FileAnnotationType.id == id).one()
+
             annotation_type.active = False
             session.commit()
             return True
+        finally:
+            session.close()
+
+
+class EnumConnector(AbsDataProviderConnector, metaclass=ABCMeta):
+    @classmethod
+    @property
+    @abc.abstractmethod
+    def enum_table(cls):
+        pass
+
+    def delete(self, id):
+        session = self.session_maker()
+        try:
+            enum_deleted = session.query(self.enum_table) \
+                .filter(self.enum_table.table_id == id) \
+                .delete()
+            session.commit()
+            return enum_deleted > 0
+        finally:
+            session.close()
+
+    @classmethod
+    def get_by_id(cls, session, id, serialize):
+        enum_results = session.query(cls.enum_table).filter(
+            cls.enum_table.table_id == id
+        ).one()
+        if serialize:
+            return enum_results.serialize()
+        else:
+            return enum_results
+
+    def update(self, id, changed_data):
+        session = self.session_maker()
+        try:
+            enum = self.get_by_id(session, id, serialize=False)
+            if "name" in changed_data:
+                enum.name = changed_data['name']
+            session.commit()
+            return enum.serialize()
+        finally:
+            session.close()
+
+
+class CassetteTypeConnector(EnumConnector):
+    enum_table = CassetteType
+
+    def get_all(self, session, serialize):
+        cassette_types = session.query(self.enum_table).all()
+        if serialize is False:
+            return cassette_types
+
+        enum_types = []
+        for i in cassette_types:
+            enum_types.append(i.serialize())
+        return enum_types
+
+    def get(self, id=None, serialize=False):
+        session = self.session_maker()
+        try:
+            if id is not None:
+                cassette_types = self.get_by_id(session, int(id), serialize)
+            else:
+                cassette_types = self.get_all(session, serialize)
+            return cassette_types
+        finally:
+            session.close()
+
+    def create(self, *args, **kwargs):
+        name = kwargs["name"]
+        session = self.session_maker()
+        try:
+            if self.entry_already_exists(name, session) is True:
+                raise ValueError(
+                    "Already a value stored for {}".format(self.enum_table))
+            new_cassette_type = self.enum_table(name=name)
+            session.add(new_cassette_type)
+            session.flush()
+            session.commit()
+            return new_cassette_type.serialize()
+        finally:
+            session.close()
+
+    def entry_already_exists(self, name, session):
+        return session.query(self.enum_table).filter(
+            self.enum_table.name == name).count() > 0
+
+
+class CassetteTapeTypeConnector(EnumConnector):
+    enum_table = CassetteTapeType
+
+    def get(self, id=None, serialize=False):
+        session = self.session_maker()
+        try:
+            if id is not None:
+                cassette_types = session.query(CassetteTapeType).filter(
+                    CassetteTapeType.table_id == id
+                )
+            else:
+                cassette_types = session.query(CassetteTapeType).all()
+            if serialize is False:
+                return cassette_types
+
+            enum_types = []
+            for i in cassette_types:
+                enum_types.append(i.serialize())
+
+            if id is not None:
+                return enum_types[0]
+            return enum_types
+        finally:
+            session.close()
+
+    def create(self, *args, **kwargs):
+        new_tape_type = CassetteTapeType(name=kwargs['name'])
+        session = self.session_maker()
+        try:
+            session.add(new_tape_type)
+            session.commit()
+            return new_tape_type.serialize()
+        finally:
+            session.close()
+
+
+class CassetteTapeThicknessConnector(EnumConnector):
+    enum_table = CassetteTapeThickness
+
+    def get(self, id=None, serialize=False):
+        session = self.session_maker()
+        try:
+            if id is not None:
+                cassette_types = session.query(self.enum_table).filter(
+                    CassetteTapeThickness.table_id == id
+                )
+            else:
+                cassette_types = session.query(self.enum_table).all()
+            if serialize is False:
+                return cassette_types
+
+            enum_types = []
+            for i in cassette_types:
+                enum_types.append(i.serialize())
+
+            if id is not None:
+                return enum_types[0]
+            return enum_types
+        finally:
+            session.close()
+
+    def create(self, *args, **kwargs):
+        session = self.session_maker()
+        value = kwargs['value']
+        unit = kwargs['unit']
+        try:
+            new_thickness = \
+                CassetteTapeThickness(value=value, unit=unit)
+
+            session.add(new_thickness)
+            session.commit()
+            return new_thickness.serialize()
+        finally:
+            session.close()
+
+    def update(self, id, changed_data):
+        session = self.session_maker()
+        try:
+            matching_enum = self.get_by_id(session, id, False)
+            if "value" in changed_data:
+                matching_enum.value = changed_data['value']
+            if "unit" in changed_data:
+                matching_enum.unit = changed_data['unit']
+
+            session.commit()
+            return matching_enum.serialize()
         finally:
             session.close()

@@ -12,6 +12,7 @@ from flask import make_response, render_template, url_for
 
 import pkg_resources
 from . import data_provider
+from .views.object_item import ObjectItemAPI
 
 
 @dataclass
@@ -347,8 +348,15 @@ class ItemFrontend(ProjectComponentDetailFrontend):
             Details(name="Medusa UUID", key="medusa_uuid", editable=True),
             Details(name="Object Sequence", key="obj_sequence", editable=True),
         ]
+        for note in selected_item['notes']:
+            note['routes'] = \
+                ObjectItemAPI.get_note_routes(
+                    note,
+                    item_id=selected_item['item_id'],
+                    object_id=selected_item['parent_object_id'],
+                    project_id=kwargs['project_id']
+                    )
 
-        api_path = f"{url_for('.page_index')}api/item/{entity_id}"
         for f in fields:
             if f.source_key is not None:
                 selected_item[f.key] = f.source_key()
@@ -378,7 +386,7 @@ class ItemFrontend(ProjectComponentDetailFrontend):
             fields=fields,
             breadcrumbs=breadcrumbs,
             show_bread_crumb=kwargs.get('show_bread_crumb'),
-            api_path=api_path,
+            api_path=url_for("item", item_id=entity_id),
             item=selected_item)
 
     @property
@@ -438,7 +446,16 @@ class ObjectFrontend(ProjectComponentDetailFrontend):
                                                    id=entity_id)
 
         collection = selected_object.get('collection')
-        if collection is not None:
+        if collection is None and 'collection_id' in selected_object:
+            collection_connector = \
+                data_provider.CollectionDataConnector(
+                    self._data_provider.db_session_maker)
+
+            collection = \
+                collection_connector.get(selected_object['collection_id'])
+
+            selected_object['collection_name'] = collection.collection_name
+        else:
             collection_id = selected_object['collection'].get('collection_id')
             if collection_id is not None:
 
@@ -465,28 +482,40 @@ class ObjectFrontend(ProjectComponentDetailFrontend):
             selected_object['project_name'] = project_name
             selected_object['project_id'] = project_id
 
+        elif 'parent_project_id' in selected_object:
+            selected_object['project_id'] = \
+                selected_object['parent_project_id']
+
         if "show_bread_crumb" in kwargs and kwargs["show_bread_crumb"] is True:
             breadcrumbs = self.build_breadcrumbs(
                 "Object",
                 project_url=url_for(
                     "page_project_details",
-                    project_id=project['project_id']
+                    project_id=selected_object['parent_project_id']
                 ),
                 object_url=url_for(
                     "page_project_object_details",
-                    project_id=project['project_id'],
+                    project_id=selected_object['parent_project_id'],
                     object_id=selected_object['object_id']
                 )
             )
         else:
             breadcrumbs = None
+        if selected_object['parent_project_id'] is not None:
+            api_route = url_for(
+                "project_object",
+                project_id=selected_object['parent_project_id'],
+                object_id=entity_id
+            )
+        else:
+            api_route = url_for('object', object_id=entity_id),
         return self.render_page(
             template="object_details.html",
             edit=False,
             show_sidebar=True,
             fields=fields,
             formats=self._data_provider.get_formats(serialize=True),
-            api_path=url_for('object', object_id=entity_id),
+            api_path=api_route,
             valid_note_types=valid_note_types,
             breadcrumbs=breadcrumbs,
             show_bread_crumb=kwargs.get("show_bread_crumb"),
@@ -514,7 +543,8 @@ class CollectionFrontend(FrontendEntity):
                                 row_table="collections"
                                 )
 
-    def display_details(self, entity_id, *args, **kwargs):
+    def display_details(self, *args, **kwargs):
+        entity_id = int(kwargs['collection_id'])
         selected_object = self._data_connector.get(serialize=True,
                                                    id=entity_id)
 
@@ -593,8 +623,7 @@ class FileDetailsFrontend:
             ),
             file_url="#"
         )
-        file_details = self._data_connector.get(file_id,
-                                                serialize=True)
+        file_details = self._data_connector.get(file_id, serialize=True)
         edit_api_path = url_for("item_files",
                                 project_id=project_id,
                                 object_id=object_id,
@@ -607,3 +636,7 @@ class FileDetailsFrontend:
                                show_bread_crumb=True,
                                file=file_details,
                                api_path=edit_api_path)
+
+
+def render_first_time_startup():
+    return render_template("initialize_app.html")

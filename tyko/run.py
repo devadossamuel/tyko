@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import OperationalError
 
 from .database import init_database
-from .exceptions import DataError
+from .exceptions import DataError, NoTable
 from .data_provider import DataProvider, get_schema_version
 from .schema import ALEMBIC_VERSION
 from .routes import Routes
@@ -22,6 +22,8 @@ def is_correct_db_version(app, database) -> bool:
         app.logger.error(
             "Problem getting version information. "
             "Reason given: {}".format(exc))
+        if "no such table" in str(exc):
+            raise NoTable()
         return False
     return version == ALEMBIC_VERSION
 
