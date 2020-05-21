@@ -76,8 +76,6 @@
                   const dropdownButton = '<button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>';
                   const editButton = `<button class="dropdown-item" onclick="window.location='${row['routes']['frontend']}'">Edit</button>`
                   const removeButton = `<button class="dropdown-item btn-danger" data-target="#removeItemModal" data-toggle="modal" data-displayname="${row['name']}" data-apiroute='${row["routes"]["api"]}'>Remove</button>`
-                  {#const removeButton = `<button class="dropdown-item btn-danger" data-toggel="modal" data-target="alert('does nothing now but when it does it will call ${row["routes"]["api"]}')" data-toggle="modal" >Remove</button>`#}
-                  {#TODO: impliment remove #}
                   const dropdownMenu =
                             `<div class="dropdown-menu">${editButton}${removeButton}</div>`
                   return `<div class="btn-group-sm justify-content-end" role="group" aria-label="Options">${dropdownButton}${dropdownMenu}</div>`;
