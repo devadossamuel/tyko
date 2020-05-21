@@ -42,49 +42,11 @@
                           console.log("Dont't know this one")
                           break
                     }
-
                 })
             </script>
         </div>
     </div>
-    <div class="form-group row cassette-row format-row" hidden>
-        <label for="cassetteDateRecordedInput" class="col-sm-2 col-form-label">Date recorded</label>
-        <div class="col-sm-10">
-            <input type="text" id="cassetteDateRecordedInput" class="form-control" name="format_details.date_recorded">
-        </div>
-    </div>
-    <div class="form-group row cassette-row format-row" hidden>
-        <label for="cassetteAudioTypeInput" class="col-sm-2 col-form-label">Audio type</label>
-        <div class="col-sm-10">
-            <select class="form-control tyko-input-enum-api-options" id="cassetteAudioTypeInput" data-enumapi="{{ url_for('cassette_tape_format_types') }}" name="format_details.format_type_id" ></select>
-        </div>
-    </div>
-    <div class="form-group row cassette-row format-row" hidden>
-        <label for="cassetteTapeTypeInput" class="col-sm-2 col-form-label">Tape Type</label>
-        <div class="col-sm-10">
-            <select id="cassetteTapeTypeInput" class="form-control tyko-input-enum-api-options" data-enumapi="{{ url_for('cassette_tape_tape_types') }}" name="format_details.tape_type_id"></select>
-        </div>
-    </div>
-    <div class="form-group row cassette-row format-row" hidden>
-        <label for="cassetteTapeThicknessInput" class="col-sm-2 col-form-label">Tape Thickness</label>
-        <div class="col-sm-10">
-            <select id="cassetteTapeThicknessInput"
-                    class="form-control tyko-input-enum-api-options"
-                    data-enumapi="{{ url_for('cassette_tape_tape_thickness') }}"
-                    name="format_details.tape_thickness_id">
-            </select>
-        </div>
-    </div>
-    <div class="form-group row cassette-row format-row" hidden>
-        <label for="cassetteDateInspectedInput" class="col-sm-2 col-form-label">Date Inspected</label>
-        <div class="col-sm-10">
-            <input id="cassetteDateInspectedInput" class="form-control tyko-input-fulldate" name="format_details.inspection_date">
-        </div>
-    </div>
-    <script type="application/javascript">
-      const CASSETTE_TAPE_THICKNESS_URL = "{{ url_for('cassette_tape_tape_thickness') }}";
-        const object_api_route = "{{ api_route }}";
-    </script>
+    {% include 'forms/new_audio_cassette.html' %}
     <script type="module" src="{{ url_for('static', filename='js/load_format_options.mjs')}}"></script>
 {% endmacro %}
 
