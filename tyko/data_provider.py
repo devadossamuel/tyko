@@ -776,8 +776,7 @@ class FilesDataConnector(AbsDataProviderConnector):
         generation = kwargs['generation']
         session = self.session_maker()
         try:
-            matching_item = session.query(CollectionItem)\
-                .filter(CollectionItem.table_id == item_id).one()
+            matching_item = ItemDataConnector._get_one(session, item_id)[0]
 
             new_file = InstantiationFile(file_name=name)
 
@@ -820,8 +819,10 @@ class FilesDataConnector(AbsDataProviderConnector):
     def remove(self, item_id: int, file_id: int):
         session = self.session_maker()
         try:
-            item = session.query(CollectionItem)\
-                .filter(CollectionItem.table_id == item_id).one()
+            item = ItemDataConnector._get_one(session, item_id)[0]
+
+            # item = session.query(CollectionItem)\
+            #     .filter(CollectionItem.table_id == item_id).one()
 
             for f in item.files:
                 if f.file_id == file_id:

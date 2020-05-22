@@ -508,7 +508,12 @@ class ObjectFrontend(ProjectComponentDetailFrontend):
                 object_id=entity_id
             )
         else:
-            api_route = url_for('object', object_id=entity_id),
+            api_route = url_for('object', object_id=entity_id)
+
+        selected_object['notes'] = \
+            self._resolve_notes(self._data_provider.db_session_maker,
+                                selected_object['notes'])
+
         return self.render_page(
             template="object_details.html",
             edit=False,
@@ -528,6 +533,24 @@ class ObjectFrontend(ProjectComponentDetailFrontend):
             context=context
         )
         return render_template(template, **new_context)
+
+    @staticmethod
+    def _resolve_notes(session_maker, notes: List[str]):
+        resolved_notes = []
+        provider = data_provider.NotesDataConnector(session_maker)
+        for note in notes:
+            resolved_note = provider.get(note['note_id'], True)
+            if "parent_project_ids" in resolved_note:
+                del resolved_note['parent_project_ids']
+
+            if 'parent_object_ids' in resolved_note:
+                del resolved_note['parent_object_ids']
+
+            if 'parent_item_ids' in resolved_note:
+                del resolved_note['parent_item_ids']
+
+            resolved_notes.append(resolved_note)
+        return resolved_notes
 
 
 class CollectionFrontend(FrontendEntity):

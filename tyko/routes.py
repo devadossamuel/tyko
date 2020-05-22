@@ -228,13 +228,7 @@ class Routes:
             methods=["POST"]
         )
 
-        yield UrlRule(
-            rule="/api/project/<int:project_id>/object/<int:object_id>",
-            endpoint="project_object",
-            view_func=ProjectObjectAPI.as_view("project_objects",
-                                               project=project),
-            methods=["GET", "DELETE"]
-        )
+
 
         yield UrlRule(
             "/api/project/<int:project_id>/notes/<int:note_id>",
@@ -255,6 +249,13 @@ class Routes:
                 "DELETE",
                 "PUT",
             ]
+        )
+        yield UrlRule(
+            rule="/api/project/<int:project_id>/object/<int:object_id>",
+            endpoint="project_object",
+            view_func=ProjectObjectAPI.as_view("project_objects",
+                                               data_provider=self.db_engine),
+            methods=["GET", "DELETE", "PUT"]
         )
 
         yield UrlRule(

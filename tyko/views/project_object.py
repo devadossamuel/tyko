@@ -1,11 +1,14 @@
 from flask import views, jsonify, make_response, url_for
 
 from tyko import middleware
+from tyko.data_provider import DataProvider
 
 
 class ProjectObjectAPI(views.MethodView):
-    def __init__(self, project: middleware.ProjectMiddlwareEntity) -> None:
-        self._project = project
+    def __init__(self, data_provider: DataProvider) -> None:
+        self._data_provider = data_provider
+
+        self._project = middleware.ProjectMiddlwareEntity(data_provider)
 
     def get(self, project_id, object_id):
 
@@ -35,6 +38,9 @@ class ProjectObjectAPI(views.MethodView):
                     }
                 )
         return make_response("no matching item", 404)
+
+    def put(self, project_id, object_id):
+        return middleware.ObjectMiddlwareEntity(self._data_provider).update(id=object_id)
 
     def delete(self, project_id, object_id):
         return self._project.remove_object(project_id, object_id)
